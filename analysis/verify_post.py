@@ -4,15 +4,21 @@ Run this after any change to the data or the text. It reads the numbers back
 out of the CSVs rather than out of the analysis in memory, so a stale table
 carried over from an earlier run fails here rather than in review.
 """
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import pandas as pd
+
+from analysis.relation import spearman
 
 base = Path("/Users/mkzung/Max/Max/xstocks-price-discovery")
 u = pd.read_csv(base / "data" / "universe.csv")
 d = pd.read_csv(base / "data" / "panel_run1.csv")
 p = pd.read_csv(base / "data" / "panel_sessions.csv")
 m = pd.read_csv(base / "data" / "venue_matrix.csv")
+g = pd.read_csv(base / "data" / "token_groups.csv")
 post = (base / "POST.md").read_text()
 
 u["ratio"] = u.cex_volume_24h / u.dex_volume_24h.clip(lower=1)
@@ -60,6 +66,34 @@ checks = [
      round(m[m.venue_a == "pool_deep"].dropna(subset=["weight_a"]).speed_a.abs().min(), 2), 0.58),
     ("pool-pair speed max 0.88",
      round(m[m.venue_a == "pool_deep"].dropna(subset=["weight_a"]).speed_a.abs().max(), 2), 0.88),
+    ("groups cover all 24", len(g), 24),
+    ("ranked group 9", int((g.group == "ranked").sum()), 9),
+    ("thin group 9", int((g.group == "thin").sum()), 9),
+    ("dead group 6", int((g.group == "no on-chain market").sum()), 6),
+    ("ranked median ratio 1.1",
+     round(g[g.group == "ranked"].ratio.median(), 1), 1.1),
+    ("thin median ratio 12.1",
+     round(g[g.group == "thin"].ratio.median(), 1), 12.1),
+    ("dead median ratio 2056",
+     round(g[g.group == "no on-chain market"].ratio.median()), 2056),
+    ("ranked median minutes 217",
+     int(g[g.group == "ranked"].paired_min.median()), 217),
+    ("thin median minutes 23",
+     int(g[g.group == "thin"].paired_min.median()), 23),
+    ("dead median minutes 4",
+     int(g[g.group == "no on-chain market"].paired_min.median()), 4),
+    ("thin minutes span 11 to 73",
+     int(g[g.group == "thin"].paired_min.min()) * 100
+     + int(g[g.group == "thin"].paired_min.max()), 1173),
+    ("spearman -0.93", round(spearman(g.paired_min, g.ratio), 2), -0.93),
+    ("spearman trimmed -0.92",
+     round(spearman(*[c.reset_index(drop=True) for c in
+                      (g.sort_values("ratio").iloc[:-6].paired_min,
+                       g.sort_values("ratio").iloc[:-6].ratio)]), 2), -0.92),
+    ("liquidity rank 0.92",
+     round(spearman(g.dex_liquidity, g.paired_min), 2), 0.92),
+    ("AMZNX thinnest ranked 79",
+     int(g[g.group == "ranked"].paired_min.min()), 79),
 ]
 bad = 0
 for label, got, want in checks:

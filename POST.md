@@ -1,4 +1,4 @@
-# Tokenized stocks are priced on the exchange, and for a quarter of them the chain is empty
+# Tokenized stocks are priced on the exchange, and the quieter the chain the more the exchange prints
 
 A tokenized equity is the rare asset where the same instrument, the same
 issuer's mint, trades at once on a centralised order book and in an on-chain
@@ -15,9 +15,12 @@ The answer for Backed Finance's xStocks, measured on 29 July 2026, is that
 the exchange leads and the Solana pool follows in every pair that can be
 ranked. It holds when the sample is cut to the hours when the US equity market
 is shut, and it holds on a second exchange, so it is the venue type doing the
-pricing rather than one listing venue. The more useful finding is the one underneath it: for a
-quarter of the listed tokens there is no on-chain market to compare against at
-all.
+pricing rather than one listing venue. The more useful finding is the one underneath it. Rank the
+twenty-four tokens by how much their pool trades and by how many exchange
+dollars are printed per on-chain dollar, and the two orders are almost exactly
+reversed: the quieter the chain, the more the exchange prints against it. At
+the bottom of that ordering sit six tokens with no on-chain market to check
+the exchange against at all.
 
 ## The universe
 
@@ -74,16 +77,23 @@ them is led by the exchange:
 | AMZNX  | 0.63 | -0.35 | 0.59 |
 
 Read the speed columns rather than the weights. In eight of the nine pairs
-Gate moves at most 0.08 of the gap per minute, and in four of them it
-moves the wrong way by a rounding error, while the pool closes 22 to
-74 percent of the gap every minute. The pool is chasing a price set
-somewhere else, and the somewhere else is the order book.
+Gate moves at most 0.08 of the gap per minute, while the pool closes 22 to 74
+percent of it. The pool is chasing a price set somewhere else, and the
+somewhere else is the order book.
 
-AMZNX is the exception and it is the exception in the right direction: it is
-the only pair where the exchange itself corrects meaningfully, at 0.35, and it
-is also the pair with the lowest exchange weight at 0.63. A venue that adjusts
-to the other side is a venue giving up some of the pricing, which is what the
-decomposition is supposed to show.
+Four of the exchange coefficients come out positive, which is the wrong sign:
+the book drifting away from the pool rather than toward it. Two are noise at
+0.002 and 0.008. The other two, GLDX at 0.04 and GOOGLX at 0.08, are small but
+real, and they are exactly the pairs whose weights print above one. A weight
+above one is the decomposition saying the pool contributed negatively, which it
+cannot really do, so those two readings are worth no more than a rank.
+
+AMZNX is the exception and it points the right way: it is the only pair where
+the exchange itself corrects meaningfully, at 0.35, and also the pair with the
+lowest exchange weight at 0.63. A venue that adjusts to the other side is a
+venue giving up some of the pricing, which is what the decomposition is meant
+to show. It is also the thinnest sample in the table at 79 paired minutes
+against 477 for TSLAX, so it is the one row here to lean on least.
 
 The ranking is not an artefact of the hours covered. Cutting the sample to the
 minutes when the US equity market is closed, which is most of the window, leaves
@@ -92,8 +102,8 @@ to 1.24. Whatever is setting these prices overnight is doing it on the order
 book.
 
 That is not damning by itself. A pool tracking a deeper venue is a pool doing
-its job, and Gate's volume in these nine names is buying real price discovery.
-The problem is the other fifteen.
+its job, and the exchange volume in these nine names is buying real price
+discovery. The question is what the other fifteen are buying.
 
 ## Is it Gate, or is it the order book
 
@@ -121,32 +131,54 @@ not be read as a ranking. What they do establish is the size of the effect:
 pool against pool, correction runs both ways and runs fast, which is not what
 the exchange-against-pool pairs look like at all.
 
-## The tokens with no chain to check
+## The less chain there is, the more the exchange prints
 
-The busiest tokens gave eight hours of paired minutes. In that window, six
-tokens traded on-chain for fewer than ten minutes in total:
+The twenty-four tokens sort into three groups on one measurement, how many
+minutes their pool traded during the window, and the groups turn out to sort
+the volume ratio too:
 
-| token | minutes the pool traded | Gate 24h volume | on-chain 24h volume |
-|-------|------------------------:|----------------:|--------------------:|
-| VTIX  | 1  | $29,243  | $4   |
-| AZNX  | 3  | $35,041  | $60  |
-| UNHX  | 4  | $82,147  | $535 |
-| NFLXX | 5  | $116,413 | $33  |
-| ACNX  | 7  | $127,448 | $24  |
-| MCDX  | 8  | $81,439  | $900 |
+| group | tokens | median minutes the pool traded | median exchange dollars per on-chain dollar |
+|-------|-------:|-------------------------------:|--------------------------------------------:|
+| rankable | 9 | 217 | 1.1 |
+| thin | 9 | 23 | 12.1 |
+| no on-chain market | 6 | 4 | 2,056 |
 
-ACNX is the sharpest case. Gate reports a hundred and twenty-seven thousand
+That is not three buckets chosen to make a point. Across all twenty-four
+tokens the rank correlation between minutes traded on-chain and exchange
+dollars printed per on-chain dollar is **-0.93**, with a two-sided permutation
+p below 0.0001 on twenty thousand draws, and it holds at -0.92 after dropping
+the six most extreme ratios. On-chain liquidity ranks with traded minutes at
+0.92, so the plain reading is that thin pools trade rarely, which is the same
+statement rather than a competing one.
+
+The six tokens at the bottom of that ordering are the ones where the exchange
+tape has nothing to check it against:
+
+| token | minutes the pool traded | exchange 24h volume | on-chain 24h volume | on-chain liquidity |
+|-------|------------------------:|--------------------:|--------------------:|-------------------:|
+| VTIX | 1 | $29,243 | $4 | $1,329 |
+| AZNX | 3 | $35,041 | $60 | $3,674 |
+| UNHX | 4 | $82,147 | $535 | $11,379 |
+| NFLXX | 5 | $116,413 | $33 | $6,003 |
+| ACNX | 7 | $127,448 | $24 | $225 |
+| MCDX | 8 | $81,439 | $900 | $14,551 |
+
+ACNX is the sharpest. The exchange reports a hundred and twenty-seven thousand
 dollars of turnover in a token whose entire on-chain market is two hundred and
-twenty-five dollars of liquidity and twenty-four dollars of daily volume, and
-which printed on-chain in seven minutes out of four hundred and eighty.
+twenty-five dollars of liquidity, and whose pool printed in eleven minutes
+across the last fifty-one hours.
 
 Nothing here proves those prints are fake. What it does prove is that they
 cannot be checked. For CRCLX or NVDAX an outside observer can ask whether the
-exchange price is the one the wider market believes, because there is a wider
+exchange price is the one a wider market believes, because there is a wider
 market. For ACNX there is nothing on the other side of the arbitrage, so the
 exchange's tape is the only evidence that the exchange's tape is real. That is
-the condition under which fabricated volume is undetectable, and it currently
-describes a quarter of the tokenized equities listed on this venue.
+the condition under which fabricated volume stays undetectable, and on this
+venue it currently describes a quarter of the tokenized equities listed.
+
+The nine in the middle sit between the two: their pools printed in eleven to
+seventy-three minutes of the window, too few to rank a leader but enough to
+show a market exists. They are named in `data/token_groups.csv` with the rest.
 
 ## What would change the reading
 
@@ -170,16 +202,26 @@ exchange minutes, GeckoTerminal's pool OHLCV endpoint for the on-chain
 minutes, and Dexscreener for pool discovery with the mint prefix check.
 
 The estimator is calibrated against a simulator whose answer is fixed by
-construction, so it can be checked rather than trusted. Two limits came out of
-that calibration and both matter for reading the table above. The fit is biased
-upward by roughly 0.02 to 0.12, which is why four of the nine weights sit
-slightly above one, a value the decomposition cannot really take; the ordering
-survives the bias in every configuration tested, so the weights are read as a
-ranking. And the estimate is unstable when two venues correct at similar
-speeds, scattering between 0.19 and 0.60 around a true 0.5, so a near-even
-reading would have meant shared discovery rather than a measured lead. Only
-AMZNX comes close, at 0.63, and every other pair sits far from even.
+construction, so it can be checked rather than trusted, and two limits came out
+of that calibration.
 
-Data, code and the test suite that holds the estimator to its known answer are
-in the accompanying repository; every figure above is reproducible from the
-committed CSVs.
+The fit is biased upward by roughly 0.02 to 0.12, which is why four of the nine
+exchange weights sit slightly above one, a value the decomposition cannot
+really take. The ordering survives the bias in every configuration tested, so
+the weights are read as a ranking rather than as point estimates.
+
+The estimate is also unstable when two venues correct at similar speeds,
+scattering between 0.19 and 0.60 around a true 0.5. No exchange-against-pool
+pair is near even, the closest being AMZNX at 0.63; the pool-against-pool
+readings are, which is why they are reported as a scale and not a ranking.
+
+Two things about the data are worth stating plainly. The 24-hour volumes are a
+snapshot taken when the universe was built and the minute bars were pulled
+afterwards, so the two are minutes apart rather than simultaneous. And the
+committed CSVs carry no capture timestamp of their own, so the date on this
+post is the date the files were committed.
+
+The repository holds the code, the tests that hold the estimator to its known
+answer, the CSVs behind every figure, and a script that reads each number in
+this post back out of those CSVs. The grouping of all twenty-four tokens,
+including the nine in the middle, is in `data/token_groups.csv`.

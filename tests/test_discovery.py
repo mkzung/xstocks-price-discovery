@@ -88,3 +88,32 @@ def test_session_mask_matches_the_us_regular_session() -> None:
     ], utc=True)
     got = session_mask(pd.DatetimeIndex(idx)).tolist()
     assert got == [False, True, True, False, False, False]
+
+
+def test_spearman_matches_a_hand_computed_case() -> None:
+    # Perfectly reversed orders must give exactly -1, and identical orders +1,
+    # so the no-scipy implementation is doing what its name says.
+    import pandas as pd
+
+    from analysis.relation import spearman
+
+    a = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0])
+    assert spearman(a, a) == pytest.approx(1.0)
+    assert spearman(a, a[::-1].reset_index(drop=True)) == pytest.approx(-1.0)
+    assert abs(spearman(a, pd.Series([2.0, 1.0, 4.0, 3.0, 5.0]))) < 1.0
+
+
+def test_permutation_test_calls_noise_noise() -> None:
+    # Unrelated series must not come out significant; a real relation must.
+    import numpy as np
+    import pandas as pd
+
+    from analysis.relation import test_relation
+
+    rng = np.random.default_rng(0)
+    noise_x = pd.Series(rng.normal(size=40))
+    noise_y = pd.Series(rng.normal(size=40))
+    assert test_relation(noise_x, noise_y, draws=2000).p_value > 0.05
+
+    monotone = pd.Series(range(40))
+    assert test_relation(monotone, monotone, draws=2000).p_value < 0.01
