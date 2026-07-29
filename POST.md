@@ -12,9 +12,10 @@ first is the venue doing the pricing. Measuring that separates a market from a
 tape.
 
 The answer for Backed Finance's xStocks, measured on 29 July 2026, is that
-Gate leads and the Solana pool follows in every pair that can be ranked, and
-the ranking survives when the sample is cut down to the hours when the US
-equity market is shut. The more useful finding is the one underneath it: for a
+the exchange leads and the Solana pool follows in every pair that can be
+ranked. It holds when the sample is cut to the hours when the US equity market
+is shut, and it holds on a second exchange, so it is the venue type doing the
+pricing rather than one listing venue. The more useful finding is the one underneath it: for a
 quarter of the listed tokens there is no on-chain market to compare against at
 all.
 
@@ -94,6 +95,32 @@ That is not damning by itself. A pool tracking a deeper venue is a pool doing
 its job, and Gate's volume in these nine names is buying real price discovery.
 The problem is the other fifteen.
 
+## Is it Gate, or is it the order book
+
+One exchange against one pool cannot tell the two apart. Gate could be leading
+because it is Gate, or because a book with a resting maker queue prices faster
+than a constant-product pool whoever runs it.
+
+Bybit lists TSLAX, so the same test runs against a different exchange and the
+same pool. Bybit leads too, at a weight of 0.75 over 498 paired
+minutes: it corrects at 0.09 of the gap per minute while the pool closes
+0.28. The lead belongs to the venue type rather than to one exchange.
+
+The mirror control is two pools on the same mint. Here the exchange-against-pool
+pattern disappears. Both pools correct hard against each other, the deeper one
+by 0.58 to 0.88 of the gap per minute, where a
+listing exchange moves at most 0.08 against a pool in eight of the nine
+pairs above. Two of the three weights, 0.41 and
+0.43, sit in the range the calibration calls shared discovery rather
+than a lead. The third, NVDAX at 0.06, points the other way, and it is
+also the pair where the deeper pool corrects hardest, at 0.88.
+
+Pools on one chain arbitrage against each other inside a block, so a minute
+grid cannot resolve which of them moved first and these three readings should
+not be read as a ranking. What they do establish is the size of the effect:
+pool against pool, correction runs both ways and runs fast, which is not what
+the exchange-against-pool pairs look like at all.
+
 ## The tokens with no chain to check
 
 The busiest tokens gave eight hours of paired minutes. In that window, six
@@ -135,9 +162,6 @@ describes a quarter of the tokenized equities listed on this venue.
   closed to 0.08 percent open. The arbitrage is working, which is what makes
   the leadership question meaningful rather than a comparison of two unrelated
   prices.
-- **Other exchanges.** Gate is one listing venue among several. The same test
-  against another book would say whether the leadership is Gate's or simply
-  any order book's.
 
 ## How the numbers were produced
 

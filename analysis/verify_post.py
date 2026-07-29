@@ -12,6 +12,7 @@ base = Path("/Users/mkzung/Max/Max/xstocks-price-discovery")
 u = pd.read_csv(base / "data" / "universe.csv")
 d = pd.read_csv(base / "data" / "panel_run1.csv")
 p = pd.read_csv(base / "data" / "panel_sessions.csv")
+m = pd.read_csv(base / "data" / "venue_matrix.csv")
 post = (base / "POST.md").read_text()
 
 u["ratio"] = u.cex_volume_24h / u.dex_volume_24h.clip(lower=1)
@@ -43,6 +44,22 @@ checks = [
     ("gap closed 0.12", round(gap["closed"].abs().mean(), 2), 0.12),
     ("gap five tokens", len(gap), 5),
     ("six dead tokens", int((d.paired_min < 10).sum()), 6),
+    ("bybit weight 0.75",
+     round(m[m.venue_a == "bybit"].dropna(subset=["weight_a"]).iloc[0].weight_a, 2), 0.75),
+    ("bybit minutes 498",
+     int(m[m.venue_a == "bybit"].dropna(subset=["weight_a"]).iloc[0].minutes), 498),
+    ("bybit speed -0.09",
+     round(m[m.venue_a == "bybit"].dropna(subset=["weight_a"]).iloc[0].speed_a, 2), -0.09),
+    ("bybit pool speed 0.28",
+     round(m[m.venue_a == "bybit"].dropna(subset=["weight_a"]).iloc[0].speed_b, 2), 0.28),
+    ("pool-pair weight min 0.06",
+     round(m[m.venue_a == "pool_deep"].dropna(subset=["weight_a"]).weight_a.min(), 2), 0.06),
+    ("pool-pair weight max 0.43",
+     round(m[m.venue_a == "pool_deep"].dropna(subset=["weight_a"]).weight_a.max(), 2), 0.43),
+    ("pool-pair speed min 0.58",
+     round(m[m.venue_a == "pool_deep"].dropna(subset=["weight_a"]).speed_a.abs().min(), 2), 0.58),
+    ("pool-pair speed max 0.88",
+     round(m[m.venue_a == "pool_deep"].dropna(subset=["weight_a"]).speed_a.abs().max(), 2), 0.88),
 ]
 bad = 0
 for label, got, want in checks:
