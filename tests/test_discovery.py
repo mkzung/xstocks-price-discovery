@@ -73,3 +73,18 @@ def test_short_samples_are_refused() -> None:
     a, b = simulate_leader_follower(n=30, seed=4)
     with pytest.raises(ValueError, match="paired observations"):
         information_share(a, b)
+
+
+def test_session_mask_matches_the_us_regular_session() -> None:
+    # 13:30 to 20:00 UTC on weekdays, which is the regular session on US
+    # summer time; the boundary minutes and the weekend have to be right.
+    import pandas as pd
+
+    from analysis.panel import session_mask
+
+    idx = pd.to_datetime([
+        "2026-07-29 13:29", "2026-07-29 13:30", "2026-07-29 19:59",
+        "2026-07-29 20:00", "2026-08-01 15:00", "2026-08-02 15:00",
+    ], utc=True)
+    got = session_mask(pd.DatetimeIndex(idx)).tolist()
+    assert got == [False, True, True, False, False, False]

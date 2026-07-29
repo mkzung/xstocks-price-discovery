@@ -11,10 +11,12 @@ has to come from someone who knows something, and the venue where it appears
 first is the venue doing the pricing. Measuring that separates a market from a
 tape.
 
-The answer for Backed Finance's xStocks, over one 8-hour window on 29 July
-2026, is that Gate leads and the Solana pool follows in every pair that can be
-ranked. The more useful finding is the one underneath it: for a quarter of the
-listed tokens there is no on-chain market to compare against at all.
+The answer for Backed Finance's xStocks, measured on 29 July 2026, is that
+Gate leads and the Solana pool follows in every pair that can be ranked, and
+the ranking survives when the sample is cut down to the hours when the US
+equity market is shut. The more useful finding is the one underneath it: for a
+quarter of the listed tokens there is no on-chain market to compare against at
+all.
 
 ## The universe
 
@@ -55,34 +57,47 @@ error and each venue's speed of correcting it says who is anchoring whom. The
 Gonzalo-Granger common-factor weights fall straight out of those speeds, and
 the venue that corrects less carries more of the permanent price move.
 
-Eight pairs had enough overlapping minutes with both sides moving. Every one of
+Nine pairs had enough overlapping minutes with both sides moving. Every one of
 them is led by the exchange:
 
 | token  | Gate weight | Gate correction speed | pool correction speed |
 |--------|------------:|----------------------:|----------------------:|
-| GLDX   | 1.21 | +0.05 | 0.28 |
-| GOOGLX | 1.16 | +0.07 | 0.48 |
-| NVDAX  | 1.04 | +0.01 | 0.22 |
-| QQQX   | 1.01 | +0.00 | 0.21 |
-| TSLAX  | 0.93 | -0.02 | 0.32 |
+| GOOGLX | 1.19 | +0.08 | 0.49 |
+| GLDX   | 1.15 | +0.04 | 0.28 |
+| QQQX   | 1.04 | +0.01 | 0.22 |
+| NVDAX  | 1.01 | +0.00 | 0.22 |
+| MSTRX  | 0.93 | -0.06 | 0.74 |
 | SPYX   | 0.92 | -0.02 | 0.22 |
-| MSTRX  | 0.90 | -0.08 | 0.72 |
-| CRCLX  | 0.87 | -0.06 | 0.40 |
+| TSLAX  | 0.92 | -0.03 | 0.33 |
+| CRCLX  | 0.85 | -0.07 | 0.40 |
+| AMZNX  | 0.63 | -0.35 | 0.59 |
 
-Read the speed columns rather than the weights. Gate never moves more than
-eight hundredths of the gap per minute in any pair, and usually moves against
-it by nothing at all. The pool closes between 21 and 72 percent of the gap
-every minute. The pool is chasing a price set somewhere else, and the somewhere
-else is the order book.
+Read the speed columns rather than the weights. In eight of the nine pairs
+Gate moves at most 0.08 of the gap per minute, and in four of them it
+moves the wrong way by a rounding error, while the pool closes 22 to
+74 percent of the gap every minute. The pool is chasing a price set
+somewhere else, and the somewhere else is the order book.
+
+AMZNX is the exception and it is the exception in the right direction: it is
+the only pair where the exchange itself corrects meaningfully, at 0.35, and it
+is also the pair with the lowest exchange weight at 0.63. A venue that adjusts
+to the other side is a venue giving up some of the pricing, which is what the
+decomposition is supposed to show.
+
+The ranking is not an artefact of the hours covered. Cutting the sample to the
+minutes when the US equity market is closed, which is most of the window, leaves
+eight pairs measurable and the exchange ahead in all eight, at weights of 0.96
+to 1.24. Whatever is setting these prices overnight is doing it on the order
+book.
 
 That is not damning by itself. A pool tracking a deeper venue is a pool doing
-its job, and Gate's volume in these eight names is buying real price discovery.
-The problem is the other sixteen.
+its job, and Gate's volume in these nine names is buying real price discovery.
+The problem is the other fifteen.
 
 ## The tokens with no chain to check
 
-The window covers eight hours. In that window, six tokens traded on-chain for
-fewer than ten minutes in total:
+The busiest tokens gave eight hours of paired minutes. In that window, six
+tokens traded on-chain for fewer than ten minutes in total:
 
 | token | minutes the pool traded | Gate 24h volume | on-chain 24h volume |
 |-------|------------------------:|----------------:|--------------------:|
@@ -108,13 +123,18 @@ describes a quarter of the tokenized equities listed on this venue.
 
 ## What would change the reading
 
-- **A wider window.** This is one eight-hour session. A token quiet on-chain
-  today may be active tomorrow, and the eight rankings need to hold across days
-  before the leadership claim is more than a snapshot.
-- **The level gap.** Gate and the pool quote CRCLX six percent apart. Until
-  that is explained, the spread cannot be treated as pure arbitrage error, and
-  the market-hours split is the obvious first suspect: the underlying equity
-  stops trading while the token does not.
+- **A wider window.** This is a single day, covering eight hours of overlap on
+  the busiest tokens and less on the rest. A token quiet on-chain today may be
+  active tomorrow, and the nine rankings need to hold across days before the
+  leadership claim is more than a snapshot. The one cut available inside the
+  day, open against closed, does hold.
+- **The two venues agree on price.** On aligned minute bars the exchange quote
+  sits about a tenth of a percent above the pool: 0.08 to 0.14 percent on
+  average across the five tokens with enough data on both sides of the bell,
+  and it narrows when the underlying equity is trading, from 0.12 percent
+  closed to 0.08 percent open. The arbitrage is working, which is what makes
+  the leadership question meaningful rather than a comparison of two unrelated
+  prices.
 - **Other exchanges.** Gate is one listing venue among several. The same test
   against another book would say whether the leadership is Gate's or simply
   any order book's.
@@ -128,13 +148,13 @@ minutes, and Dexscreener for pool discovery with the mint prefix check.
 The estimator is calibrated against a simulator whose answer is fixed by
 construction, so it can be checked rather than trusted. Two limits came out of
 that calibration and both matter for reading the table above. The fit is biased
-upward by roughly 0.02 to 0.12, which is why four of the eight weights sit
+upward by roughly 0.02 to 0.12, which is why four of the nine weights sit
 slightly above one, a value the decomposition cannot really take; the ordering
 survives the bias in every configuration tested, so the weights are read as a
 ranking. And the estimate is unstable when two venues correct at similar
 speeds, scattering between 0.19 and 0.60 around a true 0.5, so a near-even
-reading would have meant shared discovery rather than a measured lead. None of
-the eight pairs is near even.
+reading would have meant shared discovery rather than a measured lead. Only
+AMZNX comes close, at 0.63, and every other pair sits far from even.
 
 Data, code and the test suite that holds the estimator to its known answer are
 in the accompanying repository; every figure above is reproducible from the
