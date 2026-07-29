@@ -1,0 +1,26 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: estimator recovers its known answer
+        run: python -m pytest tests -q
+      - name: every number in the post matches the data
+        run: python analysis/verify.py
+      - name: the calibration reproduces
+        run: python analysis/calibrate.py
+      - name: figures redraw from the committed data
+        run: python analysis/build_analysis.py
+      - name: the post still meets the wiki submission rules
+        run: python analysis/check_dn_format.py

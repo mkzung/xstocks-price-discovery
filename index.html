@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>xStocks price discovery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0 auto; max-width: 60rem; padding: 2.5rem 1.25rem 4rem;
+         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         color: #1a1a1a; }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .4rem; }
+  p.sub { color: #666; margin: 0 0 2rem; }
+  .cards { display: grid; gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+            margin-bottom: 2.5rem; }
+  .card { border: 1px solid #e3e3e3; border-radius: .6rem; padding: 1rem 1.1rem; }
+  .card b { display: block; font-size: 1.75rem; font-weight: 600;
+             letter-spacing: -.02em; }
+  .card span { color: #666; font-size: .85rem; }
+  .card.flag b { color: #b3261e; }
+  h2 { font-size: 1.05rem; margin: 2.2rem 0 .6rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: right; padding: .4rem .55rem;
+            border-bottom: 1px solid #ececec; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: #666; font-weight: 500; }
+  figure { margin: 1.2rem 0 0; }
+  img { width: 100%; border: 1px solid #ececec; border-radius: .4rem; }
+  footer { margin-top: 3rem; color: #666; font-size: .85rem; }
+  code { background: #f5f5f5; padding: .1rem .3rem; border-radius: .2rem; }
+</style>
+<h1>Tokenized stocks are priced on the exchange</h1>
+<p class="sub">24 xStocks quoted at once on Gate and on Solana pools,
+29 July 2026. The quieter the chain, the more the exchange prints against it.</p>
+
+<div class="cards">
+  <div class="card"><b>-0.93</b><span>rank correlation between on-chain
+    minutes traded and exchange dollars per on-chain dollar</span></div>
+  <div class="card"><b>9/9</b><span>rankable pairs where the
+    exchange leads price discovery</span></div>
+  <div class="card flag"><b>6</b><span>tokens whose pool traded in under
+    ten minutes while the exchange printed five and six figures</span></div>
+  <div class="card"><b>7,311x</b><span>highest exchange volume per
+    on-chain dollar, VTIX</span></div>
+</div>
+
+<h2>Who leads, and by how much each side corrects</h2>
+<table><thead><tr><th>token</th><th>exchange weight</th><th>exchange corrects</th><th>pool corrects</th><th>paired minutes</th></tr></thead><tbody><tr><td>GOOGLX</td><td>1.19</td><td>+0.08</td><td>0.49</td><td>119</td></tr><tr><td>GLDX</td><td>1.15</td><td>+0.04</td><td>0.28</td><td>185</td></tr><tr><td>QQQX</td><td>1.04</td><td>+0.01</td><td>0.22</td><td>450</td></tr><tr><td>NVDAX</td><td>1.01</td><td>+0.00</td><td>0.22</td><td>452</td></tr><tr><td>MSTRX</td><td>0.93</td><td>-0.06</td><td>0.74</td><td>225</td></tr><tr><td>SPYX</td><td>0.92</td><td>-0.02</td><td>0.22</td><td>120</td></tr><tr><td>TSLAX</td><td>0.92</td><td>-0.03</td><td>0.33</td><td>480</td></tr><tr><td>CRCLX</td><td>0.85</td><td>-0.07</td><td>0.40</td><td>372</td></tr><tr><td>AMZNX</td><td>0.63</td><td>-0.35</td><td>0.59</td><td>82</td></tr></tbody></table>
+<figure><img src="post/weights.png" alt="Exchange weights and correction speeds"></figure>
+
+<h2>The relation across the whole universe</h2>
+<figure><img src="post/relation.png" alt="On-chain minutes against exchange dollars per on-chain dollar"></figure>
+
+<h2>The tokens with nothing to check them against</h2>
+<table><thead><tr><th>token</th><th>minutes the pool traded</th><th>exchange 24h</th><th>on-chain 24h</th><th>on-chain liquidity</th></tr></thead><tbody><tr><td>VTIX</td><td>1</td><td>$29,243</td><td>$4</td><td>$1,329</td></tr><tr><td>AZNX</td><td>3</td><td>$35,041</td><td>$60</td><td>$3,674</td></tr><tr><td>UNHX</td><td>4</td><td>$82,147</td><td>$535</td><td>$11,379</td></tr><tr><td>NFLXX</td><td>5</td><td>$116,413</td><td>$33</td><td>$6,003</td></tr><tr><td>ACNX</td><td>7</td><td>$127,448</td><td>$24</td><td>$225</td></tr><tr><td>MCDX</td><td>8</td><td>$81,439</td><td>$900</td><td>$14,551</td></tr></tbody></table>
+
+<footer>Every figure regenerates from the committed CSVs with
+<code>python analysis/build_analysis.py</code>, and every number in the write-up
+is re-checked against them by <code>python analysis/verify.py</code>.</footer>
+</html>

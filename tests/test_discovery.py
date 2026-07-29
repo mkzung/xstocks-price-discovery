@@ -21,16 +21,53 @@ def test_pure_leader_is_recovered() -> None:
 
 @pytest.mark.parametrize("adjust_a, adjust_b", [(0.0, 0.4), (0.1, 0.4),
                                                 (0.2, 0.2), (0.4, 0.1)])
-def test_known_weight_is_recovered_within_the_calibrated_bias(
+def test_known_weight_is_recovered_on_average_across_seeds(
     adjust_a: float, adjust_b: float
 ) -> None:
-    # The construction fixes the answer at adjust_b / (adjust_a + adjust_b);
-    # the fit is biased upward by up to 0.12, as recorded in the module.
+    # The construction fixes the answer at adjust_b / (adjust_a + adjust_b).
+    #
+    # An earlier version of this test ran one seed and asserted the error was
+    # within 0.12 and never negative. Both hold on seed 0 and neither holds in
+    # general: over the calibration grid 21 of 72 runs come out below the truth
+    # and 16 miss by more than 0.12. The test was green because of the seed.
+    #
+    # What is true across seeds is that the mean sits just above the truth.
     truth = adjust_b / (adjust_a + adjust_b)
-    a, b = simulate_leader_follower(adjust_a=adjust_a, adjust_b=adjust_b, seed=0)
-    r = information_share(a, b)
-    assert r.weight_a == pytest.approx(truth, abs=0.12)
-    assert r.weight_a >= truth - 1e-9  # the bias is upward, never downward
+    fits = [information_share(*simulate_leader_follower(
+        adjust_a=adjust_a, adjust_b=adjust_b, seed=s)).weight_a
+        for s in range(12)]
+    mean = sum(fits) / len(fits)
+    assert mean == pytest.approx(truth, abs=0.06)
+    assert mean >= truth  # the bias is upward in the mean, not run by run
+
+
+@pytest.mark.parametrize("adjust_a, adjust_b", [(0.0, 0.4), (0.1, 0.4),
+                                                (0.4, 0.1)])
+def test_single_runs_scatter_by_up_to_a_third(
+    adjust_a: float, adjust_b: float
+) -> None:
+    # The scatter the post has to declare. If this bound ever tightens, the
+    # post's stated limit is too pessimistic and should be retightened with it.
+    truth = adjust_b / (adjust_a + adjust_b)
+    errors = [information_share(*simulate_leader_follower(
+        adjust_a=adjust_a, adjust_b=adjust_b, seed=s)).weight_a - truth
+        for s in range(12)]
+    assert max(abs(e) for e in errors) <= 0.35
+
+
+def test_the_leader_is_picked_far_more_often_than_chance() -> None:
+    # The claim the post actually rests on. Individual weights are noisy; what
+    # has to hold is that the venue correcting less comes out ahead.
+    right = total = 0
+    for adjust_a, adjust_b in [(0.0, 0.4), (0.05, 0.4), (0.1, 0.4),
+                               (0.2, 0.4), (0.4, 0.1), (0.4, 0.05)]:
+        truth = adjust_b / (adjust_a + adjust_b)
+        for seed in range(12):
+            fit = information_share(*simulate_leader_follower(
+                adjust_a=adjust_a, adjust_b=adjust_b, seed=seed))
+            right += (fit.weight_a > 0.5) == (truth > 0.5)
+            total += 1
+    assert right / total >= 0.9
 
 
 def test_ranking_is_recovered_in_every_configuration() -> None:
