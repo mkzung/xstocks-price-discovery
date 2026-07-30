@@ -246,8 +246,8 @@ difference between two similar speeds, so a resample that nudges them together
 sends it to infinity and the interval stays wide however long the sample.
 
 Nine of nine agreeing in the first window and 7 of 7 in the second is the
-claim, not any single weight. Under a coin-flip null, 7 of 7 one way is p =
-0.0156.
+claim, not any single weight. Under a coin-flip null, seven of seven falling one
+way carries p = 0.0156.
 
 ### Sparse trading might have invented it
 

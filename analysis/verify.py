@@ -11,6 +11,11 @@ so it compared computed values against hardcoded constants and never opened the
 post at all. Every number in the text could have been wrong and it would still
 have printed FAILED: 0. Whenever a check is added here, mutate the post and
 confirm the check goes red before trusting it.
+
+The current state of that sweep: bumping each of the 99 distinct numbers in the
+post by one unit in its last digit turns 85 of them red. The 14 that stay green
+are the day, month and year components inside URLs and the frontmatter date,
+plus the year in the Hasbrouck citation, none of which restate a computed value.
 """
 import sys
 from pathlib import Path
@@ -19,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
 
+from analysis.bootstrap import sign_test
 from analysis.relation import spearman, test_relation
 
 base = Path(__file__).resolve().parent.parent
@@ -178,6 +184,12 @@ checks = [
     # The permutation test behind the headline correlation.
     ("permutation draws and p", rel.p_value < 0.0001, True,
      f"p below {0.0001:g} on twenty thousand draws"),
+    # The worked example of the Hasbrouck transformation in the prose. It is
+    # arithmetic rather than data, and arithmetic in prose is still a claim.
+    ("hasbrouck worked example",
+     round(0.8 ** 2 / (0.8 ** 2 + 0.2 ** 2), 2), 0.94,
+     f"a weight of {0.8:.2f} corresponds to a share near "
+     f"{0.8 ** 2 / (0.8 ** 2 + 0.2 ** 2):.2f}."),
     # Cointegration, tested rather than assumed.
     ("spread stationary count", int(ranked_pairs.spread_stationary.sum()), 7,
      f"**{int(ranked_pairs.spread_stationary.sum())} of {len(ranked_pairs)}** rankable pairs"),
@@ -219,6 +231,8 @@ checks = [
     # Out-of-sample.
     ("replication count", int(rep.leads_both.sum()), 7,
      f"{int(rep.leads_both.sum())} of {len(rep)} in the second"),
+    ("sign test p-value", round(float(sign_test(len(ranked_pairs), len(ranked_pairs))), 4), 0.0156,
+     f"p = {sign_test(len(ranked_pairs), len(ranked_pairs)):.4f}"),
     ("replication drift", round((rep.w_second - rep.w_first).abs().max(), 2), 0.11,
      f"the weights move by at most {(rep.w_second - rep.w_first).abs().max():.2f}"),
 ]
@@ -287,6 +301,15 @@ dead_table = [
      money(gdead.loc[t].dex_volume_24h), money(gdead.loc[t].dex_liquidity)]
     for t in gdead.index
 ]
+# The robustness table carries seven tokens across seven columns, all of it
+# hand-typed from robustness_<label>.csv. A mutation sweep found every cell of it
+# unguarded, which is the same hole the four tables above had.
+robust_table = [
+    [r.symbol, str(int(r.paired_minutes)), f"{r.fill_rate:.0%}",
+     f"{r.w_cex:.2f}", f"{r.hasbrouck_low:.2f} to {r.hasbrouck_high:.2f}",
+     f"{r.lead_share:.0%}", f"{r.spread_half_life_min:.0f}"]
+    for r in ranked_pairs.itertuples()
+]
 
 bad = 0
 searched = 0
@@ -303,6 +326,10 @@ tables = (
     ("dead-token table",
      ("token", "minutes the pool traded", "exchange 24h volume",
       "on-chain 24h volume", "on-chain liquidity"), dead_table),
+    ("robustness table",
+     ("token", "paired minutes", "pool fill", "GG weight",
+      "Hasbrouck bounds", "bootstrap lead", "spread half-life"),
+     robust_table),
 )
 for name, header, expected in tables:
     searched += sum(len(r) for r in expected)
