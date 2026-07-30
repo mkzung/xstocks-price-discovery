@@ -34,5 +34,7 @@ jobs:
         run: python analysis/windows.py 2026-07-29b 2026-07-30
       - name: figures redraw from the committed data
         run: python analysis/build_analysis.py
-      - name: the post still meets the wiki submission rules
-        run: python analysis/check_dn_format.py
+      - name: the post's line wrapping is settled
+        run: python analysis/format_post.py --check
+      - name: the post's formatting, spelling and links
+        run: python analysis/check_post.py

@@ -1,4 +1,4 @@
-"""Is the cointegrating vector really (1, -1), or was that convenient?
+"""The one-for-one error term is imposed here, not fitted. That needs checking.
 
 The error-correction model imposes the vector rather than estimating it: two
 venues quoting one mint should move one for one, so the spread of log prices is
@@ -33,7 +33,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 from analysis.cointegration import adf  # noqa: E402
-from analysis.discovery import DiscoveryResult, _ols  # noqa: E402
+from analysis.discovery import DiscoveryResult, ols  # noqa: E402
 
 __all__ = ["VectorResult", "estimate_vector", "fit_with_vector"]
 
@@ -90,7 +90,7 @@ def estimate_vector(
                       axis=1).dropna()
     x = np.column_stack([np.ones(len(frame)), frame["b"].to_numpy()])
     y = frame["a"].to_numpy()
-    coef = _ols(x, y)
+    coef = ols(x, y)
     resid = y - x @ coef
     dof = max(len(frame) - 2, 1)
     sigma2 = float(resid @ resid) / dof
@@ -141,8 +141,8 @@ def fit_with_vector(
     design.insert(0, "const", 1.0)
     fitted = pd.concat([d[["a", "b"]], design], axis=1).dropna()
     x = fitted.drop(columns=["a", "b"]).to_numpy()
-    speed_a = float(_ols(x, fitted["a"].to_numpy())[1])
-    speed_b = float(_ols(x, fitted["b"].to_numpy())[1])
+    speed_a = float(ols(x, fitted["a"].to_numpy())[1])
+    speed_b = float(ols(x, fitted["b"].to_numpy())[1])
     denom = speed_a - speed_b
     if abs(denom) < 1e-12:
         weight_a = weight_b = float("nan")

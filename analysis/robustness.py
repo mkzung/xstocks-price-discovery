@@ -44,9 +44,12 @@ from analysis.discovery import hasbrouck_share, information_share  # noqa: E402
 RAW = BASE / "raw"
 DATA = BASE / "data"
 
-# A pair needs enough paired minutes for the fit to mean anything. The
-# calibration shows samples under a few hundred rows carry no usable signal, so
-# this is the floor for a token entering the ranked set.
+# A pair needs enough paired minutes for the fit to mean anything. The estimator
+# refuses fewer than 40 rows outright, and the bootstrap shows a sample of 300
+# rows cannot establish its own leader, so nothing here is a clean threshold.
+# 120 is chosen to sit above the estimator's own floor with room for the lags,
+# and every ranked pair is reported with its sample size so a reader can
+# discount the short ones rather than trust the cut.
 MIN_PAIRED = 120
 
 __all__ = ["run"]

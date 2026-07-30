@@ -127,7 +127,14 @@ def staleness_risk(label: str) -> pd.DataFrame:
 
 
 def replication(label: str) -> pd.DataFrame:
-    """Compare this window's weights against the original panel's."""
+    """Compare this pass's weights against the session panel's.
+
+    Distinct from `windows.leadership_across_windows`, which lines up two series
+    passes against each other. This one crosses the two pipelines: the session
+    panel keeps no minute series, so it cannot go through the same comparison and
+    needs its own. Both are kept because they answer different questions, and the
+    duplication is named here so the next reader does not have to work it out.
+    """
     old = pd.read_csv(DATA / "panel_sessions.csv")
     old = (old[old.regime == "all"].dropna(subset=["w_cex"])
            .set_index("symbol")[["w_cex", "speed_cex", "speed_dex", "minutes"]])

@@ -41,7 +41,10 @@ def figure_relation(groups: pd.DataFrame) -> None:
     """The headline: on-chain activity against what the exchange prints."""
     fig, ax = plt.subplots(figsize=(7.4, 4.4))
     colours = {"ranked": INK, "thin": MUTED, "no on-chain market": ACCENT}
-    for name, sub in groups.groupby("group"):
+    # Explicit order: groupby sorts alphabetically, which lists the dead tokens
+    # first and reads backwards against the gradient the figure shows.
+    for name in ("ranked", "thin", "no on-chain market"):
+        sub = groups[groups.group == name]
         ax.scatter(sub.paired_min.clip(lower=1), sub.ratio.clip(lower=0.1),
                    s=46, color=colours[name], label=name, zorder=3,
                    edgecolor="white", linewidth=0.8)
@@ -83,8 +86,10 @@ def figure_weights(panel: pd.DataFrame) -> None:
                label="pool", zorder=3)
     right.set_yticks(y, allr.symbol, fontsize=8.5)
     right.set_xlabel("share of the gap closed per minute", fontsize=9.5)
-    right.set_title("Who moves toward whom", fontsize=10.5, pad=10)
-    right.legend(frameon=False, fontsize=8.5, loc="lower right")
+    right.set_title("Who moves toward whom", fontsize=10.5, pad=20)
+    # Inside the axes this lands on the bottom token's bars, so it goes above.
+    right.legend(frameon=False, fontsize=8.5, loc="lower center",
+                 bbox_to_anchor=(0.5, 1.02), ncol=2)
     _style(right)
     fig.tight_layout()
     fig.savefig(FIGS / "weights.png", dpi=150)
@@ -132,6 +137,57 @@ def figure_controls(matrix: pd.DataFrame) -> None:
     _style(ax)
     fig.tight_layout()
     fig.savefig(FIGS / "controls.png", dpi=150)
+    plt.close(fig)
+
+
+def figure_weights_series(rob: pd.DataFrame) -> None:
+    """The same picture for the pass that carries the extra evidence.
+
+    `figure_weights` draws the session panel, which is what the post's early
+    table reports. The dashboard leads with the series pass instead, because
+    that is the pass with Hasbrouck bounds and a bootstrap behind it, and a
+    figure of nine tokens under a table of seven invites the reader to look for
+    two that are not there.
+    """
+    ranked = rob.sort_values("w_cex")
+    fig, (left, right) = plt.subplots(1, 2, figsize=(9.0, 4.1),
+                                      gridspec_kw={"width_ratios": [1, 1.05]})
+    y = np.arange(len(ranked))
+
+    # A bar implies a magnitude, and the whole point of the surrounding text is
+    # that a single weight is a noisy ratio. A point with an interval says that.
+    for i, r in enumerate(ranked.itertuples()):
+        left.plot([r.hasbrouck_low, r.hasbrouck_high], [i, i], color=MUTED,
+                  linewidth=3.0, solid_capstyle="round", zorder=3,
+                  label="Hasbrouck bounds" if i == 0 else None)
+    left.scatter(ranked.w_cex, y, s=52, color=INK, zorder=4,
+                 label="Gonzalo-Granger weight")
+    left.axvline(0.5, color=ACCENT, linewidth=1.1, linestyle="--", zorder=2)
+    # Below the lowest row, or it collides with the legend above the axes.
+    left.text(0.5, -0.75, "even", color=ACCENT, fontsize=8, ha="center")
+    left.set_yticks(y, ranked.symbol, fontsize=8.5)
+    left.set_xlim(0.35, 1.35)
+    left.set_xlabel("exchange share of price discovery", fontsize=9.5)
+    left.set_title("Two estimators, one direction", fontsize=10.5, pad=26)
+    left.legend(frameon=False, fontsize=8, loc="lower center",
+                bbox_to_anchor=(0.5, 1.005), ncol=2, handlelength=1.6,
+                columnspacing=1.2)
+    _style(left)
+
+    right.barh(y - 0.19, ranked.speed_cex.abs(), height=0.36, color=MUTED,
+               label="exchange", zorder=3)
+    right.barh(y + 0.19, ranked.speed_dex, height=0.36, color=INK,
+               label="pool", zorder=3)
+    right.set_yticks(y, ranked.symbol, fontsize=8.5)
+    right.set_xlabel("share of the gap closed per minute", fontsize=9.5)
+    right.set_title("The pool closes the gap, the book does not",
+                    fontsize=10.5, pad=26)
+    right.legend(frameon=False, fontsize=8, loc="lower center",
+                 bbox_to_anchor=(0.5, 1.005), ncol=2, handlelength=1.6,
+                 columnspacing=1.2)
+    _style(right)
+    fig.tight_layout()
+    fig.savefig(FIGS / "weights-series.png", dpi=150)
     plt.close(fig)
 
 
@@ -217,8 +273,9 @@ def build_all(label: str = "2026-07-29b") -> list[Path]:
 
     risk = pd.read_csv(DATA / f"sensitivity_staleness_{label}.csv")
     robust = pd.read_csv(DATA / f"robustness_{label}.csv")
-    ranked = robust[robust.verdict == "ranked"].symbol.tolist()
-    figure_staleness(risk, ranked)
+    robust = robust[robust.verdict == "ranked"]
+    figure_weights_series(robust)
+    figure_staleness(risk, robust.symbol.tolist())
     figure_replication(pd.read_csv(DATA / f"sensitivity_replication_{label}.csv"))
     return sorted(FIGS.glob("*.png"))
 

@@ -1,4 +1,4 @@
-"""How much of each token's weight is the data, and how much is the sample.
+"""Separating what a token's own data says from what the method contributes.
 
 The calibration bounds the estimator's scatter on synthetic runs, which answers
 a question about the method rather than about any particular token. A token

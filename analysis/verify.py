@@ -17,6 +17,7 @@ post by one unit in its last digit turns 85 of them red. The 14 that stay green
 are the day, month and year components inside URLs and the frontmatter date,
 plus the year in the Hasbrouck citation, none of which restate a computed value.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -26,6 +27,18 @@ import pandas as pd
 
 from analysis.bootstrap import sign_test
 from analysis.relation import spearman, test_relation
+
+
+def _flat(text: str) -> str:
+    """Collapse every run of whitespace to one space.
+
+    Searches run against the flattened post so that a phrase is found wherever
+    the line break inside it happens to fall. Matching the raw text made every
+    check hostage to the wrap: rewrapping one paragraph reddened a dozen checks
+    that were about numbers, not layout, and the fix each time was to move a
+    newline inside a search string, which is not verification of anything.
+    """
+    return re.sub(r"\s+", " ", text)
 
 base = Path(__file__).resolve().parent.parent
 u = pd.read_csv(base / "data" / "universe.csv")
@@ -83,6 +96,16 @@ both_windows = pd.read_csv(base / "data" / "windows_leadership.csv", index_col=0
 both_windows = (both_windows[both_windows.windows_ranked >= 2]
                 .sort_values("spread_across_windows"))
 
+# TSLAX is the token the registry uses to show the four passes disagree.
+tslax_counts = [
+    int(d.set_index("symbol").loc["TSLAX"].paired_min),
+    int(byrow.loc["TSLAX"].minutes),
+    int(pd.read_csv(base / "raw" / LABEL / "coverage.csv")
+        .set_index("symbol").loc["TSLAX"].paired_minutes),
+    int(pd.read_csv(base / "raw" / SECOND / "coverage.csv")
+        .set_index("symbol").loc["TSLAX"].paired_minutes),
+]
+
 vec = pd.read_csv(base / "data" / f"vector_{LABEL}.csv")
 vecrow = vec.set_index("symbol")
 sim = pd.read_csv(base / "data" / "staleness.csv")
@@ -104,19 +127,19 @@ rank_near = ((near.weight_a > 0.5) == (near.truth > 0.5)).mean()
 checks = [
     ("24 paired tokens", len(u), 24, f"**{len(u)} tokens quoted on both venues**"),
     ("token count in the description", len(u), 24,
-     f"description: \"Gonzalo-Granger price discovery for {len(u)} xStocks"),
-    ("max ratio", round(u.ratio.max()), 7311, f"**{round(u.ratio.max()):,}\ndollars**"),
+     f"measured on {len(u)} xStocks quoted at once"),
+    ("max ratio", round(u.ratio.max()), 7311, f"**{round(u.ratio.max()):,} dollars**"),
     ("min ratio", round(u.ratio.min(), 2), 0.16, f"{u.ratio.min():.2f} cents".replace("0.", "")),
     ("median ratio", round(u.ratio.median(), 1), 6.8, f"The median is {u.ratio.median():.1f}."),
     ("nine rankable", len(allr), 9, f"| {len(allr)} | {ranked.paired_min.median():.0f} |"),
-    ("all exchange-led", int((allr.w_cex > 0.5).all()), 1, "The exchange\nleads every one"),
+    ("all exchange-led", int((allr.w_cex > 0.5).all()), 1, "The exchange leads every one"),
     ("four weights above one", int((allr.w_cex > 1).sum()), 4,
      f"That is why {'four' if (allr.w_cex > 1).sum() == 4 else 'ERR'} of the nine exchange"),
     ("eight-pair exchange speed", round(rest.speed_cex.abs().max(), 2), 0.08,
      f"moves at most {rest.speed_cex.abs().max():.2f} of the gap per minute"),
     ("pool speed span", round(rest.speed_dex.min(), 2), 0.22,
      f"while the pool closes {rest.speed_dex.min() * 100:.0f} to "
-     f"{rest.speed_dex.max() * 100:.0f}\npercent of it"),
+     f"{rest.speed_dex.max() * 100:.0f} percent of it"),
     ("four wrong-way", int((allr.speed_cex > 0).sum()), 4,
      f"{'Four' if (allr.speed_cex > 0).sum() == 4 else 'ERR'} of the exchange coefficients come out positive"),
     ("AMZNX speed", round(byrow.loc["AMZNX"].speed_cex, 2), -0.35,
@@ -128,7 +151,7 @@ checks = [
      f"{int(byrow.loc['TSLAX'].minutes)} for TSLAX"),
     ("closed-session rankable", len(closed), 8, f"leaves {'eight' if len(closed) == 8 else 'ERR'} pairs measurable"),
     ("closed-session weight span", round(closed.w_cex.min(), 2), 0.96,
-     f"at weights\nof {closed.w_cex.min():.2f} to {closed.w_cex.max():.2f}"),
+     f"at weights of {closed.w_cex.min():.2f} to {closed.w_cex.max():.2f}"),
     ("six dead tokens", int((d.paired_min < 10).sum()), 6,
      f"sit {'six' if (d.paired_min < 10).sum() == 6 else 'ERR'} tokens with no on-chain market"),
     ("bybit weight", round(bybit.weight_a, 2), 0.75, f"at a weight of {bybit.weight_a:.2f}"),
@@ -141,7 +164,7 @@ checks = [
     ("pool-pair lowest", round(pools.weight_a.min(), 2), 0.06,
      f"NVDAX at\n{pools.weight_a.min():.2f}"),
     ("pool-pair speeds", round(pools.speed_a.abs().min(), 2), 0.58,
-     f"the deeper one by {pools.speed_a.abs().min():.2f} to {pools.speed_a.abs().max():.2f} of\nthe gap"),
+     f"the deeper one by {pools.speed_a.abs().min():.2f} to {pools.speed_a.abs().max():.2f} of the gap"),
     ("groups cover all", len(g), 24, "The twenty-four tokens sort into three groups"),
     ("ranked group row", len(ranked), 9,
      f"| rankable | {len(ranked)} | {ranked.paired_min.median():.0f} | {ranked.ratio.median():.1f} |"),
@@ -158,7 +181,7 @@ checks = [
                                         trimmed.ratio.reset_index(drop=True)), 2), -0.92,
      f"holds at {spearman(trimmed.paired_min.reset_index(drop=True), trimmed.ratio.reset_index(drop=True)):.2f}"),
     ("liquidity rank", round(spearman(g.dex_liquidity, g.paired_min), 2), 0.92,
-     f"with traded minutes\nat {spearman(g.dex_liquidity, g.paired_min):.2f}"),
+     f"with traded minutes at {spearman(g.dex_liquidity, g.paired_min):.2f}"),
     ("gap median", round(allr.mean_gap_pct.median(), 2), 0.10,
      f"median of {allr.mean_gap_pct.median():.2f} percent"),
     ("gap max", round(allr.mean_gap_pct.max(), 2), 0.14,
@@ -171,18 +194,18 @@ checks = [
     # Calibration, recomputed from the committed grid.
     ("calibration runs", len(cal), 96, "ninety-six runs over eight speed pairs"),
     ("calibration bias", round(lead.error.mean(), 2), 0.03,
-     f"lands {lead.error.mean():.2f} above the truth on\naverage"),
+     f"lands {lead.error.mean():.2f} above the truth on average"),
     ("calibration scatter low", round(lead.error.min(), 2), -0.33,
      f"from {abs(lead.error.min()):.2f} below the truth"),
     ("calibration scatter high", round(lead.error.max(), 2), 0.28,
      f"to {lead.error.max():.2f} above it"),
     ("ranking recovery clear", round(rank_clear, 2), 0.98,
-     f"the right leader {rank_clear * 100:.0f} percent of\nthe time"),
+     f"the right leader {rank_clear * 100:.0f} percent of the time"),
     ("ranking recovery near-even", round(rank_near, 2), 0.92,
      f"falling to {rank_near * 100:.0f} percent where the truth sits near even"),
     # The share of the window with the US equity market shut.
     ("closed share of window", round(closed_share, 2), 0.86,
-     f"which is {closed_share * 100:.0f} percent of the window"),
+     f"shut, {closed_share * 100:.0f} percent of the window"),
     # Figure captions and alt text restate computed numbers. Nothing checked
     # them until a mutation sweep changed the caption correlation from -0.93 to
     # -0.94 and verify.py stayed green.
@@ -207,8 +230,18 @@ checks = [
     ("spread half-life span",
      round(ranked_pairs.spread_half_life_min.max(), 1), 3.9,
      f"half-lives of {ranked_pairs.spread_half_life_min.min():.1f} to "
-     f"{ranked_pairs.spread_half_life_min.max():.1f}\nminutes"),
+     f"{ranked_pairs.spread_half_life_min.max():.1f} minutes"),
+    # The collection registry. Four passes, and the sentence that tells them
+    # apart quotes all four of TSLAX's minute counts.
+    ("TSLAX across the four passes", int(tslax_counts[-1]), 530,
+     "TSLAX shows " + ", ".join(str(n) for n in tslax_counts[:-1])
+     + f" and {tslax_counts[-1]} paired minutes"),
+    ("pass token counts", len(day2_universe), 27,
+     f"| next day | 30 July | {len(pd.read_csv(base / 'raw' / SECOND / 'coverage.csv'))} |"),
     # The cointegrating vector: fitted rather than imposed.
+    ("GOOGLX imposed weight",
+     round(float(vecrow.loc["GOOGLX"].w_imposed), 2), 1.2,
+     f"imposed weight of {float(vecrow.loc['GOOGLX'].w_imposed):.2f}"),
     ("fitted beta span", round(vec.beta.min(), 2), 0.85,
      f"between\n{vec.beta.min():.2f} and {vec.beta.max():.2f}, below one in every pair"),
     ("one inside the bracket", int(vec.one_bracketed.sum()), 7,
@@ -220,13 +253,13 @@ checks = [
      f"largest weight by {(vec.w_fitted - vec.w_imposed).abs().max():.2f}"),
     ("GOOGLX imposed vs fitted",
      round(float(vecrow.loc["GOOGLX"].w_fitted), 2), 1.0,
-     f"brings it to\n{float(vecrow.loc['GOOGLX'].w_fitted):.2f}, which is the more plausible"),
+     f"brings it to {float(vecrow.loc['GOOGLX'].w_fitted):.2f}, a more plausible"),
     # The second estimator.
     ("estimators agree", int(ranked_pairs.agree.sum()), 7,
      f"agrees in **{int(ranked_pairs.agree.sum())} of {len(ranked_pairs)}** pairs"),
     ("innovation correlation",
      round(ranked_pairs.innovation_correlation.median(), 2), 0.39,
-     f"correlation is a median {ranked_pairs.innovation_correlation.median():.2f}\nrather"),
+     f"correlation is a median {ranked_pairs.innovation_correlation.median():.2f} rather"),
     ("bootstrap lead span", round(ranked_pairs.lead_share.min(), 2), 0.99,
      f"leads in\n{ranked_pairs.lead_share.min() * 100:.0f} to "
      f"{ranked_pairs.lead_share.max() * 100:.0f} percent of resamples"),
@@ -234,9 +267,9 @@ checks = [
     ("hold scheme errs at every partial fill",
      round(hold_false[hold_false.index < 1.0].min(), 2), 0.95,
      f"the exchange the leader in **{hold_false[hold_false.index < 1.0].min() * 100:.0f} to "
-     f"{hold_false[hold_false.index < 1.0].max() * 100:.0f}\npercent** of runs"),
+     f"{hold_false[hold_false.index < 1.0].max() * 100:.0f} percent** of runs"),
     ("hold scheme is right at complete fill", round(hold_false.loc[1.0], 2), 0.0,
-     "At complete\nfill the estimator is right"),
+     "At complete fill the estimator is right"),
     ("drop scheme bound", round(ranked_risk.false_lead_drop.max(), 2), 0.19,
      f"errs **{ranked_risk.false_lead_drop.min() * 100:.0f} to "
      f"{ranked_risk.false_lead_drop.max() * 100:.0f} percent** of the time"),
@@ -254,19 +287,19 @@ checks = [
      f"leaves the same leader in **{grid_agree} of {grid_fitted.symbol.nunique()}**"),
     # The second day.
     ("second-day correlation", round(day2.rho, 2), -0.9,
-     f"comes back at **{day2.rho:.2f}**, against -0.93 the day before"),
+     f"comes back at **{day2.rho:.2f}** against -0.93"),
     ("second-day p-value", round(day2.p_value, 4), 0.0023,
      f"permutation p of {day2.p_value:.4f}"),
     ("second-day liquidity rank", round(day2.rho_liquidity, 2), 0.77,
-     f"rank together,\nat {day2.rho_liquidity:.2f}"),
+     f"ranks with pool activity at {day2.rho_liquidity:.2f}"),
     ("second-day token count", int(day2.tokens), 9,
-     f"finished with {int(day2.tokens)} of the {len(day2_universe)}\npaired tokens"),
+     f"finished with {int(day2.tokens)} of the {len(day2_universe)} paired tokens"),
     ("second-day trimmed remainder", int(day2.trimmed_tokens), 3,
      f"it leaves {int(day2.trimmed_tokens)}, and a correlation on "
-     f"{int(day2.trimmed_tokens)} points is"),
+     f"{int(day2.trimmed_tokens)} points checks"),
     ("cross-window weight spread",
      round(both_windows.spread_across_windows.max(), 2), 0.19,
-     f"move by roughly {both_windows.spread_across_windows.max():.2f}, which is"),
+     f"move by roughly {both_windows.spread_across_windows.max():.2f}, well"),
     ("cross-window tightest",
      round(both_windows.spread_across_windows.min(), 2), 0.01,
      f"The three others move by {both_windows.spread_across_windows.min():.2f} to 0.02"),
@@ -282,7 +315,7 @@ checks = [
     ("sign test p-value", round(float(sign_test(len(ranked_pairs), len(ranked_pairs))), 4), 0.0156,
      f"p = {sign_test(len(ranked_pairs), len(ranked_pairs)):.4f}"),
     ("replication drift", round((rep.w_second - rep.w_first).abs().max(), 2), 0.11,
-     f"the weights move by at most {(rep.w_second - rep.w_first).abs().max():.2f}"),
+     f"weights moving by at most {(rep.w_second - rep.w_first).abs().max():.2f}"),
 ]
 
 def table_rows(header: tuple[str, ...]) -> list[list[str]]:
@@ -388,9 +421,10 @@ for name, header, expected in tables:
     searched += sum(len(r) for r in expected)
     bad += check_table(name, header, expected)
 
+flat_post = _flat(post)
 for label, got, want, text in checks:
     drift = abs(got - want) > 0.011
-    missing = text not in post
+    missing = _flat(text) not in flat_post
     searched += 1
     if drift:
         print(f"  [DATA] {label}: recomputed {got}, pipeline had {want}")
@@ -405,11 +439,11 @@ for token in tokens:
     row = u[u.symbol == token].iloc[0]
     for value in (f"${row.cex_volume_24h:,}", f"${row.dex_volume_24h:,}"):
         searched += 1
-        if value not in post:
+        if value not in flat_post:
             print(f"  [POST] {token}: {value} not found in post")
             bad += 1
 
-print(f"\nsearched {searched} claims against {len(post.splitlines())} lines of post")
+print(f" searched {searched} claims against {len(post.splitlines())} lines of post")
 print(f"FAILED: {bad}")
 # Exit non-zero on any failure. Without this the CI step and the README
 # reproduce flow both pass whatever the numbers say.

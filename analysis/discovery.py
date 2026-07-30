@@ -1,10 +1,14 @@
 """Which venue moves first: Gonzalo-Granger common-factor weights for a token pair.
 
-Two venues quoting the same asset share one efficient price. Both quotes track
-it, so their log prices are cointegrated with the spread as the stationary
-error. Each venue's weight in the common factor is the share of the permanent
-price move it contributes; a venue that only follows carries a weight near
-zero however much volume it prints.
+Two venues quoting the same asset should share one efficient price, in which
+case their log prices are cointegrated and the spread between them is the
+stationary error. Each venue's weight in the common factor is then the share of
+the permanent price move it contributes, and a venue that only follows carries a
+weight near zero however much volume it prints.
+
+Both of those are conditions rather than definitions. `analysis/cointegration.py`
+tests the first per pair, and `analysis/vector.py` tests whether imposing the
+one-for-one error term below changes any conclusion.
 
 The estimator is the Gonzalo-Granger (1995) decomposition read off a two-venue
 vector error-correction model: with error-correction speeds a1 (venue 1) and a2
@@ -54,7 +58,7 @@ import numpy as np
 import pandas as pd
 
 __all__ = ["DiscoveryResult", "HasbrouckResult", "fit_design", "hasbrouck_share",
-           "information_share", "simulate_leader_follower", "vecm_design"]
+           "information_share", "ols", "simulate_leader_follower", "vecm_design"]
 
 
 @dataclass(frozen=True)
@@ -98,7 +102,8 @@ class HasbrouckResult:
                 f"upper={self.upper:.3f}, rho={self.correlation:.3f})")
 
 
-def _ols(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+def ols(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Least squares, shared with the modules that build their own designs."""
     return np.linalg.lstsq(x, y, rcond=None)[0]
 
 
@@ -120,9 +125,9 @@ def vecm_design(
         msg = f"need at least {lags * 4 + 20} paired observations, got {len(df)}"
         raise ValueError(msg)
 
-    # The spread is the error-correction term: with both venues quoting one
-    # asset the cointegrating vector is (1, -1) by construction, so it does not
-    # have to be estimated.
+    # The spread is the error-correction term. That imposes a cointegrating
+    # vector of (1, -1) rather than fitting one, which buys precision when it
+    # holds; analysis/vector.py fits it instead and reports what changes.
     spread = (df["a"] - df["b"]).shift(1)
     d = df.diff()
     design = pd.concat(
@@ -140,8 +145,8 @@ def fit_design(
 ) -> DiscoveryResult | tuple[DiscoveryResult, np.ndarray]:
     """Fit the two error-correction equations on an already-built design."""
     x = frame.drop(columns=["a", "b"]).to_numpy()
-    coef_a = _ols(x, frame["a"].to_numpy())
-    coef_b = _ols(x, frame["b"].to_numpy())
+    coef_a = ols(x, frame["a"].to_numpy())
+    coef_b = ols(x, frame["b"].to_numpy())
     speed_a, speed_b = float(coef_a[1]), float(coef_b[1])
 
     denom = speed_a - speed_b

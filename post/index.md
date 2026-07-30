@@ -1,7 +1,7 @@
 ---
 title: "Tokenized stocks are priced on the exchange, and the quieter the chain the more the exchange prints"
-description: "Gonzalo-Granger price discovery for 24 xStocks quoted at once on Gate and on Solana pools, with the rank correlation between on-chain activity and exchange volume per on-chain dollar."
-date: 2026-07-29
+description: "Which venue prices a tokenized equity, measured on 24 xStocks quoted at once on Gate and in Solana pools. Gonzalo-Granger and Hasbrouck agree that the exchange leads, the result survives five robustness checks and a second day, and the quieter a pool the more the exchange prints against it."
+date: 2026-07-30
 entities: [Gate, Bybit, Raydium, Orca, TSLAX, NVDAX, CRCLX, ACNX]
 ---
 
@@ -16,18 +16,21 @@ has to come from someone who knows something, and the venue where it appears
 first is the venue doing the pricing. Measuring that separates a market from a
 tape.
 
-This wiki has read Gate before. The [2021 Gate.io article](https://github.com/1712n/dn-institute/tree/main/content/research/market-health/posts/2021-01-19-Gate-io)
-tested the digit distribution of the venue's own executed sizes, and the
-[Bybit low-cap tape](https://github.com/1712n/dn-institute/tree/main/content/research/market-health/posts/2026-06-13-bybit)
-read one book's cadence and clip sizes. Both check a venue against a statistical
-expectation. This one checks it against a second venue quoting the same mint,
-which is what makes the leadership question answerable at all.
+This wiki has read Gate before. The [2021 Gate.io article](https://github.com/1
+712n/dn-institute/tree/main/content/research/market-health/posts/2021-01-19-Gat
+e-io) tested the digit distribution of the venue's own executed sizes, and the
+[Bybit low-cap tape](https://github.com/1712n/dn-institute/tree/main/content/re
+search/market-health/posts/2026-06-13-bybit) read one book's cadence and clip
+sizes. Both check a venue against a statistical expectation. This one checks it
+against a second venue quoting the same mint. That is what makes the leadership
+question answerable at all.
 
-The answer for Backed Finance's xStocks, measured on 29 July 2026, is that the
-exchange leads and the Solana pool follows in every pair that can be ranked. It
-holds when the sample is cut to the hours when the US equity market is shut,
-and it holds on a second exchange, so the pricing belongs to the venue type
-rather than to one listing venue.
+The answer for Backed Finance's xStocks, collected on 29 and 30 July 2026, is
+that the exchange leads and the Solana pool follows in every pair that can be
+ranked. It holds when the sample is cut to the hours when the US equity market
+is shut, it holds on a second exchange, and it holds on the second day, so the
+pricing belongs to the venue type rather than to one listing venue or one
+stretch of minutes.
 
 The more useful finding sits underneath it. Rank the twenty-four tokens by how
 much their pool trades, and by how many exchange dollars are printed per
@@ -70,11 +73,13 @@ class, one issuer, and one pair of venues. The median is 6.8.
 
 ## Which venue moves first
 
-The two log price series are cointegrated by construction: they quote one
-asset, so their difference is the error, and each venue's speed of correcting
-it says who is anchoring whom. The Gonzalo-Granger common-factor weights fall
-out of those speeds, and the venue that corrects less carries more of the
-permanent price move.
+Two venues quoting one mint should share one efficient price, so the difference
+between their log quotes is the error each is pulled back toward, and each
+venue's speed of closing it says who is anchoring whom. The Gonzalo-Granger
+common-factor weights fall out of those speeds: the venue that corrects less
+carries more of the permanent price move. Whether the two series really are
+cointegrated is a testable claim rather than a definition, and it is tested
+later rather than assumed here.
 
 Nine pairs had enough overlapping minutes with both sides moving. The exchange
 leads every one:
@@ -98,7 +103,7 @@ moves at most 0.08 of the gap per minute, while the pool closes 22 to 74
 percent of it. The pool is chasing a price set somewhere else, and the
 somewhere else is the order book.
 
-Four of the exchange coefficients come out positive, which is the wrong sign:
+Four of the exchange coefficients come out positive. That is the wrong sign,
 the book drifting away from the pool rather than toward it. Two are noise, at
 0.002 and 0.008. The other two, GLDX at 0.04 and GOOGLX at 0.08, are small but
 real, and they are the pairs whose weights print above one. A weight above one
@@ -108,14 +113,14 @@ really do, so those two readings are worth no more than a rank.
 AMZNX is the exception and it points the right way: the only pair where the
 exchange itself corrects meaningfully, at 0.35, and also the pair with the
 lowest exchange weight at 0.63. A venue that adjusts to the other side is a
-venue giving up some of the pricing, which is what the decomposition is meant
-to show. It is also the thinnest sample in the table, 82 paired minutes against
+venue giving up some of the pricing, and showing that is what the decomposition
+is for. It is also the thinnest sample in the table, 82 paired minutes against
 480 for TSLAX, so it is the row to lean on least.
 
 The ranking is not an artefact of the hours covered. Cutting the sample to the
-minutes when the US equity market is shut, which is 86 percent of the window,
-leaves eight pairs measurable and the exchange ahead in all eight, at weights
-of 0.96 to 1.24.
+minutes when the US equity market is shut, 86 percent of the window, leaves
+eight pairs measurable and the exchange ahead in all eight, at weights of 0.96
+to 1.24.
 
 {{< figure src="sessions.png" alt="Exchange weights for eight tokens measured on the whole window and on the closed-market hours, both sets sitting near or above one" caption="Whatever sets these prices overnight is doing it on the order book." loading="lazy" >}}
 
@@ -146,8 +151,8 @@ hardest.
 Pools on one chain arbitrage against each other inside a block, so a minute
 grid cannot resolve which moved first, and these three readings are a scale
 rather than a ranking. What they establish is the size of the effect: pool
-against pool, correction runs both ways and runs fast, which is not what the
-exchange-against-pool pairs look like.
+against pool, correction runs both ways and runs fast, and the
+exchange-against-pool pairs look nothing like that.
 
 ## The less chain there is, the more the exchange prints
 
@@ -166,8 +171,8 @@ tokens the rank correlation between minutes traded on-chain and exchange
 dollars printed per on-chain dollar is **-0.93**, with a two-sided permutation
 p below 0.0001 on twenty thousand draws, and it holds at -0.92 after the six
 most extreme ratios are dropped. On-chain liquidity ranks with traded minutes
-at 0.92, so the plain reading is that thin pools trade rarely, which is the
-same statement rather than a competing one.
+at 0.92, so the plain reading is that thin pools trade rarely. That is the same
+statement, not a competing one.
 
 The six at the bottom of the ordering are the ones whose exchange tape has
 nothing to check it against:
@@ -199,25 +204,26 @@ The nine in the middle sit between the two: their pools printed in eleven to
 seventy-three minutes of the window, too few to rank a leader but enough to
 show a market exists. They are named in `data/token_groups.csv` with the rest.
 
-## Six ways this could be wrong
+## What would have to be true for this to be wrong
 
-Every number above comes from one estimator on one window, and six things
-could produce it without the exchange leading anything. Each is answered
-against the minute series themselves, which are committed under `raw/`, rather
-than against the fitted panel.
+Everything above rests on one estimator, one specification and one stretch of
+minutes. Five things could have produced it with no venue leading anything, and
+each is answered against the minute series themselves rather than against the
+fitted panel. The sixth question, whether any of it survives being measured
+again, gets its own section after them.
 
-### The model might not apply
+### Cointegration, tested rather than assumed
 
 The error-correction framework assumes the two log prices are cointegrated, and
 the earlier draft called that true by construction. It is not. It is true if
 arbitrage binds, and arbitrage cannot bind on a pool holding two hundred
-dollars of liquidity. Tested rather than assumed, with an augmented Dickey-
-Fuller regression on each pair's spread, it holds: the spread is stationary in
-**7 of 7** rankable pairs, and it reverts fast: half-lives of 0.6 to 3.9
-minutes, so a gap between the two venues is half gone inside four minutes and
-usually inside two.
+dollars of liquidity. Tested rather than assumed, with an augmented
+Dickey-Fuller regression on each pair's spread, it holds: the spread is
+stationary in **7 of 7** rankable pairs, and it reverts fast: half-lives of 0.6
+to 3.9 minutes, so a gap between the two venues is half gone inside four
+minutes and usually inside two.
 
-### The error term might be the wrong one
+### The error term, fitted instead of imposed
 
 Stationarity is tested on the spread of log prices, which imposes a
 cointegrating vector of one to minus one rather than fitting it. Two venues
@@ -226,21 +232,18 @@ it is an assumption and it can fail: a pool at a proportional discount that
 widens with the price would need a coefficient away from one, and the spread
 built the wrong way would not be the error the model thinks it is.
 
-Fitted rather than imposed, the coefficient comes out between
-0.85 and 1.00, below one in every pair. That is what
-noise in a regressor does, not evidence of scaling: a pool quote carries error,
-and error in a regressor drags its slope toward zero. The test that survives
-that is whether one sits inside the bracket the two one-sided regressions
-define, and it does in **7 of 7** pairs.
+Fitted rather than imposed, the coefficient comes out between 0.85 and 1.00,
+below one in every pair. That is what noise in a regressor does, not evidence
+of scaling: a pool quote carries error, and error in a regressor drags its
+slope toward zero. The test that survives that is whether one sits inside the
+bracket the two one-sided regressions define, and it does in **7 of 7** pairs.
 Refitting the whole model on the fitted coefficient instead of the imposed one
-names the same leader in **7 of 7**, moving the
-largest weight by 0.20. That one case is
-GOOGLX, whose imposed weight of 1.20
-is above one and so impossible; fitting the coefficient brings it to
-1.00, which is the more plausible
-reading of the same data.
+names the same leader in **7 of 7**, moving the largest weight by 0.20. That
+one case is GOOGLX, whose imposed weight of 1.20 is above one and so
+impossible; fitting the coefficient brings it to 1.00, a more plausible reading
+of the same data.
 
-### A second estimator might disagree
+### Hasbrouck against Gonzalo-Granger
 
 Gonzalo-Granger reads leadership off the correction speeds and ignores how
 correlated the two venues' innovations are. Hasbrouck (1995) splits the
@@ -264,17 +267,17 @@ sits entirely above an even split.
 | SPYX | 124 | 12% | 1.03 | 0.94 to 0.99 | 100% | 3.1 |
 
 The bootstrap column is each token's own data speaking rather than the method:
-resampling blocks of the fitted regression rows, the exchange still leads in
-99 to 100 percent of resamples. The weight's own interval is deliberately not shown,
-because it is useless. The weight is a ratio whose denominator is the
+resampling blocks of the fitted regression rows, the exchange still leads in 99
+to 100 percent of resamples. The weight's own interval is deliberately not
+shown, because it is useless. The weight is a ratio whose denominator is the
 difference between two similar speeds, so a resample that nudges them together
 sends it to infinity and the interval stays wide however long the sample.
 
 Nine of nine agreeing in the first window and 7 of 7 in the second is the
-claim, not any single weight. Under a coin-flip null, seven of seven falling one
-way carries p = 0.0156.
+claim, not any single weight. Under a coin-flip null, seven of seven falling
+one way carries p = 0.0156.
 
-### Sparse trading might have invented it
+### Could sparse trading have invented all of it
 
 This is the objection that would sink the study. A pool does not print every
 minute. Its last price stands still while the exchange keeps moving, so when it
@@ -287,52 +290,48 @@ the estimator says. Carrying the last price forward destroys it. At complete
 fill the estimator is right, and it fails the moment a minute goes missing: at
 every partial fill rate tested it calls the exchange the leader in **95 to 100
 percent** of runs, and at the fill rates the real pools actually show it is 100
-percent every time. Dropping the untraded minutes instead, which is what this
-pipeline does, does not: across the ranked pairs' measured fill rates the same
+percent every time. Dropping the untraded minutes instead, as this pipeline
+does, breaks nothing: across the ranked pairs' measured fill rates the same
 test errs **2 to 19 percent** of the time.
 
 {{< figure src="staleness.png" alt="Two curves against pool fill rate. The forward-filling curve sits flat at one hundred percent. The drop curve falls from thirty-eight percent at the sparsest fills to two percent at half, with the seven ranked tokens marked along it" caption="The sampling choice is doing load-bearing work. The ranked pairs sit on the lower curve, between 2 and 19 percent." loading="lazy" >}}
 
 So the finding is not an artefact, but the residual risk is not zero and it is
-not uniform. TSLAX at half its minutes filled sits at 2 percent; SPYX at an eighth
-sits at 19 percent. The thin tokens further down the universe, at one to nine percent
-fill, sit where the test errs up to 38 percent of the time, which is why none of them
-is ranked here and why the volume finding below rests on their trading
-frequency rather than on any leadership claim about them.
+not uniform. TSLAX at half its minutes filled sits at 2 percent; SPYX at an
+eighth sits at 19 percent. The thin tokens further down the universe, at one to
+nine percent fill, sit where the test errs up to 38 percent of the time, which
+is why none of them is ranked here and why the volume finding below rests on
+their trading frequency rather than on any leadership claim about them.
 
-### It might be a specification choice
+### Lags, grids and the other free choices
 
 Five lags and one-minute bars were choices. Refitting every pair at one, three,
 five and ten lags changes the leader in **0 of 7** pairs. Coarsening the grid
-to five minutes, which is a deliberate handicap given pools arbitrage inside a
-block, leaves the same leader in **7 of 7**.
+to five minutes handicaps the test on purpose, since pools arbitrage inside a
+block, and it leaves the same leader in **7 of 7**.
 
-### And it repeats out of sample
+## Measured again, twice
 
-The window here is not the window the leadership table above was measured on.
-Across the 7 tokens rankable in both, the exchange leads in both every time,
-and the weights move by at most 0.11. The correction speeds, which are what the
-ordering actually rests on, come back closer still.
+A result that exists in one stretch of minutes is a result about that stretch.
+The leadership was therefore refitted on a second pass over the same day, and
+then the whole collection was repeated the following day with its own volume
+snapshot so that nothing at all is carried over.
 
-{{< figure src="replication.png" alt="Left, exchange weights for seven tokens in two windows, all well above the even line in both. Right, pool correction speed in the first window against the second, with the points sitting on the diagonal" caption="Two windows, seven tokens, same answer." loading="lazy" >}}
+Against the session panel, the 7 tokens rankable in both the panel and the
+series pass lead in both every time, with weights moving by at most 0.11. The
+correction speeds, which are what the ordering actually rests on, come back
+closer still.
 
+{{< figure src="replication.png" alt="Left, exchange weights for seven tokens measured in the session panel and in the series pass, all well above the even line in both. Right, pool correction speed in one pass against the other, with the points sitting on the diagonal" caption="Same day, two passes, seven tokens, one answer." loading="lazy" >}}
 
+The next day is the harder test, and it reaches the headline rather than the
+leadership. The correlation between how much a pool trades and how many
+exchange dollars are printed against it had been computed once and never again.
+Recomputed from the next day's own snapshot it comes back at **-0.90** against
+-0.93, with a permutation p of 0.0023, and pool liquidity still ranks with pool
+activity at 0.77.
 
-### And it holds on the next day
-
-Everything above is measured inside windows collected hours apart on 29 July. A
-result that lives on one date is a result about that date, so the whole
-collection was repeated on 30 July, with its own volume snapshot so that
-nothing is borrowed from the first pass.
-
-The headline of this post is not the leadership, it is the correlation between
-how much a pool trades and how many exchange dollars are printed against it.
-That number had been computed once. Recomputed from the second day's own
-snapshot it comes back at **-0.90**, against -0.93 the day before, with a
-permutation p of 0.0023. Pool liquidity and pool activity still rank together,
-at 0.77.
-
-The leadership repeats too, on every token measurable on both days:
+Every token measurable on both days leads on both:
 
 | token | 29 July | 30 July | change |
 |-------|--------:|--------:|-------:|
@@ -342,21 +341,19 @@ The leadership repeats too, on every token measurable on both days:
 | CRCLX | 0.90 | 0.72 | 0.18 |
 | NVDAX | 0.96 | 0.77 | 0.19 |
 
-Two of the five move by roughly 0.19, which is inside the scatter the
-calibration already declares for a single weight, and neither comes close to
-crossing over. The three others move by 0.01 to 0.02.
+Two of the five move by roughly 0.19, well inside the scatter the calibration
+already declares for a single weight, and neither approaches a crossover. The
+three others move by 0.01 to 0.02.
 
-One limitation belongs here rather than in a footnote. The second day's
+One limitation belongs in the text rather than a footnote. The next-day
 collection lost its network part way through and finished with 9 of the 27
-paired tokens, so the second-day correlation rests on 9 tokens rather than the
-twenty-four of the first, and GOOGLX and QQQX were never collected on the
-second day at all. The tail robustness check that drops the six most extreme
-ratios cannot run on nine tokens: it leaves 3, and a correlation on 3 points is
-not a check on anything. What the second day establishes is that the sign, the
-rough magnitude and the per-token ordering survive a change of date. It does
-not re-establish the tail result.
-
-
+paired tokens then listed, so its correlation rests on 9 tokens against the
+twenty-four of the first day, and GOOGLX and QQQX were never collected on the
+second day at all. The tail check that drops the six most extreme ratios cannot
+run on nine tokens, since it leaves 3, and a correlation on 3 points checks
+nothing. What the second day establishes is that the sign, the rough magnitude
+and the per-token ordering survive a change of date. It does not re-establish
+the tail result.
 
 ## How this was measured
 
@@ -365,10 +362,31 @@ Bybit's spot kline endpoint for the exchange minutes, GeckoTerminal's pool
 OHLCV endpoint for the on-chain minutes, and Dexscreener for pool discovery
 with the mint prefix check.
 
+### Which collection each number comes from
+
+Four passes over the same venues sit behind this post, and they do not agree to
+the minute because they were taken at different times. TSLAX shows 477, 480,
+503 and 530 paired minutes across them. That is the window moving, not a
+disagreement, but a figure only means something once you know which pass it
+came from.
+
+| pass | when | tokens | what it produces |
+|------|------|-------:|------------------|
+| universe | 29 July | 24 | the volume snapshot, the grouping, the rank correlation |
+| session panel | 29 July, later | 13 | the leadership table and the open-against-shut split |
+| series | 29 July, later still | 16 | the minute series in `raw/`, and every robustness check |
+| next day | 30 July | 9 | the repeat, on its own volume snapshot |
+
+Only the last two keep the underlying minute series, so the checks below run on
+those and the tables above cannot. Where a sentence quotes a sample size it
+quotes the pass that produced the table it sits under, and the pass is named
+wherever two of them could be confused.
+
 ### Mapping to the DN market-health metrics
 
-The [market-health metric family](https://dn.institute/market-health/docs/market-health-metrics/)
-covers this study as follows.
+The [market-health metric
+family](https://dn.institute/market-health/docs/market-health-metrics/) covers
+this study as follows.
 
 - `vwap` is the average price of an asset weighted by its trading volume over
   a period. This post uses the one-minute close from each venue instead,
@@ -426,30 +444,49 @@ apart: the pool closes 22 to 74 percent of the gap per minute while the
 exchange closes at most 8. Those speeds are read straight off the fit rather
 than through the ratio that forms the weight, and they are what the ordering is
 built on. Pool-against-pool weights land near even, where the estimator is
-weakest, which is why they are reported as a scale and not a ranking.
+weakest, so they are reported as a scale and not a ranking.
 
 ### Provenance
 
-The 24-hour volumes are a snapshot taken when the universe was built, and the
-minute bars were pulled afterwards, so the two are minutes apart rather than
-simultaneous. Two panel runs are committed. The grouping and the rank
-correlation use `panel_run1.csv`; the leadership weights and the session split
-use the later `panel_sessions.csv`, which caught a few more minutes per token as
-the window advanced. Where a sentence quotes a sample size, it quotes the run
-that produced the table it sits under. The committed CSVs carry no capture timestamp of their own, so
-the date on this post is the date the files were committed.
+Within a pass the 24-hour volumes are a snapshot taken when the universe was
+built and the minute bars were pulled afterwards, so the two are minutes apart
+rather than simultaneous. The next-day pass carries its own snapshot in
+`raw/2026-07-30/universe.csv` and borrows nothing from the first day.
+
+The bar CSVs carry epoch timestamps per row, so the series passes date
+themselves. The two earlier panels do not, and their date is the date they were
+committed.
+
+What is not measured here is worth stating. The underlying equities trade on
+NYSE and NASDAQ, and during US hours both venues in every pair are importing a
+price from there rather than discovering it. The open-against-shut split
+separates the two regimes and the answer holds in both, but no third leg reads
+the primary listing, so this measures which of the two crypto venues moves
+first, not where the price is born.
 
 ### Reproducing
 
-The companion repository, pinned at `34d1464753`, holds the code, the tests that hold the estimator to
-its known answer, the CSVs behind every figure, and `analysis/verify.py`, which
-reads each number in this post back out of those CSVs.
+Everything is in this repository: the code, the minute series, the tests that
+hold each estimator to an answer it was not told, and `analysis/verify.py`,
+which reads every number in this post back out of the CSVs and exits non-zero
+if one has drifted.
 
 ```bash
-git clone <companion-repo> && cd xstocks-price-discovery
-git checkout 34d1464753
 pip install -r requirements.txt
-python -m pytest tests -q
-python analysis/verify.py
-python analysis/build_analysis.py
+python -m pytest tests -q                            # known-answer tests
+python analysis/verify.py                            # every number, against data/
+python analysis/calibrate.py                         # what the fit does to a known answer
+python analysis/staleness.py                         # can sparse trading fake this
+python analysis/robustness.py 2026-07-29b            # the series pass
+python analysis/vector.py 2026-07-29b                # imposed vector against fitted
+python analysis/sensitivity.py 2026-07-29b           # lags, grid, artefact risk
+python analysis/robustness.py 2026-07-30             # the next-day pass
+python analysis/windows.py 2026-07-29b 2026-07-30    # what survives a change of date
+python analysis/build_analysis.py                    # redraw every figure
+```
+
+A fresh window is a new directory rather than an overwrite:
+
+```bash
+python analysis/collect_raw.py 2026-08-05 --refresh-universe
 ```

@@ -1,12 +1,11 @@
-"""Does any of it hold on a different day.
+"""Everything so far was measured on one date. This measures it on another.
 
-The leadership result now survives five ways of being wrong, but all of that is
-still measured inside windows collected hours apart on the same date. The
-headline of the post is not the leadership at all, it is the rank correlation
+The leadership result survives five separate ways of being wrong, but every one
+of those checks runs inside windows collected hours apart on one date. And the
+headline of the post is not the leadership at all: it is the rank correlation
 between how much a pool trades and how many exchange dollars are printed against
-it, and that number was computed exactly once on one snapshot. A correlation of
--0.93 from a single draw of twenty-four tokens is a striking number and a weak
-claim.
+it, computed once, on one snapshot. A correlation of -0.93 from a single draw of
+twenty-four tokens is a striking number attached to a weak claim.
 
 This compares any set of collection runs on the two things worth repeating: the
 correlation, recomputed from each run's own volume snapshot and its own measured
@@ -83,7 +82,13 @@ def ratio_relation(label: str, *, draws: int = 20000) -> dict:
 
 
 def leadership_across_windows(labels: list[str]) -> pd.DataFrame:
-    """One row per token, one column per window, holding the fitted weight."""
+    """One row per token, one column per window, holding the fitted weight.
+
+    Only series passes appear here, since only they produce a robustness file.
+    `sensitivity.replication` handles the other comparison, between a series pass
+    and the session panel, which keeps no minute series and so cannot be read the
+    same way.
+    """
     frames = {}
     for label in labels:
         path = DATA / f"robustness_{label}.csv"

@@ -12,8 +12,9 @@ pool, on the same issuer's mint, with arbitrage tying the two quotes together.
 That makes it possible to ask which venue actually sets the price, and to check
 an exchange's tape against something outside the exchange.
 
-`post/index.md` is the write-up, with its figures beside it. Everything in it is reproducible from this
-repository.
+`post/index.md` is the write-up and `index.html` is the same findings on one
+page. Everything in both is reproducible from this repository, and
+`analysis/verify.py` fails if a number in the text stops matching the data.
 
 ## What is here
 
@@ -34,7 +35,8 @@ repository.
 | `analysis/calibrate.py` | what the estimator does to an answer it already knows |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
-| `analysis/check_dn_format.py` | the post's own formatting and link rules |
+| `analysis/check_post.py` | the post's formatting, spelling and link rules |
+| `analysis/format_post.py` | settles the line wrapping, so phrase checks stop moving under the text |
 | `analysis/build_analysis.py` | redraws every figure from `data/` |
 | `tests/` | holds every estimator to an answer it was not told |
 | `data/` | the exact outputs behind every figure in the post |
@@ -55,7 +57,8 @@ python analysis/vector.py 2026-07-29b         # imposed vector against fitted
 python analysis/robustness.py 2026-07-30      # the second collection day
 python analysis/windows.py 2026-07-29b 2026-07-30   # what survives a change of date
 python analysis/build_analysis.py             # redraw the figures
-python analysis/check_dn_format.py            # the post's formatting rules
+python analysis/format_post.py --check        # wrapping is settled
+python analysis/check_post.py                 # formatting, spelling, links
 ```
 
 To collect a new window, which becomes its own directory under `raw/` rather
