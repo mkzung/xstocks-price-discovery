@@ -135,7 +135,77 @@ def figure_controls(matrix: pd.DataFrame) -> None:
     plt.close(fig)
 
 
-def build_all() -> list[Path]:
+def figure_staleness(risk: pd.DataFrame, ranked: list[str]) -> None:
+    """How much of the finding sparse trading could explain, per token."""
+    fig, ax = plt.subplots(figsize=(7.4, 4.3))
+    shown = risk.sort_values("fill_rate")
+    ax.plot(shown.fill_rate * 100, shown.false_lead_hold * 100, color=ACCENT,
+            linewidth=1.8, marker="o", markersize=4,
+            label="carrying the last price forward")
+    ax.plot(shown.fill_rate * 100, shown.false_lead_drop * 100, color=INK,
+            linewidth=1.8, marker="o", markersize=4,
+            label="dropping untraded minutes, as done here")
+    inside = shown[shown.symbol.isin(ranked)]
+    ax.scatter(inside.fill_rate * 100, inside.false_lead_drop * 100, s=70,
+               facecolor="white", edgecolor=INK, linewidth=1.6, zorder=4,
+               label="the ranked pairs")
+    # Several ranked tokens sit within a percentage point of each other on the
+    # fill axis, so labels alternate above and below to stay readable.
+    for i, r in enumerate(inside.sort_values("fill_rate").itertuples()):
+        offset = (7, 7) if i % 2 == 0 else (7, -11)
+        ax.annotate(r.symbol, (r.fill_rate * 100, r.false_lead_drop * 100),
+                    textcoords="offset points", xytext=offset, fontsize=7.5,
+                    color=INK)
+    ax.set_xlabel("share of minutes the pool printed in", fontsize=9.5)
+    ax.set_ylabel("simulated rate of inventing a leader, percent", fontsize=9.5)
+    ax.set_title("What the sampling choice costs, measured against a known answer",
+                 fontsize=11, color=INK, pad=12)
+    ax.set_ylim(-4, 104)
+    ax.legend(frameon=False, fontsize=8.5, loc="center right")
+    _style(ax)
+    fig.tight_layout()
+    fig.savefig(FIGS / "staleness.png", dpi=150)
+    plt.close(fig)
+
+
+def figure_replication(rep: pd.DataFrame) -> None:
+    """The same tokens measured on a second window."""
+    fig, (left, right) = plt.subplots(1, 2, figsize=(8.6, 4.1))
+    y = np.arange(len(rep))
+    left.scatter(rep.w_first, y, s=46, color=MUTED, label="first window", zorder=3)
+    left.scatter(rep.w_second, y, s=46, color=INK, marker="D",
+                 label="second window", zorder=3)
+    for i, r in enumerate(rep.itertuples()):
+        left.plot([r.w_first, r.w_second], [i, i], color=GRID, linewidth=1.4)
+    left.axvline(0.5, color=ACCENT, linestyle="--", linewidth=1.0)
+    left.set_yticks(y, rep.symbol, fontsize=8.5)
+    left.set_xlabel("exchange weight", fontsize=9.5)
+    left.set_title("Weights across two windows", fontsize=10.5, pad=22)
+    # Inside the axes the legend lands on the bottom row, so it goes above.
+    left.legend(frameon=False, fontsize=8.5, loc="lower center",
+                bbox_to_anchor=(0.5, 1.06), ncol=2)
+    _style(left)
+
+    lim = max(rep.speed_dex_first.max(), rep.speed_dex_second.max()) * 1.15
+    right.plot([0, lim], [0, lim], color=GRID, linewidth=1.2, zorder=1)
+    right.scatter(rep.speed_dex_first, rep.speed_dex_second, s=52, color=INK,
+                  zorder=3)
+    # Three tokens sit almost on top of each other near 0.22, so labels fan out.
+    for i, r in enumerate(rep.sort_values("speed_dex_first").itertuples()):
+        fan = [(8, -2), (8, -12), (-38, -12), (8, 6)][i % 4]
+        right.annotate(r.symbol, (r.speed_dex_first, r.speed_dex_second),
+                       textcoords="offset points", xytext=fan, fontsize=7.5,
+                       color=INK)
+    right.set_xlabel("pool correction speed, first window", fontsize=9.5)
+    right.set_ylabel("second window", fontsize=9.5)
+    right.set_title("The speeds themselves replicate", fontsize=10.5, pad=10)
+    _style(right)
+    fig.tight_layout()
+    fig.savefig(FIGS / "replication.png", dpi=150)
+    plt.close(fig)
+
+
+def build_all(label: str = "2026-07-29b") -> list[Path]:
     FIGS.mkdir(parents=True, exist_ok=True)
     groups = pd.read_csv(DATA / "token_groups.csv")
     panel = pd.read_csv(DATA / "panel_sessions.csv")
@@ -144,6 +214,12 @@ def build_all() -> list[Path]:
     figure_weights(panel)
     figure_sessions(panel)
     figure_controls(matrix)
+
+    risk = pd.read_csv(DATA / f"sensitivity_staleness_{label}.csv")
+    robust = pd.read_csv(DATA / f"robustness_{label}.csv")
+    ranked = robust[robust.verdict == "ranked"].symbol.tolist()
+    figure_staleness(risk, ranked)
+    figure_replication(pd.read_csv(DATA / f"sensitivity_replication_{label}.csv"))
     return sorted(FIGS.glob("*.png"))
 
 

@@ -19,24 +19,38 @@ repository.
 
 | path | what it does |
 |------|--------------|
-| `analysis/discovery.py` | Gonzalo-Granger common-factor weights, plus a simulator whose answer is fixed by construction |
+| `analysis/discovery.py` | Gonzalo-Granger weights and Hasbrouck information shares, plus a simulator whose answer is fixed by construction |
 | `analysis/collect.py` | builds the paired universe and pulls minute bars from both venues |
+| `analysis/collect_raw.py` | keeps the paired minute series themselves under `raw/<run>/`, with per-token fill rates and gap structure |
 | `analysis/panel.py` | runs the estimator per token, whole window and split by US session |
 | `analysis/venues.py` | the controls: a second exchange, and two pools on one mint |
+| `analysis/cointegration.py` | the augmented Dickey-Fuller test on each pair's spread, which the model needs and the first draft assumed |
+| `analysis/bootstrap.py` | block bootstrap over the fitted regression rows, and the exact binomial for the joint result |
+| `analysis/staleness.py` | whether sparse pool trading can invent the finding, measured against a known answer |
+| `analysis/robustness.py` | every check above applied to one collection run |
+| `analysis/sensitivity.py` | lag order, sampling grid, per-token artefact risk, and the second window against the first |
+| `analysis/calibrate.py` | what the estimator does to an answer it already knows |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
+| `analysis/check_dn_format.py` | the post's own formatting and link rules |
 | `analysis/build_analysis.py` | redraws every figure from `data/` |
-| `tests/` | holds the estimator to the answer the simulator already knows |
+| `tests/` | holds every estimator to an answer it was not told |
 | `data/` | the exact outputs behind every figure in the post |
+| `raw/` | the paired minute series, so fill rates and spreads can be rechecked |
 | `dashboard/build_dashboard.py` | rebuilds `index.html`, the single-page view of the findings |
 
 ## Reproducing
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                 # the estimator still recovers its known answer
-python analysis/verify.py                 # every number in the post, checked against data/
-python analysis/build_analysis.py         # redraw the figures
+python -m pytest tests -q                     # every estimator recovers a known answer
+python analysis/verify.py                     # every number in the post, checked against data/
+python analysis/calibrate.py                  # what the fit does to a known answer
+python analysis/staleness.py                  # whether sparse trading can invent the finding
+python analysis/robustness.py 2026-07-29b     # cointegration, Hasbrouck, bootstrap, per token
+python analysis/sensitivity.py 2026-07-29b    # lags, grid, artefact risk, second window
+python analysis/build_analysis.py             # redraw the figures
+python analysis/check_dn_format.py            # the post's formatting rules
 ```
 
 To pull fresh data, in this order:
@@ -67,9 +81,23 @@ Read a single weight as weak evidence. The fit sits 0.03 above the truth on
 average, so weights slightly above one are the bias rather than a real reading,
 and a single run lands anywhere from 0.33 below the truth to 0.28 above it
 across the whole grid. What holds up is the ordering: the estimator picks the
-right leader in 98 percent of runs where the true weight is clearly one-sided,
-92 percent where it is near even. The post therefore leans on nine of nine
-pairs agreeing and on the correction speeds, not on any one weight.
+right leader in 98 percent of runs where the true weight is plainly one-sided,
+92 percent where it is near even. The post therefore leans on every pair
+agreeing and on the correction speeds, not on any one weight.
+
+Two things are easy to get wrong when reusing this code.
+
+A Hasbrouck information share is not a Gonzalo-Granger weight. They decompose
+different objects, and with uncorrelated innovations the second is the square of
+the first over the sum of squares, so a weight of 0.80 goes with a share near
+0.94. Compare their direction, never their magnitude.
+
+Do not carry a pool's last price forward across minutes it did not trade in.
+`staleness.py` measures what that costs on data with a known answer: at every
+partial fill rate the estimator then calls the exchange the leader in 95 to 100
+percent of runs, whoever actually leads. Dropping the untraded minutes, which is
+what the pipeline does, keeps the error to 2 to 19 percent at the fill rates the
+ranked pairs show.
 
 Two provenance notes. The 24-hour volumes in `universe.csv` are a snapshot
 taken when the universe was built; the minute bars were pulled afterwards, so

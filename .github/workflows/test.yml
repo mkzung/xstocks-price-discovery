@@ -20,6 +20,12 @@ jobs:
         run: python analysis/verify.py
       - name: the calibration reproduces
         run: python analysis/calibrate.py
+      - name: sparse trading cannot invent the finding
+        run: python analysis/staleness.py
+      - name: cointegration, second estimator, bootstrap
+        run: python analysis/robustness.py 2026-07-29b
+      - name: lags, grid, artefact risk, second window
+        run: python analysis/sensitivity.py 2026-07-29b
       - name: figures redraw from the committed data
         run: python analysis/build_analysis.py
       - name: the post still meets the wiki submission rules

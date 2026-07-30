@@ -54,6 +54,25 @@ noise, real_wrong = wrong.iloc[:2], wrong.iloc[2:]
 closed_share = (p[p.regime == "closed"].minutes.sum()
                 / p[p.regime == "all"].minutes.sum())
 
+# The robustness section restates a second window's results and the sensitivity
+# sweeps. It is the same hand-typed layer as the tables above and gets the same
+# treatment.
+LABEL = "2026-07-29b"
+rob = pd.read_csv(base / "data" / f"robustness_{LABEL}.csv")
+ranked_pairs = rob[rob.verdict == "ranked"]
+stale_risk = pd.read_csv(base / "data" / f"sensitivity_staleness_{LABEL}.csv")
+ranked_risk = stale_risk[stale_risk.symbol.isin(ranked_pairs.symbol)]
+rep = pd.read_csv(base / "data" / f"sensitivity_replication_{LABEL}.csv")
+lag_sweep = pd.read_csv(base / "data" / f"sensitivity_lags_{LABEL}.csv")
+grid_sweep = pd.read_csv(base / "data" / f"sensitivity_grid_{LABEL}.csv")
+grid_fitted = grid_sweep.dropna(subset=["w_cex"])
+lag_flips = int((lag_sweep.groupby("symbol").leads.nunique() > 1).sum())
+grid_agree = int((grid_fitted.groupby("symbol").leads.nunique() == 1).sum())
+sim = pd.read_csv(base / "data" / "staleness.csv")
+hold_false = (sim[sim.scheme == "hold"].groupby("keep")
+              .apply(lambda s: float((s.w_cex > 0.5).mean()),
+                     include_groups=False))
+
 cal = pd.read_csv(base / "data" / "calibration.csv")
 lead = cal[~cal.even]
 near = lead[(lead.truth - 0.5).abs() < 0.2]
@@ -159,6 +178,49 @@ checks = [
     # The permutation test behind the headline correlation.
     ("permutation draws and p", rel.p_value < 0.0001, True,
      f"p below {0.0001:g} on twenty thousand draws"),
+    # Cointegration, tested rather than assumed.
+    ("spread stationary count", int(ranked_pairs.spread_stationary.sum()), 7,
+     f"**{int(ranked_pairs.spread_stationary.sum())} of {len(ranked_pairs)}** rankable pairs"),
+    ("spread half-life span",
+     round(ranked_pairs.spread_half_life_min.max()), 6,
+     f"half-lives of {ranked_pairs.spread_half_life_min.min():.0f} to "
+     f"{ranked_pairs.spread_half_life_min.max():.0f} minutes"),
+    # The second estimator.
+    ("estimators agree", int(ranked_pairs.agree.sum()), 7,
+     f"agrees in **{int(ranked_pairs.agree.sum())} of {len(ranked_pairs)}** pairs"),
+    ("innovation correlation",
+     round(ranked_pairs.innovation_correlation.median(), 2), 0.39,
+     f"correlation is a median {ranked_pairs.innovation_correlation.median():.2f}\nrather"),
+    ("bootstrap lead span", round(ranked_pairs.lead_share.min(), 2), 0.99,
+     f"leads in\n{ranked_pairs.lead_share.min() * 100:.0f} to "
+     f"{ranked_pairs.lead_share.max() * 100:.0f} percent of resamples"),
+    # The staleness bound, read at the ranked pairs' own fill rates.
+    ("hold scheme errs at every partial fill",
+     round(hold_false[hold_false.index < 1.0].min(), 2), 0.95,
+     f"the exchange the leader in **{hold_false[hold_false.index < 1.0].min() * 100:.0f} to "
+     f"{hold_false[hold_false.index < 1.0].max() * 100:.0f}\npercent** of runs"),
+    ("hold scheme is right at complete fill", round(hold_false.loc[1.0], 2), 0.0,
+     "At complete\nfill the estimator is right"),
+    ("drop scheme bound", round(ranked_risk.false_lead_drop.max(), 2), 0.19,
+     f"errs **{ranked_risk.false_lead_drop.min() * 100:.0f} to "
+     f"{ranked_risk.false_lead_drop.max() * 100:.0f} percent** of the time"),
+    ("thinnest tokens bound", round(stale_risk.false_lead_drop.max(), 2), 0.38,
+     f"errs up to {stale_risk.false_lead_drop.max() * 100:.0f} percent of the time"),
+    ("TSLAX risk",
+     round(float(ranked_risk.set_index("symbol").loc["TSLAX"].false_lead_drop), 2),
+     0.02,
+     "TSLAX at half its minutes filled sits at "
+     f"{float(ranked_risk.set_index('symbol').loc['TSLAX'].false_lead_drop) * 100:.0f} percent"),
+    # Specification sweeps.
+    ("lag flips", lag_flips, 0,
+     f"changes the leader in **{lag_flips} of {lag_sweep.symbol.nunique()}**"),
+    ("grid agreement", grid_agree, 7,
+     f"leaves the same leader in **{grid_agree} of {grid_fitted.symbol.nunique()}**"),
+    # Out-of-sample.
+    ("replication count", int(rep.leads_both.sum()), 7,
+     f"{int(rep.leads_both.sum())} of {len(rep)} in the second"),
+    ("replication drift", round((rep.w_second - rep.w_first).abs().max(), 2), 0.11,
+     f"the weights move by at most {(rep.w_second - rep.w_first).abs().max():.2f}"),
 ]
 
 def table_rows(header: tuple[str, ...]) -> list[list[str]]:

@@ -1,0 +1,15 @@
+symbol,grid,rows,w_cex,speed_cex,speed_dex,leads
+TSLAX,1min,503,0.894,-0.04,0.339,True
+TSLAX,5min,179,1.095,0.058,0.674,True
+NVDAX,1min,493,0.96,-0.01,0.25,True
+NVDAX,5min,182,1.496,0.135,0.408,True
+QQQX,1min,457,1.063,0.014,0.238,True
+QQQX,5min,172,1.071,0.024,0.358,True
+CRCLX,1min,378,0.9,-0.049,0.438,True
+CRCLX,5min,146,1.203,0.095,0.564,True
+MSTRX,1min,244,0.896,-0.086,0.737,True
+MSTRX,5min,120,0.955,-0.039,0.822,True
+GOOGLX,1min,134,1.198,0.077,0.464,True
+GOOGLX,5min,83,1.278,0.152,0.7,True
+SPYX,1min,124,1.035,0.007,0.221,True
+SPYX,5min,66,0.848,-0.051,0.283,True

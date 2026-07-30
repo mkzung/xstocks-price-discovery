@@ -199,6 +199,100 @@ The nine in the middle sit between the two: their pools printed in eleven to
 seventy-three minutes of the window, too few to rank a leader but enough to
 show a market exists. They are named in `data/token_groups.csv` with the rest.
 
+## Four ways this could be wrong
+
+Every number above comes from one estimator on one window, and four things
+could produce it without the exchange leading anything. Each is answered
+against the minute series themselves, which are committed under `raw/`, rather
+than against the fitted panel.
+
+### The model might not apply
+
+The error-correction framework assumes the two log prices are cointegrated, and
+the earlier draft called that true by construction. It is not. It is true if
+arbitrage binds, and arbitrage cannot bind on a pool holding two hundred
+dollars of liquidity. Tested rather than assumed, with an augmented Dickey-
+Fuller regression on each pair's spread, it holds: the spread is stationary in
+**7 of 7** rankable pairs, with half-lives of 2 to 6 minutes.
+
+### A second estimator might disagree
+
+Gonzalo-Granger reads leadership off the correction speeds and ignores how
+correlated the two venues' innovations are. Hasbrouck (1995) splits the
+variance of the efficient price innovation instead, and the two are different
+quantities rather than two names for one: with uncorrelated innovations and
+equal variances the second reduces to the square of the first over the sum of
+squares, so a weight of 0.80 corresponds to a share near 0.94. Only the
+direction can be compared, and it agrees in **7 of 7** pairs. Hasbrouck's
+bounds are informative here because the innovation correlation is a median 0.39
+rather than the near-collinear case that makes them useless, and every interval
+sits entirely above an even split.
+
+| token | paired minutes | pool fill | GG weight | Hasbrouck bounds | bootstrap lead | spread half-life |
+|-------|---------------:|----------:|----------:|:----------------:|---------------:|-----------------:|
+| TSLAX | 503 | 50% | 0.89 | 0.74 to 0.96 | 100% | 3 |
+| NVDAX | 493 | 49% | 0.96 | 0.80 to 1.00 | 100% | 5 |
+| QQQX | 457 | 46% | 1.06 | 0.98 to 1.00 | 100% | 6 |
+| CRCLX | 378 | 38% | 0.90 | 0.60 to 0.98 | 99% | 2 |
+| MSTRX | 244 | 25% | 0.90 | 0.56 to 0.99 | 100% | 2 |
+| GOOGLX | 134 | 13% | 1.20 | 0.88 to 0.94 | 100% | 3 |
+| SPYX | 124 | 12% | 1.03 | 0.94 to 0.99 | 100% | 4 |
+
+The bootstrap column is each token's own data speaking rather than the method:
+resampling blocks of the fitted regression rows, the exchange still leads in
+99 to 100 percent of resamples. The weight's own interval is deliberately not shown,
+because it is useless. The weight is a ratio whose denominator is the
+difference between two similar speeds, so a resample that nudges them together
+sends it to infinity and the interval stays wide however long the sample.
+
+Nine of nine agreeing in the first window and 7 of 7 in the second is the
+claim, not any single weight. Under a coin-flip null, 7 of 7 one way is p =
+0.0156.
+
+### Sparse trading might have invented it
+
+This is the objection that would sink the study. A pool does not print every
+minute. Its last price stands still while the exchange keeps moving, so when it
+finally prints it jumps most of the way to the current level, which through an
+error-correction model is indistinguishable from the pool chasing the exchange.
+
+The simulator settles it, because there the answer is known. Build a world
+where the **pool** is the true leader, sample the pool sparsely, and see what
+the estimator says. Carrying the last price forward destroys it. At complete
+fill the estimator is right, and it fails the moment a minute goes missing: at
+every partial fill rate tested it calls the exchange the leader in **95 to 100
+percent** of runs, and at the fill rates the real pools actually show it is 100
+percent every time. Dropping the untraded minutes instead, which is what this
+pipeline does, does not: across the ranked pairs' measured fill rates the same
+test errs **2 to 19 percent** of the time.
+
+{{< figure src="staleness.png" alt="Two curves against pool fill rate. The forward-filling curve sits flat at one hundred percent. The drop curve falls from thirty-eight percent at the sparsest fills to two percent at half, with the seven ranked tokens marked along it" caption="The sampling choice is doing load-bearing work. The ranked pairs sit on the lower curve, between 2 and 19 percent." loading="lazy" >}}
+
+So the finding is not an artefact, but the residual risk is not zero and it is
+not uniform. TSLAX at half its minutes filled sits at 2 percent; SPYX at an eighth
+sits at 19 percent. The thin tokens further down the universe, at one to nine percent
+fill, sit where the test errs up to 38 percent of the time, which is why none of them
+is ranked here and why the volume finding below rests on their trading
+frequency rather than on any leadership claim about them.
+
+### It might be a specification choice
+
+Five lags and one-minute bars were choices. Refitting every pair at one, three,
+five and ten lags changes the leader in **0 of 7** pairs. Coarsening the grid
+to five minutes, which is a deliberate handicap given pools arbitrage inside a
+block, leaves the same leader in **7 of 7**.
+
+### And it repeats out of sample
+
+The window here is not the window the leadership table above was measured on.
+Across the 7 tokens rankable in both, the exchange leads in both every time,
+and the weights move by at most 0.11. The correction speeds, which are what the
+ordering actually rests on, come back closer still.
+
+{{< figure src="replication.png" alt="Left, exchange weights for seven tokens in two windows, all well above the even line in both. Right, pool correction speed in the first window against the second, with the points sitting on the diagonal" caption="Two windows, seven tokens, same answer." loading="lazy" >}}
+
+
+
 ## How this was measured
 
 Both sides are free and need no key: Gate's public candlestick endpoint and
