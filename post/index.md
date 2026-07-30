@@ -199,9 +199,9 @@ The nine in the middle sit between the two: their pools printed in eleven to
 seventy-three minutes of the window, too few to rank a leader but enough to
 show a market exists. They are named in `data/token_groups.csv` with the rest.
 
-## Four ways this could be wrong
+## Six ways this could be wrong
 
-Every number above comes from one estimator on one window, and four things
+Every number above comes from one estimator on one window, and six things
 could produce it without the exchange leading anything. Each is answered
 against the minute series themselves, which are committed under `raw/`, rather
 than against the fitted panel.
@@ -213,7 +213,32 @@ the earlier draft called that true by construction. It is not. It is true if
 arbitrage binds, and arbitrage cannot bind on a pool holding two hundred
 dollars of liquidity. Tested rather than assumed, with an augmented Dickey-
 Fuller regression on each pair's spread, it holds: the spread is stationary in
-**7 of 7** rankable pairs, with half-lives of 2 to 6 minutes.
+**7 of 7** rankable pairs, and it reverts fast: half-lives of 0.6 to 3.9
+minutes, so a gap between the two venues is half gone inside four minutes and
+usually inside two.
+
+### The error term might be the wrong one
+
+Stationarity is tested on the spread of log prices, which imposes a
+cointegrating vector of one to minus one rather than fitting it. Two venues
+quoting one mint should move one for one, and imposing that buys precision, but
+it is an assumption and it can fail: a pool at a proportional discount that
+widens with the price would need a coefficient away from one, and the spread
+built the wrong way would not be the error the model thinks it is.
+
+Fitted rather than imposed, the coefficient comes out between
+0.85 and 1.00, below one in every pair. That is what
+noise in a regressor does, not evidence of scaling: a pool quote carries error,
+and error in a regressor drags its slope toward zero. The test that survives
+that is whether one sits inside the bracket the two one-sided regressions
+define, and it does in **7 of 7** pairs.
+Refitting the whole model on the fitted coefficient instead of the imposed one
+names the same leader in **7 of 7**, moving the
+largest weight by 0.20. That one case is
+GOOGLX, whose imposed weight of 1.20
+is above one and so impossible; fitting the coefficient brings it to
+1.00, which is the more plausible
+reading of the same data.
 
 ### A second estimator might disagree
 
@@ -230,13 +255,13 @@ sits entirely above an even split.
 
 | token | paired minutes | pool fill | GG weight | Hasbrouck bounds | bootstrap lead | spread half-life |
 |-------|---------------:|----------:|----------:|:----------------:|---------------:|-----------------:|
-| TSLAX | 503 | 50% | 0.89 | 0.74 to 0.96 | 100% | 3 |
-| NVDAX | 493 | 49% | 0.96 | 0.80 to 1.00 | 100% | 5 |
-| QQQX | 457 | 46% | 1.06 | 0.98 to 1.00 | 100% | 6 |
-| CRCLX | 378 | 38% | 0.90 | 0.60 to 0.98 | 99% | 2 |
-| MSTRX | 244 | 25% | 0.90 | 0.56 to 0.99 | 100% | 2 |
-| GOOGLX | 134 | 13% | 1.20 | 0.88 to 0.94 | 100% | 3 |
-| SPYX | 124 | 12% | 1.03 | 0.94 to 0.99 | 100% | 4 |
+| TSLAX | 503 | 50% | 0.89 | 0.74 to 0.96 | 100% | 1.6 |
+| NVDAX | 493 | 49% | 0.96 | 0.80 to 1.00 | 100% | 2.8 |
+| QQQX | 457 | 46% | 1.06 | 0.98 to 1.00 | 100% | 3.9 |
+| CRCLX | 378 | 38% | 0.90 | 0.60 to 0.98 | 99% | 1.2 |
+| MSTRX | 244 | 25% | 0.90 | 0.56 to 0.99 | 100% | 0.6 |
+| GOOGLX | 134 | 13% | 1.20 | 0.88 to 0.94 | 100% | 1.7 |
+| SPYX | 124 | 12% | 1.03 | 0.94 to 0.99 | 100% | 3.1 |
 
 The bootstrap column is each token's own data speaking rather than the method:
 resampling blocks of the fitted regression rows, the exchange still leads in
@@ -290,6 +315,46 @@ and the weights move by at most 0.11. The correction speeds, which are what the
 ordering actually rests on, come back closer still.
 
 {{< figure src="replication.png" alt="Left, exchange weights for seven tokens in two windows, all well above the even line in both. Right, pool correction speed in the first window against the second, with the points sitting on the diagonal" caption="Two windows, seven tokens, same answer." loading="lazy" >}}
+
+
+
+### And it holds on the next day
+
+Everything above is measured inside windows collected hours apart on 29 July. A
+result that lives on one date is a result about that date, so the whole
+collection was repeated on 30 July, with its own volume snapshot so that
+nothing is borrowed from the first pass.
+
+The headline of this post is not the leadership, it is the correlation between
+how much a pool trades and how many exchange dollars are printed against it.
+That number had been computed once. Recomputed from the second day's own
+snapshot it comes back at **-0.90**, against -0.93 the day before, with a
+permutation p of 0.0023. Pool liquidity and pool activity still rank together,
+at 0.77.
+
+The leadership repeats too, on every token measurable on both days:
+
+| token | 29 July | 30 July | change |
+|-------|--------:|--------:|-------:|
+| SPYX | 1.03 | 1.05 | 0.01 |
+| MSTRX | 0.90 | 0.91 | 0.01 |
+| TSLAX | 0.89 | 0.92 | 0.02 |
+| CRCLX | 0.90 | 0.72 | 0.18 |
+| NVDAX | 0.96 | 0.77 | 0.19 |
+
+Two of the five move by roughly 0.19, which is inside the scatter the
+calibration already declares for a single weight, and neither comes close to
+crossing over. The three others move by 0.01 to 0.02.
+
+One limitation belongs here rather than in a footnote. The second day's
+collection lost its network part way through and finished with 9 of the 27
+paired tokens, so the second-day correlation rests on 9 tokens rather than the
+twenty-four of the first, and GOOGLX and QQQX were never collected on the
+second day at all. The tail robustness check that drops the six most extreme
+ratios cannot run on nine tokens: it leaves 3, and a correlation on 3 points is
+not a check on anything. What the second day establishes is that the sign, the
+rough magnitude and the per-token ordering survive a change of date. It does
+not re-establish the tail result.
 
 
 

@@ -300,6 +300,55 @@ def test_adf_rejects_at_about_its_nominal_rate() -> None:
     assert 0.01 <= rejects / 200 <= 0.12
 
 
+def test_fitted_vector_recovers_a_scaling_that_is_really_there() -> None:
+    # The model imposes a cointegrating vector of (1, -1). If the estimator
+    # cannot see a scaling when one exists, the check that the imposition is
+    # harmless proves nothing.
+    import numpy as np
+
+    from analysis.vector import estimate_vector
+
+    a, b = simulate_leader_follower(n=4000, adjust_a=0.0, adjust_b=0.4, seed=0)
+    beta, se, _ = estimate_vector(a, b)
+    assert beta == pytest.approx(1.0, abs=0.05)
+
+    # Same series with venue A's log price stretched by 1.3.
+    stretched = pd.Series(np.exp(1.3 * np.log(a)), index=a.index)
+    beta_stretched, _, _ = estimate_vector(stretched, b)
+    assert beta_stretched == pytest.approx(1.3, abs=0.05)
+    assert beta_stretched - beta > 0.2
+
+
+def test_attenuation_bracket_contains_one_when_the_truth_is_one() -> None:
+    # Noise in a regressor drags its slope toward zero, so a fitted slope below
+    # one is not evidence against a one-for-one relation. The bracket between
+    # the two one-sided regressions is what has to contain one.
+    from analysis.vector import attenuation_bounds
+
+    for noise in (0.0, 0.001, 0.004):
+        a, b = simulate_leader_follower(n=4000, adjust_a=0.1, adjust_b=0.4,
+                                        noise=noise, seed=0)
+        low, high = attenuation_bounds(a, b)
+        assert low <= 1.0 <= high
+    # And the bracket has to widen as the noise grows, or it is not measuring
+    # attenuation at all.
+    quiet = attenuation_bounds(*simulate_leader_follower(
+        n=4000, adjust_a=0.1, adjust_b=0.4, noise=0.0, seed=0))
+    noisy = attenuation_bounds(*simulate_leader_follower(
+        n=4000, adjust_a=0.1, adjust_b=0.4, noise=0.004, seed=0))
+    assert (noisy[1] - noisy[0]) > (quiet[1] - quiet[0])
+
+
+def test_imposing_the_vector_matches_fitting_it_when_it_holds() -> None:
+    from analysis.vector import fit_with_vector
+
+    a, b = simulate_leader_follower(n=4000, adjust_a=0.0, adjust_b=0.4, seed=0)
+    imposed = fit_with_vector(a, b, beta=1.0)
+    reference = information_share(a, b)
+    assert imposed.weight_a == pytest.approx(reference.weight_a, abs=1e-9)
+    assert imposed.speed_a == pytest.approx(reference.speed_a, abs=1e-9)
+
+
 def test_spearman_matches_a_hand_computed_case() -> None:
     # Perfectly reversed orders must give exactly -1, and identical orders +1,
     # so the no-scipy implementation is doing what its name says.

@@ -74,6 +74,17 @@ grid_sweep = pd.read_csv(base / "data" / f"sensitivity_grid_{LABEL}.csv")
 grid_fitted = grid_sweep.dropna(subset=["w_cex"])
 lag_flips = int((lag_sweep.groupby("symbol").leads.nunique() > 1).sum())
 grid_agree = int((grid_fitted.groupby("symbol").leads.nunique() == 1).sum())
+# The second collection day, and the cross-window comparison built from it.
+SECOND = "2026-07-30"
+day2 = (pd.read_csv(base / "data" / "windows_relation.csv")
+        .set_index("window").loc[SECOND])
+day2_universe = pd.read_csv(base / "raw" / SECOND / "universe.csv")
+both_windows = pd.read_csv(base / "data" / "windows_leadership.csv", index_col=0)
+both_windows = (both_windows[both_windows.windows_ranked >= 2]
+                .sort_values("spread_across_windows"))
+
+vec = pd.read_csv(base / "data" / f"vector_{LABEL}.csv")
+vecrow = vec.set_index("symbol")
 sim = pd.read_csv(base / "data" / "staleness.csv")
 hold_false = (sim[sim.scheme == "hold"].groupby("keep")
               .apply(lambda s: float((s.w_cex > 0.5).mean()),
@@ -194,9 +205,22 @@ checks = [
     ("spread stationary count", int(ranked_pairs.spread_stationary.sum()), 7,
      f"**{int(ranked_pairs.spread_stationary.sum())} of {len(ranked_pairs)}** rankable pairs"),
     ("spread half-life span",
-     round(ranked_pairs.spread_half_life_min.max()), 6,
-     f"half-lives of {ranked_pairs.spread_half_life_min.min():.0f} to "
-     f"{ranked_pairs.spread_half_life_min.max():.0f} minutes"),
+     round(ranked_pairs.spread_half_life_min.max(), 1), 3.9,
+     f"half-lives of {ranked_pairs.spread_half_life_min.min():.1f} to "
+     f"{ranked_pairs.spread_half_life_min.max():.1f}\nminutes"),
+    # The cointegrating vector: fitted rather than imposed.
+    ("fitted beta span", round(vec.beta.min(), 2), 0.85,
+     f"between\n{vec.beta.min():.2f} and {vec.beta.max():.2f}, below one in every pair"),
+    ("one inside the bracket", int(vec.one_bracketed.sum()), 7,
+     f"and it does in **{int(vec.one_bracketed.sum())} of {len(vec)}** pairs"),
+    ("same leader either vector", int(vec.same_leader.sum()), 7,
+     f"names the same leader in **{int(vec.same_leader.sum())} of {len(vec)}**"),
+    ("largest vector weight move",
+     round((vec.w_fitted - vec.w_imposed).abs().max(), 2), 0.2,
+     f"largest weight by {(vec.w_fitted - vec.w_imposed).abs().max():.2f}"),
+    ("GOOGLX imposed vs fitted",
+     round(float(vecrow.loc["GOOGLX"].w_fitted), 2), 1.0,
+     f"brings it to\n{float(vecrow.loc['GOOGLX'].w_fitted):.2f}, which is the more plausible"),
     # The second estimator.
     ("estimators agree", int(ranked_pairs.agree.sum()), 7,
      f"agrees in **{int(ranked_pairs.agree.sum())} of {len(ranked_pairs)}** pairs"),
@@ -228,6 +252,30 @@ checks = [
      f"changes the leader in **{lag_flips} of {lag_sweep.symbol.nunique()}**"),
     ("grid agreement", grid_agree, 7,
      f"leaves the same leader in **{grid_agree} of {grid_fitted.symbol.nunique()}**"),
+    # The second day.
+    ("second-day correlation", round(day2.rho, 2), -0.9,
+     f"comes back at **{day2.rho:.2f}**, against -0.93 the day before"),
+    ("second-day p-value", round(day2.p_value, 4), 0.0023,
+     f"permutation p of {day2.p_value:.4f}"),
+    ("second-day liquidity rank", round(day2.rho_liquidity, 2), 0.77,
+     f"rank together,\nat {day2.rho_liquidity:.2f}"),
+    ("second-day token count", int(day2.tokens), 9,
+     f"finished with {int(day2.tokens)} of the {len(day2_universe)}\npaired tokens"),
+    ("second-day trimmed remainder", int(day2.trimmed_tokens), 3,
+     f"it leaves {int(day2.trimmed_tokens)}, and a correlation on "
+     f"{int(day2.trimmed_tokens)} points is"),
+    ("cross-window weight spread",
+     round(both_windows.spread_across_windows.max(), 2), 0.19,
+     f"move by roughly {both_windows.spread_across_windows.max():.2f}, which is"),
+    ("cross-window tightest",
+     round(both_windows.spread_across_windows.min(), 2), 0.01,
+     f"The three others move by {both_windows.spread_across_windows.min():.2f} to 0.02"),
+    ("cross-window led everywhere",
+     int(both_windows.led_every_window.sum()), 5,
+     f"| {both_windows.index[0]} | "
+     f"{both_windows.iloc[0]['2026-07-29b']:.2f} | "
+     f"{both_windows.iloc[0]['2026-07-30']:.2f} | "
+     f"{both_windows.iloc[0].spread_across_windows:.2f} |"),
     # Out-of-sample.
     ("replication count", int(rep.leads_both.sum()), 7,
      f"{int(rep.leads_both.sum())} of {len(rep)} in the second"),
@@ -307,7 +355,7 @@ dead_table = [
 robust_table = [
     [r.symbol, str(int(r.paired_minutes)), f"{r.fill_rate:.0%}",
      f"{r.w_cex:.2f}", f"{r.hasbrouck_low:.2f} to {r.hasbrouck_high:.2f}",
-     f"{r.lead_share:.0%}", f"{r.spread_half_life_min:.0f}"]
+     f"{r.lead_share:.0%}", f"{r.spread_half_life_min:.1f}"]
     for r in ranked_pairs.itertuples()
 ]
 
@@ -330,6 +378,11 @@ tables = (
      ("token", "paired minutes", "pool fill", "GG weight",
       "Hasbrouck bounds", "bootstrap lead", "spread half-life"),
      robust_table),
+    ("cross-window table",
+     ("token", "29 July", "30 July", "change"),
+     [[sym, f"{r['2026-07-29b']:.2f}", f"{r['2026-07-30']:.2f}",
+       f"{r.spread_across_windows:.2f}"]
+      for sym, r in both_windows.iterrows()]),
 )
 for name, header, expected in tables:
     searched += sum(len(r) for r in expected)

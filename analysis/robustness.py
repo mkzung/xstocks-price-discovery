@@ -66,8 +66,14 @@ def _one(symbol: str, paired: pd.DataFrame, coverage: pd.Series) -> dict:
         return row
 
     cex, dex = paired["cex"], paired["dex"]
+    # Demeaned, because the Dickey-Fuller regression used here carries no
+    # constant and so tests reversion to zero. A pool sitting at a persistent
+    # premium leaves a non-zero mean in the spread, and leaving it in costs real
+    # power: on TSLAX the statistic moves from -4.71 to -6.00 once it is
+    # removed. The direction is safe, an undemeaned test under-rejects, but the
+    # numbers reported should be the right ones.
     spread = np.log(cex) - np.log(dex)
-    unit_root = adf(spread)
+    unit_root = adf(spread - spread.mean())
     row.update(adf_statistic=round(unit_root.statistic, 2),
                spread_stationary=bool(unit_root.rejects_unit_root()),
                spread_half_life_min=round(unit_root.half_life_min, 1))

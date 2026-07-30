@@ -23,20 +23,27 @@ sys.path.insert(0, str(BASE))
 
 import pandas as pd  # noqa: E402
 
-from analysis.collect import cex_bars, dex_history, load_universe  # noqa: E402
+from analysis.collect import (  # noqa: E402
+    build_universe, cex_bars, dex_history, load_universe,
+)
 
 RAW = BASE / "raw"
 
 __all__ = ["collect"]
 
 
-def collect(run: str, *, pages: int = 3, pause: float = 4.0) -> pd.DataFrame:
+def collect(run: str, *, pages: int = 3, pause: float = 4.0,
+            refresh_universe: bool = False) -> pd.DataFrame:
     """Write one paired minute series per token and return a coverage summary.
 
     Arguments:
         run: Label for this collection, used as the directory name.
         pages: Pages of pool history to walk backwards through.
         pause: Seconds between tokens, since the pool API rate-limits hard.
+        refresh_universe: Rebuild the paired universe and snapshot its
+            24-hour volumes into the run directory. The volume ratio behind the
+            post's headline correlation was measured once, on one snapshot, so a
+            second window cannot re-test it without its own snapshot.
 
     Returns:
         One row per token: how many minutes each venue covered, how many paired,
@@ -44,6 +51,19 @@ def collect(run: str, *, pages: int = 3, pause: float = 4.0) -> pd.DataFrame:
     """
     out = RAW / run
     out.mkdir(parents=True, exist_ok=True)
+    if refresh_universe:
+        # build_universe writes data/universe.csv, which the committed panel and
+        # every volume figure in the post are keyed to. Snapshot it into the run
+        # directory and put the committed file back, or a fresh collection
+        # silently invalidates the published numbers. It did once.
+        committed = BASE / "data" / "universe.csv"
+        keep = committed.read_bytes() if committed.exists() else None
+        snapshot = build_universe()
+        snapshot.to_csv(out / "universe.csv", index=False)
+        if keep is not None:
+            committed.write_bytes(keep)
+        print(f"  universe snapshot: {len(snapshot)} paired tokens, "
+              f"data/universe.csv left untouched", flush=True)
     summary = []
     for _, token in load_universe().iterrows():
         try:
@@ -92,7 +112,8 @@ def collect(run: str, *, pages: int = 3, pause: float = 4.0) -> pd.DataFrame:
 
 if __name__ == "__main__":
     label = sys.argv[1] if len(sys.argv) > 1 else "run"
-    f = collect(label)
+    fresh = "--refresh-universe" in sys.argv
+    f = collect(label, refresh_universe=fresh)
     print(f"\nwrote raw/{label}/, {len(f)} tokens")
     if len(f):
         print(f"  fill rate: {f.fill_rate.min():.0%} to {f.fill_rate.max():.0%}, "

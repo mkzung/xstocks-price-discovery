@@ -29,6 +29,8 @@ repository.
 | `analysis/staleness.py` | whether sparse pool trading can invent the finding, measured against a known answer |
 | `analysis/robustness.py` | every check above applied to one collection run |
 | `analysis/sensitivity.py` | lag order, sampling grid, per-token artefact risk, and the second window against the first |
+| `analysis/vector.py` | whether imposing a cointegrating vector of one to minus one changes any conclusion |
+| `analysis/windows.py` | the headline correlation and the per-token leadership, recomputed inside each collection day |
 | `analysis/calibrate.py` | what the estimator does to an answer it already knows |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
@@ -49,11 +51,28 @@ python analysis/calibrate.py                  # what the fit does to a known ans
 python analysis/staleness.py                  # whether sparse trading can invent the finding
 python analysis/robustness.py 2026-07-29b     # cointegration, Hasbrouck, bootstrap, per token
 python analysis/sensitivity.py 2026-07-29b    # lags, grid, artefact risk, second window
+python analysis/vector.py 2026-07-29b         # imposed vector against fitted
+python analysis/robustness.py 2026-07-30      # the second collection day
+python analysis/windows.py 2026-07-29b 2026-07-30   # what survives a change of date
 python analysis/build_analysis.py             # redraw the figures
 python analysis/check_dn_format.py            # the post's formatting rules
 ```
 
-To pull fresh data, in this order:
+To collect a new window, which becomes its own directory under `raw/` rather
+than overwriting anything:
+
+```bash
+python analysis/collect_raw.py 2026-08-01 --refresh-universe
+```
+
+The `--refresh-universe` flag snapshots the paired universe and its 24-hour
+volumes into that run's directory, and puts `data/universe.csv` back afterwards,
+because the published volume figures are keyed to the committed snapshot.
+Collection takes the better part of an hour and can lose its network part way
+through, in which case the run finishes with fewer tokens and says so in
+`coverage.csv`.
+
+To rebuild the original panel, in this order:
 
 ```python
 from analysis.collect import build_universe
