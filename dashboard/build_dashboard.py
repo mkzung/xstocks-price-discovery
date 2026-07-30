@@ -118,9 +118,9 @@ Hasbrouck bounds and the bootstrap come from the series pass.</p>
 <figure><img src="post/weights-series.png" alt="Exchange weights with Hasbrouck bounds, and the correction speeds behind them"></figure>
 
 <h2>Measured again the next day</h2>
-<p class="lede">Every token rankable on both days leads on both. The next-day
-collection lost its network part way through and covered {day2_tokens} tokens,
-which is why the table is short.</p>
+<p class="lede">Every token rankable on both days leads on both, across
+{day2_tokens} tokens collected on the second day. The two largest moves sit
+inside the scatter the calibration declares for a single weight.</p>
 {cross_table}
 
 <h2>The relation across the whole universe</h2>

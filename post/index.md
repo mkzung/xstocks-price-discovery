@@ -314,46 +314,58 @@ block, and it leaves the same leader in **7 of 7**.
 
 A result that exists in one stretch of minutes is a result about that stretch.
 The leadership was therefore refitted on a second pass over the same day, and
-then the whole collection was repeated the following day with its own volume
-snapshot so that nothing at all is carried over.
+then the whole collection was repeated the following day, on its own volume
+snapshot, so that nothing at all is carried over.
 
-Against the session panel, the 7 tokens rankable in both the panel and the
-series pass lead in both every time, with weights moving by at most 0.11. The
-correction speeds, which are what the ordering actually rests on, come back
+Against the session panel first: the 7 tokens rankable in both the panel and
+the series pass lead in both every time, with weights moving by at most 0.11.
+The correction speeds, which are what the ordering actually rests on, come back
 closer still.
 
 {{< figure src="replication.png" alt="Left, exchange weights for seven tokens measured in the session panel and in the series pass, all well above the even line in both. Right, pool correction speed in one pass against the other, with the points sitting on the diagonal" caption="Same day, two passes, seven tokens, one answer." loading="lazy" >}}
 
-The next day is the harder test, and it reaches the headline rather than the
-leadership. The correlation between how much a pool trades and how many
-exchange dollars are printed against it had been computed once and never again.
-Recomputed from the next day's own snapshot it comes back at **-0.90** against
--0.93, with a permutation p of 0.0023, and pool liquidity still ranks with pool
-activity at 0.77.
+The next day is the harder test, and it reaches everything. The correlation
+between how much a pool trades and how many exchange dollars are printed
+against it comes back at **-0.93** on 25 tokens, against -0.94 the day before,
+with a permutation p below 0.0001. It survives its own tail check now: dropping
+the six most extreme ratios leaves 19 tokens and the correlation holds at
+-0.91. Pool liquidity still ranks with pool activity, at 0.92.
 
-Every token measurable on both days leads on both:
+The leadership repeats on every token measurable across days:
 
 | token | 29 July | 30 July | change |
 |-------|--------:|--------:|-------:|
 | SPYX | 1.03 | 1.05 | 0.01 |
 | MSTRX | 0.90 | 0.91 | 0.01 |
 | TSLAX | 0.89 | 0.92 | 0.02 |
+| QQQX | 1.06 | 1.01 | 0.05 |
 | CRCLX | 0.90 | 0.72 | 0.18 |
 | NVDAX | 0.96 | 0.77 | 0.19 |
+| GOOGLX | 1.20 | 0.94 | 0.26 |
 
-Two of the five move by roughly 0.19, well inside the scatter the calibration
-already declares for a single weight, and neither approaches a crossover. The
-three others move by 0.01 to 0.02.
+GOOGLX is worth a sentence. Its first-day weight of 1.20 was the impossible
+above-one reading this post flags as bias; measured again on more minutes it
+prints 0.94. The two largest moves, CRCLX and NVDAX at about 0.19, sit inside
+the scatter the calibration declares for a single weight, and nothing
+approaches a crossover.
 
-One limitation belongs in the text rather than a footnote. The next-day
-collection lost its network part way through and finished with 9 of the 27
-paired tokens then listed, so its correlation rests on 9 tokens against the
-twenty-four of the first day, and GOOGLX and QQQX were never collected on the
-second day at all. The tail check that drops the six most extreme ratios cannot
-run on nine tokens, since it leaves 3, and a correlation on 3 points checks
-nothing. What the second day establishes is that the sign, the rough magnitude
-and the per-token ordering survive a change of date. It does not re-establish
-the tail result.
+The full second day also ranks two tokens the first day could not, and they are
+the honest edge of the result. GLDX prints 0.64 and METAX 0.57, the only
+near-even readings in the study, and they behave just as the calibration says
+near-even readings do: METAX is the one pair where Hasbrouck and
+Gonzalo-Granger disagree, and both tokens flip leader when the cointegrating
+vector is fitted rather than imposed, which none of the seven clear pairs does.
+Those two are shared discovery, not exchange leads, and the sign test is quoted
+on the nine anyway: nine of nine above even carries p = 0.0039.
+
+Two collection notes rather than footnotes. The next-day run lost its network
+part way through and was topped up the same evening, so it holds two collection
+sessions; each token's own timestamps are in `raw/2026-07-30/coverage.csv`, and
+the volume snapshot all of its ratios use was taken in the morning. And two of
+the twenty-seven snapshot tokens, ABTX and CMCSAX, could not be paired at all,
+because their pools' last prints sit further back than the exchange window
+reaches. The tokens too dead to measure are the strongest form of the pattern
+the measurement shows.
 
 ## How this was measured
 
@@ -375,7 +387,7 @@ came from.
 | universe | 29 July | 24 | the volume snapshot, the grouping, the rank correlation |
 | session panel | 29 July, later | 13 | the leadership table and the open-against-shut split |
 | series | 29 July, later still | 16 | the minute series in `raw/`, and every robustness check |
-| next day | 30 July | 9 | the repeat, on its own volume snapshot |
+| next day | 30 July, two sessions | 25 | the repeat, on its own volume snapshot |
 
 Only the last two keep the underlying minute series, so the checks below run on
 those and the tables above cannot. Where a sentence quotes a sample size it

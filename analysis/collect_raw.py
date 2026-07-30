@@ -33,7 +33,7 @@ __all__ = ["collect"]
 
 
 def collect(run: str, *, pages: int = 3, pause: float = 4.0,
-            refresh_universe: bool = False) -> pd.DataFrame:
+            refresh_universe: bool = False, top_up: bool = False) -> pd.DataFrame:
     """Write one paired minute series per token and return a coverage summary.
 
     Arguments:
@@ -44,6 +44,14 @@ def collect(run: str, *, pages: int = 3, pause: float = 4.0,
             24-hour volumes into the run directory. The volume ratio behind the
             post's headline correlation was measured once, on one snapshot, so a
             second window cannot re-test it without its own snapshot.
+        top_up: Collect only the tokens this run does not already hold, and
+            merge their coverage into the existing summary instead of replacing
+            it. This exists because a collection can lose its network part way
+            through, which happened on 30 July: 9 of 27 tokens landed and the
+            rest errored out. Re-running whole would have thrown away the
+            morning's series; skipping the run would have left the window
+            partial forever. The per-token timestamps in the coverage file
+            record that a topped-up run holds two collection times.
 
     Returns:
         One row per token: how many minutes each venue covered, how many paired,
@@ -64,8 +72,26 @@ def collect(run: str, *, pages: int = 3, pause: float = 4.0,
             committed.write_bytes(keep)
         print(f"  universe snapshot: {len(snapshot)} paired tokens, "
               f"data/universe.csv left untouched", flush=True)
+
+    # A run with its own snapshot is collected against that snapshot, not
+    # against the committed universe: the two can differ, and mixing them made
+    # a top-up chase tokens the run's correlation could never use.
+    own_snapshot = out / "universe.csv"
+    universe = (pd.read_csv(own_snapshot) if own_snapshot.exists()
+                else load_universe())
+
+    done: set[str] = set()
     summary = []
-    for _, token in load_universe().iterrows():
+    if top_up:
+        done = {p.stem for p in out.glob("*.csv")} - {"universe", "coverage"}
+        coverage_path = out / "coverage.csv"
+        if coverage_path.exists():
+            summary = pd.read_csv(coverage_path).to_dict("records")
+        print(f"  topping up: {len(done)} tokens already collected", flush=True)
+
+    for _, token in universe.iterrows():
+        if token.symbol in done:
+            continue
         try:
             cex = cex_bars(token.cex_pair, limit=1000)
             dex = dex_history(token.pool, pages=pages)
@@ -113,7 +139,8 @@ def collect(run: str, *, pages: int = 3, pause: float = 4.0,
 if __name__ == "__main__":
     label = sys.argv[1] if len(sys.argv) > 1 else "run"
     fresh = "--refresh-universe" in sys.argv
-    f = collect(label, refresh_universe=fresh)
+    extend = "--top-up" in sys.argv
+    f = collect(label, refresh_universe=fresh, top_up=extend)
     print(f"\nwrote raw/{label}/, {len(f)} tokens")
     if len(f):
         print(f"  fill rate: {f.fill_rate.min():.0%} to {f.fill_rate.max():.0%}, "

@@ -30,6 +30,8 @@ jobs:
         run: python analysis/vector.py 2026-07-29b
       - name: the second collection day
         run: python analysis/robustness.py 2026-07-30
+      - name: the second day's cointegrating vector
+        run: python analysis/vector.py 2026-07-30
       - name: does anything hold across days
         run: python analysis/windows.py 2026-07-29b 2026-07-30
       - name: figures redraw from the committed data

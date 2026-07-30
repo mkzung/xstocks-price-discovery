@@ -1,6 +1,10 @@
 symbol,beta,beta_se,bracket_low,bracket_high,one_bracketed,beta_near_one,adf_imposed,adf_fitted,w_imposed,w_fitted,same_leader
 TSLAX,0.9683,0.0069,0.9683,0.994,False,True,-5.22,-5.14,0.915,0.861,True
 NVDAX,0.9569,0.0097,0.9569,1.0062,True,True,-5.98,-5.9,0.77,0.709,True
+QQQX,0.9738,0.0108,0.9738,1.0245,True,True,-5.4,-5.29,1.012,0.987,True
 CRCLX,0.9866,0.0087,0.9866,1.0101,True,True,-5.87,-5.75,0.718,0.661,True
 MSTRX,1.0193,0.0063,1.0193,1.0299,False,True,-4.79,-5.19,0.908,0.981,True
+GLDX,0.8023,0.0437,0.8023,1.427,True,False,-2.27,-2.07,0.64,0.457,False
 SPYX,0.885,0.0255,0.885,1.0184,True,False,-3.7,-3.43,1.046,0.955,True
+GOOGLX,0.9521,0.0194,0.9521,1.0092,True,True,-3.95,-3.79,0.935,0.783,True
+METAX,0.9874,0.0129,0.9874,1.0111,True,True,-4.32,-4.27,0.567,0.472,False

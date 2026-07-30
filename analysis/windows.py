@@ -44,10 +44,18 @@ def ratio_relation(label: str, *, draws: int = 20000) -> dict:
     """
     folder = RAW / label
     universe_path = folder / "universe.csv"
-    if not universe_path.exists():
-        return {"window": label, "tokens": 0,
-                "note": "no volume snapshot for this run"}
-    universe = pd.read_csv(universe_path).set_index("symbol")
+    if universe_path.exists():
+        universe = pd.read_csv(universe_path).set_index("symbol")
+        snapshot_source = "own"
+    else:
+        # The first day's series pass has no snapshot of its own because the
+        # committed universe IS that day's snapshot, taken the same morning a
+        # few hours before the series. Falling back to it makes the first day
+        # computable the same way as the rest; the source column says which
+        # kind of snapshot each row used, since hours-apart is a weaker pairing
+        # than minutes-apart and the reader should see the difference.
+        universe = (pd.read_csv(DATA / "universe.csv").set_index("symbol"))
+        snapshot_source = "committed, same day"
     coverage = pd.read_csv(folder / "coverage.csv").set_index("symbol")
     shared = sorted(set(universe.index) & set(coverage.index))
     frame = pd.DataFrame({
@@ -70,6 +78,7 @@ def ratio_relation(label: str, *, draws: int = 20000) -> dict:
                    if len(trimmed) >= 10 else None)
     return {
         "window": label,
+        "snapshot": snapshot_source,
         "tokens": len(frame),
         "rho": round(rho, 3),
         "p_value": test.p_value,

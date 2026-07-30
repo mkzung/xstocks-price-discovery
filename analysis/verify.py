@@ -12,10 +12,12 @@ post at all. Every number in the text could have been wrong and it would still
 have printed FAILED: 0. Whenever a check is added here, mutate the post and
 confirm the check goes red before trusting it.
 
-The current state of that sweep: bumping each of the 99 distinct numbers in the
-post by one unit in its last digit turns 85 of them red. The 14 that stay green
-are the day, month and year components inside URLs and the frontmatter date,
-plus the year in the Hasbrouck citation, none of which restate a computed value.
+The current state of that sweep: bumping each of the 123 distinct numbers in
+the post by one unit in its last digit turns 110 of them red. The 13 that stay
+green are day, month and year components inside URLs and the frontmatter date,
+plus the Hasbrouck citation year, which the sweep also hits when it bumps a
+two-digit number that first occurs as a substring of 1995. None of them restates
+a computed value.
 """
 import re
 import sys
@@ -92,6 +94,10 @@ SECOND = "2026-07-30"
 day2 = (pd.read_csv(base / "data" / "windows_relation.csv")
         .set_index("window").loc[SECOND])
 day2_universe = pd.read_csv(base / "raw" / SECOND / "universe.csv")
+day2_coverage = pd.read_csv(base / "raw" / SECOND / "coverage.csv")
+day2_rob = pd.read_csv(base / "data" / f"robustness_{SECOND}.csv")
+day2_ranked = day2_rob[day2_rob.verdict == "ranked"]
+day2_vec = pd.read_csv(base / "data" / f"vector_{SECOND}.csv")
 both_windows = pd.read_csv(base / "data" / "windows_leadership.csv", index_col=0)
 both_windows = (both_windows[both_windows.windows_ranked >= 2]
                 .sort_values("spread_across_windows"))
@@ -216,7 +222,7 @@ checks = [
     ("alt text bybit weight", round(bybit.weight_a, 2), 0.75,
      f"pool bar sits at {bybit.weight_a:.2f}"),
     # The permutation test behind the headline correlation.
-    ("permutation draws and p", rel.p_value < 0.0001, True,
+    ("permutation draws and p", int(rel.p_value < 0.0001), 1,
      f"p below {0.0001:g} on twenty thousand draws"),
     # The worked example of the Hasbrouck transformation in the prose. It is
     # arithmetic rather than data, and arithmetic in prose is still a claim.
@@ -236,8 +242,6 @@ checks = [
     ("TSLAX across the four passes", int(tslax_counts[-1]), 530,
      "TSLAX shows " + ", ".join(str(n) for n in tslax_counts[:-1])
      + f" and {tslax_counts[-1]} paired minutes"),
-    ("pass token counts", len(day2_universe), 27,
-     f"| next day | 30 July | {len(pd.read_csv(base / 'raw' / SECOND / 'coverage.csv'))} |"),
     # The cointegrating vector: fitted rather than imposed.
     ("GOOGLX imposed weight",
      round(float(vecrow.loc["GOOGLX"].w_imposed), 2), 1.2,
@@ -285,30 +289,45 @@ checks = [
      f"changes the leader in **{lag_flips} of {lag_sweep.symbol.nunique()}**"),
     ("grid agreement", grid_agree, 7,
      f"leaves the same leader in **{grid_agree} of {grid_fitted.symbol.nunique()}**"),
-    # The second day.
-    ("second-day correlation", round(day2.rho, 2), -0.9,
-     f"comes back at **{day2.rho:.2f}** against -0.93"),
-    ("second-day p-value", round(day2.p_value, 4), 0.0023,
-     f"permutation p of {day2.p_value:.4f}"),
-    ("second-day liquidity rank", round(day2.rho_liquidity, 2), 0.77,
-     f"ranks with pool activity at {day2.rho_liquidity:.2f}"),
-    ("second-day token count", int(day2.tokens), 9,
-     f"finished with {int(day2.tokens)} of the {len(day2_universe)} paired tokens"),
-    ("second-day trimmed remainder", int(day2.trimmed_tokens), 3,
-     f"it leaves {int(day2.trimmed_tokens)}, and a correlation on "
-     f"{int(day2.trimmed_tokens)} points checks"),
+    # The second day, completed by the evening top-up.
+    ("registry row for the next day", len(day2_coverage), 25,
+     f"| next day | 30 July, two sessions | {len(day2_coverage)} |"),
+    ("second-day correlation", round(day2.rho, 2), -0.93,
+     f"comes back at **{day2.rho:.2f}** on {int(day2.tokens)} tokens"),
+    ("second-day p-value", int(day2.p_value < 0.0001), 1,
+     "with a permutation p below 0.0001"),
+    ("second-day tail check", round(day2.rho_trimmed, 2), -0.91,
+     f"leaves {int(day2.trimmed_tokens)} tokens and the correlation holds at "
+     f"{day2.rho_trimmed:.2f}"),
+    ("second-day liquidity rank", round(day2.rho_liquidity, 2), 0.92,
+     f"ranks with pool activity, at {day2.rho_liquidity:.2f}"),
+    ("second-day rankable", len(day2_ranked), 9,
+     f"nine of nine above even carries p = "
+     f"{sign_test(int((day2_ranked.w_cex > 0.5).sum()), len(day2_ranked)):.4f}"),
+    ("second-day estimator split", int(day2_ranked.agree.sum()), 8,
+     "METAX is the one pair where Hasbrouck and Gonzalo-Granger disagree"),
+    ("GLDX near even", round(float(day2_ranked.set_index("symbol").loc["GLDX"].w_cex), 2),
+     0.64, f"GLDX prints {float(day2_ranked.set_index('symbol').loc['GLDX'].w_cex):.2f}"),
+    ("METAX near even", round(float(day2_ranked.set_index("symbol").loc["METAX"].w_cex), 2),
+     0.57, f"METAX {float(day2_ranked.set_index('symbol').loc['METAX'].w_cex):.2f}"),
+    ("near-even pairs flip under the fitted vector",
+     int((~day2_vec.same_leader).sum()), 2,
+     "both tokens flip leader when the cointegrating vector is fitted"),
+    ("GOOGLX across days",
+     round(float(both_windows.loc["GOOGLX", "2026-07-30"]), 2), 0.94,
+     f"measured again on more minutes it prints "
+     f"{float(both_windows.loc['GOOGLX', '2026-07-30']):.2f}"),
     ("cross-window weight spread",
-     round(both_windows.spread_across_windows.max(), 2), 0.19,
-     f"move by roughly {both_windows.spread_across_windows.max():.2f}, well"),
-    ("cross-window tightest",
-     round(both_windows.spread_across_windows.min(), 2), 0.01,
-     f"The three others move by {both_windows.spread_across_windows.min():.2f} to 0.02"),
+     round(both_windows.spread_across_windows.max(), 2), 0.26,
+     f"CRCLX and NVDAX at about {both_windows.spread_across_windows.nlargest(2).min():.2f}"),
     ("cross-window led everywhere",
-     int(both_windows.led_every_window.sum()), 5,
+     int(both_windows.led_every_window.sum()), 7,
      f"| {both_windows.index[0]} | "
      f"{both_windows.iloc[0]['2026-07-29b']:.2f} | "
      f"{both_windows.iloc[0]['2026-07-30']:.2f} | "
      f"{both_windows.iloc[0].spread_across_windows:.2f} |"),
+    ("missing tokens named", len(day2_universe) - len(day2_coverage), 2,
+     "ABTX and CMCSAX, could not be paired at all"),
     # Out-of-sample.
     ("replication count", int(rep.leads_both.sum()), 7,
      f"{int(rep.leads_both.sum())} of {len(rep)} in the second"),
