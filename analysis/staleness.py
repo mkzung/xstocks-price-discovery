@@ -103,8 +103,53 @@ def run(*, draws: int = 40) -> pd.DataFrame:
     return frame
 
 
+def run_matched(*, draws: int = 40) -> pd.DataFrame:
+    """The same test at the sample sizes the real pairs actually have.
+
+    The main sweep simulates a 4,000-minute base series, so a 12 percent fill
+    still keeps near 500 fitted rows, while a real pair at that fill holds a
+    quarter of that. Error rates at one fill but different lengths are not the
+    same number, so the sweep is repeated with the base series shortened to
+    match the real windows: about 1,000 minutes gives row counts near the
+    ranked pairs', and 250 stresses the floor.
+    """
+    rows = []
+    for n in (4000, 1000, 250):
+        for keep in (0.5, 0.25, 0.12):
+            for seed in range(draws):
+                pool, cex = simulate_leader_follower(
+                    n=n, adjust_a=0.0, adjust_b=0.4, seed=seed)
+                sparse = drop_sample(pool, keep, seed=seed + 7000)
+                paired = pd.concat([cex.rename("cex"),
+                                    sparse.rename("pool")], axis=1).dropna()
+                try:
+                    fit = information_share(paired.cex, paired.pool)
+                except ValueError:
+                    rows.append({"n": n, "keep": keep, "seed": seed,
+                                 "w_cex": float("nan"), "rows": len(paired),
+                                 "fitted": False})
+                    continue
+                rows.append({"n": n, "keep": keep, "seed": seed,
+                             "w_cex": fit.weight_a, "rows": fit.n_obs,
+                             "fitted": True})
+    frame = pd.DataFrame(rows)
+    frame.to_csv(DATA / "staleness_matched.csv", index=False)
+    return frame
+
+
 if __name__ == "__main__":
     f = run()
+    m = run_matched()
+    print("Matched-length check: same fills, shorter base series.")
+    ok = m[m.fitted]
+    for n in (4000, 1000, 250):
+        for keep in (0.5, 0.25, 0.12):
+            sub = ok[(ok.n == n) & (ok.keep == keep)]
+            if len(sub):
+                err = float((sub.w_cex > 0.5).mean())
+                print(f"  n={n:>5} keep={keep:.2f}: rows~{int(sub.rows.median()):>4} "
+                      f"false-lead {err:.0%} ({len(sub)} fits)")
+    print()
     print("The pool is the true leader in every run below, so a correct")
     print("estimator reports an exchange weight near 0. Rising numbers mean")
     print("sparse sampling is inventing exchange leadership.\n")

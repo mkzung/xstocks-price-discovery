@@ -21,10 +21,11 @@ pool. Arbitrage ties the two quotes together. That allows a market-health
 question a single-venue study cannot ask: when the two disagree, which one
 moves, and which one follows.
 
-Volume can be manufactured on either side. A permanent price move cannot. It
-has to come from someone who knows something, and the venue where it appears
-first is the venue doing the pricing. Measuring that separates a market from a
-tape.
+Volume can be manufactured on either side. A permanent price move is harder:
+whatever drives it, information, inventory or force, it has to be paid for and
+it has to appear somewhere first, and the venue where it keeps appearing first
+is the venue doing the pricing. Which shock moved the price is beyond a
+two-venue model; who moved first is not.
 
 This wiki has read Gate before. The [2021 Gate.io
 article](https://github.com/1712n/dn-institute/tree/main/content/research/market-health/posts/2021-01-19-Gate-io)
@@ -48,7 +49,7 @@ The more useful finding sits underneath it. Rank the twenty-four tokens by how
 much their pool trades, and by how many exchange dollars are printed per
 on-chain dollar, and the two orders come out close to reversed: the quieter the
 chain, the more the exchange prints against it. At the bottom of that ordering
-sit six tokens with no on-chain market to check the exchange against at all.
+sit six tokens whose pools are too close to dead to check the exchange against.
 
 {{< figure src="relation.png" alt="Scatter of minutes the pool traded against exchange dollars per on-chain dollar, on log axes, sloping down across four and a half orders of magnitude" caption="Each point is one token quoted on both venues. Rank correlation -0.93 across all twenty-four." >}}
 
@@ -60,9 +61,11 @@ matching alone is not safe here: a re-screen after the third collection day,
 committed as `data/collisions.csv`, found 13 Solana pools answering to 10 of
 these tickers on mints that are not the issuer's. Their claimed liquidity was
 negligible that day, and the population is not stable: impostor pools appear
-and vanish between screens. Each pool was therefore checked against the mint
-prefix Backed uses for its issued tokens, and only exact-symbol pools on that
-issuer's mint were kept.
+and vanish between screens. Each pool was therefore checked against the vanity
+prefix Backed uses for its issued mints, and only exact-symbol pools on such
+mints were kept. A prefix is a screen, not authentication, so the full mint
+address of every kept token is committed in `data/universe.csv` for
+verification against the issuer's own listings.
 
 That leaves **24 tokens quoted on both venues**. Per dollar of on-chain volume
 in the same mint, Gate's 24-hour volume ranges from 16 cents to **7,311
@@ -96,8 +99,10 @@ carries more of the permanent price move. Whether the two series really are
 cointegrated is a testable claim, not a definition, and it is tested below
 instead of assumed.
 
-Nine pairs had enough overlapping minutes with both sides moving in the first
-day's session panel, and in that pass the exchange leads every one:
+Nine pairs cleared the session panel's gate of eighty paired minutes with
+twenty moves on each side, and in that pass the exchange leads every one. Two
+sit under the stricter 120-minute floor the series passes use, GOOGLX at 119
+and AMZNX at 82, and the text below leans on them accordingly:
 
 {{< figure src="weights.png" alt="Left panel, exchange weight in the common factor for nine tokens, all at or above 0.63. Right panel, the share of the gap each side closes per minute, with the pool bars far longer than the exchange bars" caption="The exchange weight, and underneath it the reason: the pool closes the gap, the book does not." loading="lazy" >}}
 
@@ -189,10 +194,15 @@ dollars printed per on-chain dollar is **-0.93**, with a two-sided permutation
 p below 0.0001 on twenty thousand draws, and it holds at -0.92 after the six
 most extreme ratios are dropped. On-chain liquidity ranks with traded minutes
 at 0.92, so the plain reading is that thin pools trade rarely. That is the same
-statement, not a competing one.
+statement, not a competing one. The ratio's denominator shares data with the
+activity measure, so the correlation could be suspected of being mechanical;
+the numerator alone says otherwise. Exchange dollars in absolute terms rank
+positively with pool activity, at 0.64, meaning busy pools sit on busy
+listings. The finding is that the exchange's volume against the quiet pools is
+large relative to anything the chain can absorb, not that it is large outright.
 
-The six at the bottom of the ordering are the ones whose exchange tape has
-nothing to check it against:
+The six at the bottom of the ordering are the ones whose pools, a few prints
+and a few hundred dollars deep, cannot meaningfully check the exchange tape:
 
 | token | minutes the pool traded | exchange 24h volume | on-chain 24h volume | on-chain liquidity |
 |-------|------------------------:|--------------------:|--------------------:|-------------------:|
@@ -264,10 +274,12 @@ of the same data.
 ### Hasbrouck against Gonzalo-Granger
 
 Gonzalo-Granger reads leadership off the correction speeds and ignores how
-correlated the two venues' innovations are. Hasbrouck (1995) splits the
-variance of the efficient price innovation instead, and the two are different
-quantities, not two names for one: with uncorrelated innovations and equal
-variances the second reduces to the square of the first over the sum of
+correlated the two venues' innovations are ([Gonzalo and Granger
+1995](https://doi.org/10.1080/07350015.1995.10524576)). Hasbrouck splits the
+variance of the efficient price innovation instead ([Hasbrouck
+1995](https://doi.org/10.1111/j.1540-6261.1995.tb04054.x)), and the two are
+different quantities, not two names for one: with uncorrelated innovations and
+equal variances the second reduces to the square of the first over the sum of
 squares, so a weight of 0.80 corresponds to a share near 0.94. Only the
 direction can be compared, and it agrees in **7 of 7** pairs. Hasbrouck's
 bounds are informative here because the innovation correlation is a median 0.39
@@ -303,15 +315,21 @@ minute. Its last price stands still while the exchange keeps moving, so when it
 finally prints it jumps most of the way to the current level, which through an
 error-correction model is indistinguishable from the pool chasing the exchange.
 
-The simulator settles it, because there the answer is known. Build a world
-where the **pool** is the true leader, sample the pool sparsely, and see what
-the estimator says. Carrying the last price forward destroys it. At complete
-fill the estimator is right, and it fails the moment a minute goes missing: at
-every partial fill rate tested it calls the exchange the leader in **95 to 100
-percent** of runs, and at the fill rates the real pools actually show it is 100
-percent every time. Dropping the untraded minutes instead, as this pipeline
-does, breaks nothing: across the ranked pairs' measured fill rates the same
-test errs **2 to 19 percent** of the time.
+The simulator gives the objection a number, because there the answer is known.
+Build a world where the **pool** is the true leader, sample the pool sparsely,
+and see what the estimator says. Carrying the last price forward destroys it.
+At complete fill the estimator is right, and it fails the moment a minute goes
+missing: at every partial fill rate tested it calls the exchange the leader in
+**95 to 100 percent** of runs, and at the fill rates the real pools actually
+show it is 100 percent every time. Dropping the untraded minutes instead, as
+this pipeline does, holds the error to **2 to 19 percent** on a long base
+series. Sample length matters too, and `data/staleness_matched.csv` prices it:
+shortening the base series to the sixteen-hour windows the real pairs occupy
+lifts the error to about 12 percent at half fill and 42 percent at an eighth.
+The deep pairs carry low risk; the thin ranked pairs carry real risk on any
+single day, which is what the daily repetition and the strict tally below are
+for. The artefact also runs one way, fabricating exchange leads, so AMZNX's
+pool lead stands against it, not because of it.
 
 {{< figure src="staleness.png" alt="Two curves against pool fill rate. The forward-filling curve sits flat at one hundred percent. The drop curve falls from thirty-eight percent at the sparsest fills to two percent at half, with the seven ranked tokens marked along it" caption="The sampling choice is doing load-bearing work. The ranked pairs sit on the lower curve, between 2 and 19 percent." loading="lazy" >}}
 
@@ -386,13 +404,19 @@ twenty-three pair-days prices on the chain, and it is the pair the very first
 measurement pointed at. A method that can only find exchange leads would be
 describing itself; this one found the exception.
 
-The near-even readings tell the same story at lower volume. GLDX repeats at
-0.64 and 0.67 across its two days, stably short of a clear lead. METAX printed
-0.57 on the second day, the one pair where the estimators disagreed, and on the
-third day its pool went completely silent: not a single print in the sixteen
-hours the exchange window reaches, after 142 paired minutes the day before. A
-pool that is a venue one day and absent the next is the volatility of the thin
-end of this market, measured.
+The 21-of-23 tally uses one mechanical rule, a weight above an even split,
+because a tally needs a rule that cannot be argued with after the fact. The
+calibration says weights near even are weak readings, so here is the same count
+under a stricter predeclared rule that only classifies weights outside 0.3 to
+0.7: **17 pair-days are clear exchange leads, 1 is a clear pool lead, and 5 are
+unclassified**. The conclusion does not move; the near-even rows stop being
+counted as victories. GLDX repeats at 0.64 and 0.67 across its two days, stably
+short of a clear lead under either rule. METAX printed 0.57 on the second day,
+the one pair where the estimators disagreed, and on the third day its pool went
+completely silent: not a single print in the sixteen hours the exchange window
+reaches, after 142 paired minutes the day before. A pool that is a venue one
+day and absent the next is the volatility of the thin end of this market,
+measured.
 
 Three collection notes, none of them footnotes. The second and third days both
 lost their network mid-run and were topped up within hours, so each holds two
@@ -554,7 +578,9 @@ open-against-shut split separates the two regimes and the answer holds in both,
 but no third leg reads the primary listing, so this measures which of the two
 crypto venues moves first, not where the price is born.
 
-Leadership claims are made only for pairs with at least 120 paired minutes, and
-near-even weights are read as shared discovery, never as a lead. The volume
-finding makes no claim that any print is fake, only that for a quarter of these
-listings nothing outside the exchange could tell you either way.
+The daily series passes rank only pairs with at least 120 paired minutes; the
+first day's session panel used a looser gate of eighty minutes and twenty moves
+per side, and its two thinnest rows are named where they appear. Near-even
+weights are read as shared discovery, never as a lead. The volume finding makes
+no claim that any print is fake, only that for a quarter of these listings
+nothing outside the exchange could tell you either way.

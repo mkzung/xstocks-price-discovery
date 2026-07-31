@@ -142,6 +142,18 @@ hold_false = (sim[sim.scheme == "hold"].groupby("keep")
 
 collisions = pd.read_csv(base / "data" / "collisions.csv")
 
+# The strict predeclared tally: only weights outside 0.3 to 0.7 classify.
+strict_ex = strict_pool = strict_near = 0
+for _day in (ranked_pairs, day2_ranked, day3_ranked.reset_index()):
+    strict_ex += int((_day.w_cex > 0.7).sum())
+    strict_pool += int((_day.w_cex < 0.3).sum())
+    strict_near += int(((_day.w_cex >= 0.3) & (_day.w_cex <= 0.7)).sum())
+
+matched = pd.read_csv(base / "data" / "staleness_matched.csv")
+matched = matched[matched.fitted]
+matched_1000_50 = matched[(matched.n == 1000) & (matched.keep == 0.5)]
+matched_1000_12 = matched[(matched.n == 1000) & (matched.keep == 0.12)]
+
 cal = pd.read_csv(base / "data" / "calibration.csv")
 lead = cal[~cal.even]
 near = lead[(lead.truth - 0.5).abs() < 0.2]
@@ -183,7 +195,7 @@ checks = [
     ("closed-session weight span", round(closed.w_cex.min(), 2), 0.96,
      f"at weights of {closed.w_cex.min():.2f} to {closed.w_cex.max():.2f}"),
     ("six dead tokens", int((d.paired_min < 10).sum()), 6,
-     f"sit {'six' if (d.paired_min < 10).sum() == 6 else 'ERR'} tokens with no on-chain market"),
+     f"sit {'six' if (d.paired_min < 10).sum() == 6 else 'ERR'} tokens whose pools are too close"),
     ("bybit weight", round(bybit.weight_a, 2), 0.75, f"at a weight of {bybit.weight_a:.2f}"),
     ("bybit minutes", int(bybit.minutes), 498, f"over {int(bybit.minutes)} paired minutes"),
     ("bybit speeds", round(bybit.speed_a, 2), -0.09,
@@ -299,8 +311,8 @@ checks = [
     ("hold scheme is right at complete fill", round(hold_false.loc[1.0], 2), 0.0,
      "At complete fill the estimator is right"),
     ("drop scheme bound", round(ranked_risk.false_lead_drop.max(), 2), 0.19,
-     f"errs **{ranked_risk.false_lead_drop.min() * 100:.0f} to "
-     f"{ranked_risk.false_lead_drop.max() * 100:.0f} percent** of the time"),
+     f"holds the error to **{ranked_risk.false_lead_drop.min() * 100:.0f} to "
+     f"{ranked_risk.false_lead_drop.max() * 100:.0f} percent** on a long base"),
     ("thinnest tokens bound", round(stale_risk.false_lead_drop.max(), 2), 0.38,
      f"errs up to {stale_risk.false_lead_drop.max() * 100:.0f} percent of the time"),
     ("TSLAX risk",
@@ -340,9 +352,24 @@ checks = [
     # says the screen enforced it, so the data has to show it.
     ("mint prefix on every token",
      int(u.mint.str.startswith("Xs").sum()), 24,
-     "the mint prefix Backed uses for its issued tokens"),
+     "the vanity prefix Backed uses for its issued mints"),
     ("ranking floor in scope", MIN_PAIRED, 120,
      f"pairs with at least {MIN_PAIRED} paired minutes"),
+    ("numerator-only control", round(spearman(g.paired_min, g.cex_volume_24h), 2),
+     0.64, f"rank positively with pool activity, at "
+     f"{spearman(g.paired_min, g.cex_volume_24h):.2f}"),
+    ("panel gate names its thin rows",
+     int((allr.minutes < MIN_PAIRED).sum()), 2,
+     f"GOOGLX at {int(byrow.loc['GOOGLX'].minutes)} and AMZNX at "
+     f"{int(byrow.loc['AMZNX'].minutes)}"),
+    ("strict tally", strict_ex * 100 + strict_pool * 10 + strict_near, 1715,
+     f"**{strict_ex} pair-days are clear exchange leads, {strict_pool} is a "
+     f"clear pool lead, and {strict_near} are unclassified**"),
+    ("matched-length staleness",
+     round(float((matched_1000_12.w_cex > 0.5).mean()), 2), 0.42,
+     f"error to about {float((matched_1000_50.w_cex > 0.5).mean()) * 100:.0f} "
+     f"percent at half fill and "
+     f"{float((matched_1000_12.w_cex > 0.5).mean()) * 100:.0f} percent at an eighth"),
     # The daily replication, three days in.
     ("registry row, second day", len(day2_coverage), 25,
      f"| next day | 30 July, two sessions | {len(day2_coverage)} |"),
