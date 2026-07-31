@@ -261,6 +261,27 @@ def figure_replication(rep: pd.DataFrame) -> None:
     plt.close(fig)
 
 
+# The processed datasets behind every figure and table in the post, mirrored
+# into the post's own directory. The wiki maintainer asks for datasets beside
+# the article rather than only in the repository around it, and a copy that is
+# synced here and byte-checked by verify.py cannot drift from the originals.
+POST_DATA = ("universe.csv", "token_groups.csv", "panel_run1.csv",
+             "panel_sessions.csv", "venue_matrix.csv", "calibration.csv",
+             "staleness.csv", "robustness_2026-07-29b.csv",
+             "robustness_2026-07-30.csv", "robustness_2026-07-31.csv",
+             "sensitivity_staleness_2026-07-29b.csv",
+             "sensitivity_replication_2026-07-29b.csv",
+             "windows_relation.csv", "windows_leadership.csv")
+
+
+def sync_post_data() -> None:
+    """Mirror the post's datasets into post/data/."""
+    target = FIGS / "data"
+    target.mkdir(parents=True, exist_ok=True)
+    for name in POST_DATA:
+        (target / name).write_bytes((DATA / name).read_bytes())
+
+
 def build_all(label: str = "2026-07-29b") -> list[Path]:
     FIGS.mkdir(parents=True, exist_ok=True)
     groups = pd.read_csv(DATA / "token_groups.csv")
@@ -276,6 +297,7 @@ def build_all(label: str = "2026-07-29b") -> list[Path]:
     robust = robust[robust.verdict == "ranked"]
     figure_weights_series(robust)
     figure_staleness(risk, robust.symbol.tolist())
+    sync_post_data()
     figure_replication(pd.read_csv(DATA / f"sensitivity_replication_{label}.csv"))
     return sorted(FIGS.glob("*.png"))
 

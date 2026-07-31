@@ -1,0 +1,7 @@
+token,venue_a,venue_b,minutes,moves_a,moves_b,weight_a,speed_a,speed_b
+TSLAX,bybit,pool,498,343,498,0.752,-0.093,0.282
+AMZNX,mexc,pool,55,55,55,,,
+METAX,mexc,pool,17,17,17,,,
+CRCLX,pool_deep,pool_second,999,999,999,0.433,-0.583,0.445
+NVDAX,pool_deep,pool_second,648,648,648,0.063,-0.878,0.059
+TSLAX,pool_deep,pool_second,548,548,548,0.414,-0.603,0.427

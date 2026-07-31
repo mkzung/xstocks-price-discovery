@@ -40,6 +40,7 @@ page. Everything in both is reproducible from this repository, and
 | `analysis/build_analysis.py` | redraws every figure from `data/` |
 | `tests/` | holds every estimator to an answer it was not told |
 | `data/` | the exact outputs behind every figure in the post |
+| `post/data/` | the same datasets mirrored beside the article, per the wiki's in-directory convention; verify.py fails if the copy drifts |
 | `raw/` | the paired minute series, so fill rates and spreads can be rechecked |
 | `dashboard/build_dashboard.py` | rebuilds `index.html`, the single-page view of the findings |
 

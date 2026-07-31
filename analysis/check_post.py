@@ -57,11 +57,21 @@ check("no stale commit pin left in the post",
 # Line wrapping has to be settled, or the phrase searches in verify.py become
 # hostage to whichever edit ran last.
 check("line wrapping is normalised", normalise(post) == post)
+# The wiki's figure convention: the first figure loads eagerly, the rest lazily.
+_figs = re.findall(r"\{\{< figure[^>]*>\}\}", post)
+check("first figure eager, the rest lazy",
+      len(_figs) > 1 and "lazy" not in _figs[0]
+      and all("lazy" in g for g in _figs[1:]))
+# The accepted article template opens with Summary and closes with Scope.
+check("opens with a Summary section", post.find("## Summary") < post.find("## The universe"))
+check("closes with a Scope section", post.rstrip().split("## ")[-1].startswith("Scope"))
 check("no chestnut emoji", "\U0001f330" not in post)
 check("no shipit", "shipit" not in post.lower())
 check("pure ASCII", all(ord(c) < 128 for c in post))
 check("no em/en dash", "—" not in post and "–" not in post)
 
+# "tokenized" stays as spelled: it is the asset class's own name, written that
+# way by the issuer and across the wiki's sources.
 british = {"normalize": "normalise", "summarize": "summarise",
            "analyze": "analyse", "behavior": "behaviour",
            "labeled": "labelled", "modeling": "modelling"}

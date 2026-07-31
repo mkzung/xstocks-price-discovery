@@ -1,0 +1,17 @@
+symbol,paired_minutes,fill_rate,consecutive_share,median_gap_min,max_gap_min,adf_statistic,spread_stationary,spread_half_life_min,w_cex,speed_cex,speed_dex,hasbrouck_low,hasbrouck_high,innovation_correlation,lead_share,speed_cex_low,speed_cex_high,speed_dex_low,speed_dex_high,speeds_separated,agree,verdict
+TSLAX,503,0.5035,0.6315,1,17,-6.0,True,1.6,0.894,-0.04,0.339,0.739,0.96,0.329,1.0,-0.087,0.003,0.244,0.436,True,True,ranked
+NVDAX,493,0.4945,0.628,1,11,-4.66,True,2.8,0.96,-0.01,0.25,0.799,0.996,0.391,1.0,-0.06,0.032,0.168,0.34,True,True,ranked
+QQQX,457,0.4584,0.6425,1,24,-4.27,True,3.9,1.063,0.014,0.238,0.981,0.999,0.172,1.0,-0.016,0.043,0.188,0.304,True,True,ranked
+CRCLX,378,0.3788,0.6525,1,32,-4.86,True,1.2,0.9,-0.049,0.438,0.603,0.983,0.524,0.993,-0.193,0.086,0.284,0.589,True,True,ranked
+MSTRX,244,0.246,0.4897,2,37,-5.6,True,0.6,0.896,-0.086,0.737,0.564,0.986,0.565,1.0,-0.316,0.151,0.521,0.99,True,True,ranked
+GOOGLX,134,0.134,0.3083,3,73,-2.99,True,1.7,1.198,0.077,0.464,0.875,0.935,0.581,1.0,-0.093,0.188,0.309,0.689,True,True,ranked
+SPYX,124,0.1242,0.4878,2,141,-2.22,True,3.1,1.035,0.007,0.221,0.942,0.992,-0.155,0.998,-0.047,0.057,0.124,0.412,True,True,ranked
+COINX,90,0.0902,0.4382,2,173,,,,,,,,,,,,,,,,,too few paired minutes
+SPCXX,63,0.0644,0.3226,4,203,,,,,,,,,,,,,,,,,too few paired minutes
+AAPLX,56,0.0569,0.0727,10,96,,,,,,,,,,,,,,,,,too few paired minutes
+HOODX,43,0.0434,0.2619,4,215,,,,,,,,,,,,,,,,,too few paired minutes
+TQQQX,29,0.0293,0.25,6,237,,,,,,,,,,,,,,,,,too few paired minutes
+AVGOX,19,0.0193,0.0556,13,255,,,,,,,,,,,,,,,,,too few paired minutes
+KOX,12,0.0141,0.2727,21,203,,,,,,,,,,,,,,,,,too few paired minutes
+ACNX,9,0.0094,0.5,3,77,,,,,,,,,,,,,,,,,too few paired minutes
+NFLXX,6,0.0063,0.0,165,308,,,,,,,,,,,,,,,,,too few paired minutes

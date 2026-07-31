@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pandas as pd
 
 from analysis.bootstrap import sign_test
+from analysis.robustness import MIN_PAIRED
 from analysis.relation import spearman, test_relation
 
 
@@ -316,6 +317,8 @@ checks = [
      f"The exchange leads in {led_days} of {pair_days} rankable pair-days"),
     ("pair-days in the limits section", led_days * 100 + pair_days, 2123,
      f"It rests on {led_days} of {pair_days} pair-days pointing the same way"),
+    ("ranking floor in scope", MIN_PAIRED, 120,
+     f"pairs with at least {MIN_PAIRED} paired minutes"),
     # The daily replication, three days in.
     ("registry row, second day", len(day2_coverage), 25,
      f"| next day | 30 July, two sessions | {len(day2_coverage)} |"),
@@ -463,8 +466,24 @@ robust_table = [
     for r in ranked_pairs.itertuples()
 ]
 
-bad = 0
-searched = 0
+# The post directory carries its own copy of every dataset behind a figure or
+# table, per the wiki's in-directory rule. A copy can drift; a byte comparison
+# cannot lie about it.
+from analysis.build_analysis import POST_DATA  # noqa: E402
+
+mirror_bad = 0
+for name in POST_DATA:
+    canonical = (base / "data" / name)
+    mirrored = (base / "post" / "data" / name)
+    if not mirrored.exists():
+        print(f"  [POST] post/data/{name} is missing")
+        mirror_bad += 1
+    elif mirrored.read_bytes() != canonical.read_bytes():
+        print(f"  [POST] post/data/{name} has drifted from data/{name}")
+        mirror_bad += 1
+
+bad = mirror_bad
+searched = len(POST_DATA)
 tables = (
     ("universe table",
      ("token", "Gate 24h", "on-chain 24h", "on-chain liquidity",

@@ -2,8 +2,18 @@
 title: "Tokenized stocks are priced on the exchange, and the quieter the chain the more the exchange prints"
 description: "Which venue prices a tokenized equity, measured on 24 xStocks quoted at once on Gate and in Solana pools, daily across three days. The exchange leads in 21 of 23 rankable pair-days, the quieter a pool the more the exchange prints against it, and the exceptions are reported rather than smoothed over."
 date: 2026-07-31
-entities: [Gate, Bybit, Raydium, Orca, TSLAX, NVDAX, CRCLX, ACNX]
+entities:
+  - Gate
+  - Bybit
+  - Raydium
+  - Orca
+  - TSLAX
+  - NVDAX
+  - CRCLX
+  - ACNX
 ---
+
+## Summary
 
 A tokenized equity is the rare asset where one instrument, on one issuer's
 mint, trades at the same moment on a centralised order book and in an on-chain
@@ -495,13 +505,6 @@ The bar CSVs carry epoch timestamps per row, so the series passes date
 themselves. The two earlier panels do not, and their date is the date they were
 committed.
 
-What is not measured here is worth stating. The underlying equities trade on
-NYSE and NASDAQ, and during US hours both venues in every pair are importing a
-price from there rather than discovering it. The open-against-shut split
-separates the two regimes and the answer holds in both, but no third leg reads
-the primary listing, so this measures which of the two crypto venues moves
-first, not where the price is born.
-
 ### Reproducing
 
 Everything is in this repository: the code, the minute series, the tests that
@@ -533,3 +536,21 @@ A fresh window is a new directory rather than an overwrite:
 ```bash
 python analysis/collect_raw.py 2026-08-05 --refresh-universe
 ```
+
+## Scope
+
+One issuer's tokenized equities, one listing exchange plus one control
+exchange, Solana pools only, minute bars, and three consecutive days at the end
+of July 2026. Nothing here is a claim about other issuers, other chains,
+coarser horizons, or other months.
+
+The underlying equities trade on NYSE and NASDAQ, and during US hours both
+venues in every pair are importing a price from there rather than discovering
+it. The open-against-shut split separates the two regimes and the answer holds
+in both, but no third leg reads the primary listing, so this measures which of
+the two crypto venues moves first, not where the price is born.
+
+Leadership claims are made only for pairs with at least 120 paired minutes, and
+near-even weights are read as shared discovery, never as a lead. The volume
+finding makes no claim that any print is fake, only that for a quarter of these
+listings nothing outside the exchange could tell you either way.

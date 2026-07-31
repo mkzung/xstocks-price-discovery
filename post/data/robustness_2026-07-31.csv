@@ -1,0 +1,25 @@
+symbol,paired_minutes,fill_rate,consecutive_share,median_gap_min,max_gap_min,verdict,adf_statistic,spread_stationary,spread_half_life_min,w_cex,speed_cex,speed_dex,hasbrouck_low,hasbrouck_high,innovation_correlation,lead_share,speed_cex_low,speed_cex_high,speed_dex_low,speed_dex_high,speeds_separated,agree
+TSLAX,433,0.4369,0.581,1,23,ranked,-6.68,True,0.9,0.472,-0.206,0.184,0.124,0.465,0.381,0.48,-0.288,-0.119,0.09,0.31,False,True
+NVDAX,398,0.4045,0.5617,1,35,ranked,-5.67,True,2.1,0.761,-0.061,0.194,0.416,0.805,0.401,0.978,-0.107,-0.02,0.119,0.302,True,True
+QQQX,247,0.2576,0.4593,2,49,ranked,-5.65,True,1.3,0.917,-0.034,0.38,0.787,0.928,0.207,1.0,-0.066,-0.001,0.258,0.522,True,True
+CRCLX,235,0.2359,0.5043,1,38,ranked,-4.81,True,1.4,0.606,-0.154,0.236,0.19,0.793,0.603,0.662,-0.294,-0.067,0.095,0.428,True,False
+GLDX,206,0.2066,0.4976,2,58,ranked,-3.06,True,3.6,0.666,-0.057,0.113,0.767,0.832,-0.081,0.845,-0.159,0.011,0.052,0.184,True,True
+AMZNX,180,0.1805,0.5028,1,75,ranked,-5.04,True,0.4,-0.238,-0.442,-0.085,0.006,0.157,0.469,0.025,-0.731,-0.279,-0.407,0.254,True,True
+MSTRX,153,0.153,0.3684,2,170,ranked,-2.73,True,2.4,0.725,-0.082,0.215,0.367,0.905,0.57,0.902,-0.218,0.054,0.089,0.463,True,True
+GOOGLX,111,0.1119,0.2273,5,58,too few paired minutes,,,,,,,,,,,,,,,,
+SPYX,110,0.1217,0.4128,2,128,too few paired minutes,,,,,,,,,,,,,,,,
+AAPLX,109,0.1102,0.3148,3,78,too few paired minutes,,,,,,,,,,,,,,,,
+COINX,62,0.0625,0.4262,3,414,too few paired minutes,,,,,,,,,,,,,,,,
+HOODX,47,0.0472,0.1522,8,102,too few paired minutes,,,,,,,,,,,,,,,,
+TQQQX,34,0.0362,0.2121,12,112,too few paired minutes,,,,,,,,,,,,,,,,
+SPCXX,22,0.022,0.0476,11,289,too few paired minutes,,,,,,,,,,,,,,,,
+KOX,20,0.0206,0.2632,6,239,too few paired minutes,,,,,,,,,,,,,,,,
+AVGOX,9,0.0108,0.125,44,223,too few paired minutes,,,,,,,,,,,,,,,,
+NFLXX,6,0.0067,0.0,123,437,too few paired minutes,,,,,,,,,,,,,,,,
+PGX,6,0.0221,0.2,34,69,too few paired minutes,,,,,,,,,,,,,,,,
+HONX,6,0.0061,0.0,5,502,too few paired minutes,,,,,,,,,,,,,,,,
+UNHX,4,0.0042,0.3333,117,154,too few paired minutes,,,,,,,,,,,,,,,,
+LLYX,1,0.0135,0.0,0,0,too few paired minutes,,,,,,,,,,,,,,,,
+VTIX,1,0.0011,0.0,0,0,too few paired minutes,,,,,,,,,,,,,,,,
+ABTX,1,0.0106,0.0,0,0,too few paired minutes,,,,,,,,,,,,,,,,
+PMX,1,0.0052,0.0,0,0,too few paired minutes,,,,,,,,,,,,,,,,

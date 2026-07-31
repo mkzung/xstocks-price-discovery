@@ -1,0 +1,4 @@
+window,snapshot,tokens,rho,p_value,rho_trimmed,trimmed_tokens,rho_liquidity,median_ratio,max_ratio
+2026-07-29b,"committed, same day",16,-0.938,0.0,-0.855,10,0.9,4.37,5310
+2026-07-30,own,25,-0.931,0.0,-0.911,19,0.916,5.62,32798
+2026-07-31,own,24,-0.934,0.0,-0.92,18,0.898,10.67,45056
