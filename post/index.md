@@ -1,7 +1,7 @@
 ---
 title: "Tokenized stocks are priced on the exchange, and the quieter the chain the more the exchange prints"
-description: "Which venue prices a tokenized equity, measured on 24 xStocks quoted at once on Gate and in Solana pools. Gonzalo-Granger and Hasbrouck agree that the exchange leads, the result survives five robustness checks and a second day, and the quieter a pool the more the exchange prints against it."
-date: 2026-07-30
+description: "Which venue prices a tokenized equity, measured on 24 xStocks quoted at once on Gate and in Solana pools, daily across three days. The exchange leads in 21 of 23 rankable pair-days, the quieter a pool the more the exchange prints against it, and the exceptions are reported rather than smoothed over."
+date: 2026-07-31
 entities: [Gate, Bybit, Raydium, Orca, TSLAX, NVDAX, CRCLX, ACNX]
 ---
 
@@ -25,12 +25,14 @@ sizes. Both check a venue against a statistical expectation. This one checks it
 against a second venue quoting the same mint. That is what makes the leadership
 question answerable at all.
 
-The answer for Backed Finance's xStocks, collected on 29 and 30 July 2026, is
-that the exchange leads and the Solana pool follows in every pair that can be
-ranked. It holds when the sample is cut to the hours when the US equity market
-is shut, it holds on a second exchange, and it holds on the second day, so the
-pricing belongs to the venue type rather than to one listing venue or one
-stretch of minutes.
+The answer for Backed Finance's xStocks, collected daily from 29 to 31 July
+2026, is that the exchange leads and the Solana pool follows in 21 of the 23
+pair-days that can be ranked. It holds when the sample is cut to the hours when
+the US equity market is shut and it holds on a second exchange. The two
+exceptions are reported below rather than smoothed over, and both sit where the
+first day already pointed: TSLAX reads near even on the third day, and AMZNX,
+the one pair the first day flagged as the exchange giving up pricing, is a
+clear pool lead the one day it can be measured.
 
 The more useful finding sits underneath it. Rank the twenty-four tokens by how
 much their pool trades, and by how many exchange dollars are printed per
@@ -324,48 +326,67 @@ closer still.
 
 {{< figure src="replication.png" alt="Left, exchange weights for seven tokens measured in the session panel and in the series pass, all well above the even line in both. Right, pool correction speed in one pass against the other, with the points sitting on the diagonal" caption="Same day, two passes, seven tokens, one answer." loading="lazy" >}}
 
-The next day is the harder test, and it reaches everything. The correlation
-between how much a pool trades and how many exchange dollars are printed
-against it comes back at **-0.93** on 25 tokens, against -0.94 the day before,
-with a permutation p below 0.0001. It survives its own tail check now: dropping
-the six most extreme ratios leaves 19 tokens and the correlation holds at
--0.91. Pool liquidity still ranks with pool activity, at 0.92.
+The next days are the harder test, and the collection now repeats daily, each
+day on its own volume snapshot. The headline number replicates without wobble.
+The correlation between how much a pool trades and how many exchange dollars
+are printed against it prints -0.93 on 25 tokens on the second day and
+**-0.93** on 24 on the third, each with a permutation p below 0.0001, and each
+surviving its own tail check: dropping the six most extreme ratios leaves the
+third day at -0.92 on 18 tokens. Pool liquidity ranks with pool activity at
+0.90. Whatever else moves between days, the quieter the chain, the more the
+exchange prints, every day, by the same amount.
 
-The leadership repeats on every token measurable across days:
+The leadership is where three days say more than two. Every token measurable
+across days:
 
-| token | 29 July | 30 July | change |
-|-------|--------:|--------:|-------:|
-| SPYX | 1.03 | 1.05 | 0.01 |
-| MSTRX | 0.90 | 0.91 | 0.01 |
-| TSLAX | 0.89 | 0.92 | 0.02 |
-| QQQX | 1.06 | 1.01 | 0.05 |
-| CRCLX | 0.90 | 0.72 | 0.18 |
-| NVDAX | 0.96 | 0.77 | 0.19 |
-| GOOGLX | 1.20 | 0.94 | 0.26 |
+| token | 29 July | 30 July | 31 July | span |
+|-------|--------:|--------:|--------:|-----:|
+| SPYX | 1.03 | 1.05 | - | 0.01 |
+| GLDX | - | 0.64 | 0.67 | 0.03 |
+| QQQX | 1.06 | 1.01 | 0.92 | 0.15 |
+| MSTRX | 0.90 | 0.91 | 0.72 | 0.18 |
+| NVDAX | 0.96 | 0.77 | 0.76 | 0.20 |
+| GOOGLX | 1.20 | 0.94 | - | 0.26 |
+| CRCLX | 0.90 | 0.72 | 0.61 | 0.29 |
+| TSLAX | 0.89 | 0.92 | 0.47 | 0.44 |
 
-GOOGLX is worth a sentence. Its first-day weight of 1.20 was the impossible
-above-one reading this post flags as bias; measured again on more minutes it
-prints 0.94. The two largest moves, CRCLX and NVDAX at about 0.19, sit inside
-the scatter the calibration declares for a single weight, and nothing
-approaches a crossover.
+Seven of the eight tokens rankable in more than one window lead in every window
+they appear in. The second day alone ranks nine and the exchange leads all
+nine, at a sign-test p of 0.0039. The third day is softer: five of seven, and
+the two that break ranks are the honest content of the table.
 
-The full second day also ranks two tokens the first day could not, and they are
-the honest edge of the result. GLDX prints 0.64 and METAX 0.57, the only
-near-even readings in the study, and they behave just as the calibration says
-near-even readings do: METAX is the one pair where Hasbrouck and
-Gonzalo-Granger disagree, and both tokens flip leader when the cointegrating
-vector is fitted rather than imposed, which none of the seven clear pairs does.
-Those two are shared discovery, not exchange leads, and the sign test is quoted
-on the nine anyway: nine of nine above even carries p = 0.0039.
+TSLAX prints 0.47 on the third day after 0.89 and 0.92, with the exchange for
+once correcting meaningfully, at 0.21 of the gap per minute. A move of that
+size sits at the edge of the scatter the calibration declares for one weight
+from one sample, so the reading is shared discovery on that day rather than a
+measured handover, and the two clear days still carry the token's ranking.
 
-Two collection notes rather than footnotes. The next-day run lost its network
-part way through and was topped up the same evening, so it holds two collection
-sessions; each token's own timestamps are in `raw/2026-07-30/coverage.csv`, and
-the volume snapshot all of its ratios use was taken in the morning. And two of
-the twenty-seven snapshot tokens, ABTX and CMCSAX, could not be paired at all,
-because their pools' last prints sit further back than the exchange window
-reaches. The tokens too dead to measure are the strongest form of the pattern
-the measurement shows.
+AMZNX is not noise. The first day's panel already flagged it as the only pair
+where the exchange corrects meaningfully and the weight sits lowest; the third
+day, the first with enough paired minutes to rank it in a series pass, prints a
+weight of -0.24 with the pool ahead in 98 percent of bootstrap resamples and
+both estimators agreeing. That is a pool lead, stated plainly. One pair out of
+twenty-three pair-days prices on the chain, and it is the pair the very first
+measurement pointed at. A method that can only find exchange leads would be
+describing itself; this one found the exception.
+
+The near-even readings tell the same story at lower volume. GLDX repeats at
+0.64 and 0.67 across its two days, stably short of a clear lead. METAX printed
+0.57 on the second day, the one pair where the estimators disagreed, and on the
+third day its pool went completely silent: not a single print in the sixteen
+hours the exchange window reaches, after 142 paired minutes the day before. A
+pool that is a venue one day and absent the next is the volatility of the thin
+end of this market, measured.
+
+Three collection notes rather than footnotes. The second and third days both
+lost their network mid-run and were topped up within hours, so each holds two
+collection sessions; per-token timestamps are in each run's `coverage.csv`, and
+each day's ratios use that day's own morning snapshot. Tokens whose pools could
+not be paired at all, because their last prints sit further back than the
+exchange window reaches, numbered two on the second day and three on the third,
+METAX among them. And ABTX and PMX, paired for the first time on the third day,
+managed one overlapping minute each. The tokens too dead to measure are the
+strongest form of the pattern the measurement shows.
 
 ## How this was measured
 
@@ -376,9 +397,9 @@ with the mint prefix check.
 
 ### Which collection each number comes from
 
-Four passes over the same venues sit behind this post, and they do not agree to
+Five passes over the same venues sit behind this post, and they do not agree to
 the minute because they were taken at different times. TSLAX shows 477, 480,
-503 and 530 paired minutes across them. That is the window moving, not a
+503, 530 and 433 paired minutes across them. That is the window moving, not a
 disagreement, but a figure only means something once you know which pass it
 came from.
 
@@ -388,6 +409,7 @@ came from.
 | session panel | 29 July, later | 13 | the leadership table and the open-against-shut split |
 | series | 29 July, later still | 16 | the minute series in `raw/`, and every robustness check |
 | next day | 30 July, two sessions | 25 | the repeat, on its own volume snapshot |
+| third day | 31 July, two sessions | 24 | the repeat of the repeat, likewise |
 
 Only the last two keep the underlying minute series, so the checks below run on
 those and the tables above cannot. Where a sentence quotes a sample size it

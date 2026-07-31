@@ -26,6 +26,7 @@ DATA = BASE / "data"
 RAW = BASE / "raw"
 SERIES_PASS = "2026-07-29b"
 NEXT_DAY = "2026-07-30"
+THIRD_DAY = "2026-07-31"
 
 __all__ = ["build"]
 
@@ -80,15 +81,15 @@ TEMPLATE = """<!doctype html>
 
 <h1>Tokenized stocks are priced on the exchange</h1>
 <p class="sub">{n_tokens} xStocks quoted at once on Gate and in Solana pools.
-The exchange sets the price in every pair that can be ranked, and the quieter a
-token's pool, the more the exchange prints against it. Collected 29 and 30 July
-2026.</p>
+The exchange sets the price in 21 of 23 rankable pair-days, the quieter a
+token's pool the more the exchange prints against it, and the exceptions are
+reported. Collected daily, 29 to 31 July 2026.</p>
 
 <div class="cards">
   <div class="card"><b>{rho}</b><span>rank correlation between pool activity
     and exchange dollars per on-chain dollar</span></div>
-  <div class="card"><b>{led}/{ranked}</b><span>rankable pairs where the exchange
-    leads, on both estimators</span></div>
+  <div class="card"><b>{led_days}/{pair_days}</b><span>pair-days across three
+    days where the exchange leads</span></div>
   <div class="card flag"><b>{dead}</b><span>tokens whose pool traded in under
     ten minutes while the exchange printed five and six figures</span></div>
   <div class="card"><b>{ratio_max:,.0f}x</b><span>highest exchange volume per
@@ -117,10 +118,11 @@ Hasbrouck bounds and the bootstrap come from the series pass.</p>
 {weights_table}
 <figure><img src="post/weights-series.png" alt="Exchange weights with Hasbrouck bounds, and the correction speeds behind them"></figure>
 
-<h2>Measured again the next day</h2>
-<p class="lede">Every token rankable on both days leads on both, across
-{day2_tokens} tokens collected on the second day. The two largest moves sit
-inside the scatter the calibration declares for a single weight.</p>
+<h2>Measured daily, three days running</h2>
+<p class="lede">The correlation prints -0.94, -0.93 and -0.93 on the three days.
+Seven of eight tokens rankable in more than one window lead in every window
+they appear in; the two that break ranks, TSLAX near even on the third day and
+AMZNX led by its pool, are reported rather than smoothed over.</p>
 {cross_table}
 
 <h2>The relation across the whole universe</h2>
@@ -184,9 +186,10 @@ def _checks_table(rob: pd.DataFrame, vec: pd.DataFrame, lags: pd.DataFrame,
          "refitted on five-minute bars",
          f"same leader in {int((grid_ok.groupby('symbol').leads.nunique() == 1).sum())} "
          f"of {grid_ok.symbol.nunique()}"),
-        ("Does it survive a different day",
-         "whole collection repeated 30 July",
-         f"led on both days in {int(cross.led_every_window.sum())} of {len(cross)}"),
+        ("Does it survive different days",
+         "collection repeated daily through 31 July",
+         f"led in every window ranked, {int(cross.led_every_window.sum())} of "
+         f"{len(cross)} tokens"),
     ]
     return pd.DataFrame(rows, columns=["question", "how it was answered", "result"])
 
@@ -203,8 +206,6 @@ def build() -> Path:
     risk = risk[risk.symbol.isin(rob.symbol)]
     cross = pd.read_csv(DATA / "windows_leadership.csv", index_col=0)
     cross = cross[cross.windows_ranked >= 2].sort_values("spread_across_windows")
-    day2 = (pd.read_csv(DATA / "windows_relation.csv")
-            .set_index("window").loc[NEXT_DAY])
 
     allr = (panel[panel.regime == "all"].dropna(subset=["w_cex"])
             .sort_values("w_cex", ascending=False))
@@ -220,11 +221,15 @@ def build() -> Path:
         "bootstrap lead": rob.lead_share.map("{:.0%}".format),
         "paired minutes": rob.paired_minutes.astype(int),
     })
+    def col(name: str) -> list[str]:
+        return ["-" if pd.isna(v) else f"{v:.2f}" for v in cross[name]]
+
     cross_rows = pd.DataFrame({
         "token": cross.index,
-        "29 July": cross[SERIES_PASS].map("{:.2f}".format),
-        "30 July": cross[NEXT_DAY].map("{:.2f}".format),
-        "change": cross.spread_across_windows.map("{:.2f}".format),
+        "29 July": col(SERIES_PASS),
+        "30 July": col(NEXT_DAY),
+        "31 July": col(THIRD_DAY),
+        "span": cross.spread_across_windows.map("{:.2f}".format),
     })
     dead_rows = pd.DataFrame({
         "token": dead.symbol,
@@ -234,17 +239,25 @@ def build() -> Path:
         "on-chain liquidity": dead.dex_liquidity.map("${:,.0f}".format),
     })
 
+    # Pair-days across every series pass: each day's ranked pairs, each
+    # counted once, exchange-led where the weight clears an even split.
+    led_days = pair_days = 0
+    for label in (SERIES_PASS, NEXT_DAY, THIRD_DAY):
+        day = pd.read_csv(DATA / f"robustness_{label}.csv")
+        day = day[day.verdict == "ranked"]
+        pair_days += len(day)
+        led_days += int((day.w_cex > 0.5).sum())
+
     html = TEMPLATE.format(
         style=STYLE,
         n_tokens=len(groups),
         rho=f"{spearman(groups.paired_min, groups.ratio):.2f}",
-        led=int((rob.w_cex > 0.5).sum()),
-        ranked=len(rob),
+        led_days=led_days,
+        pair_days=pair_days,
         dead=len(dead),
         ratio_max=groups.ratio.max(),
         risk_low=risk.false_lead_drop.min() * 100,
         risk_high=risk.false_lead_drop.max() * 100,
-        day2_tokens=int(day2.tokens),
         checks_table=_table(_checks_table(rob, vec, lags, grid, risk, cross),
                             {"result": "pass"}),
         weights_table=_table(weights),

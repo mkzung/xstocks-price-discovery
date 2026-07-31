@@ -32,8 +32,12 @@ jobs:
         run: python analysis/robustness.py 2026-07-30
       - name: the second day's cointegrating vector
         run: python analysis/vector.py 2026-07-30
+      - name: the third collection day
+        run: python analysis/robustness.py 2026-07-31
+      - name: the third day's cointegrating vector
+        run: python analysis/vector.py 2026-07-31
       - name: does anything hold across days
-        run: python analysis/windows.py 2026-07-29b 2026-07-30
+        run: python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31
       - name: figures redraw from the committed data
         run: python analysis/build_analysis.py
       - name: the post's line wrapping is settled

@@ -47,15 +47,15 @@
 
 <h1>Tokenized stocks are priced on the exchange</h1>
 <p class="sub">24 xStocks quoted at once on Gate and in Solana pools.
-The exchange sets the price in every pair that can be ranked, and the quieter a
-token's pool, the more the exchange prints against it. Collected 29 and 30 July
-2026.</p>
+The exchange sets the price in 21 of 23 rankable pair-days, the quieter a
+token's pool the more the exchange prints against it, and the exceptions are
+reported. Collected daily, 29 to 31 July 2026.</p>
 
 <div class="cards">
   <div class="card"><b>-0.93</b><span>rank correlation between pool activity
     and exchange dollars per on-chain dollar</span></div>
-  <div class="card"><b>7/7</b><span>rankable pairs where the exchange
-    leads, on both estimators</span></div>
+  <div class="card"><b>21/23</b><span>pair-days across three
+    days where the exchange leads</span></div>
   <div class="card flag"><b>6</b><span>tokens whose pool traded in under
     ten minutes while the exchange printed five and six figures</span></div>
   <div class="card"><b>7,311x</b><span>highest exchange volume per
@@ -66,7 +66,7 @@ token's pool, the more the exchange prints against it. Collected 29 and 30 July
 <p class="lede">Every way the result could have been an artefact, and what the
 check returned. All of it runs from the committed data, and the counts below are
 the rankable pairs in the pass that keeps its minute series.</p>
-<table><thead><tr><th>question</th><th>how it was answered</th><th>result</th></tr></thead><tbody><tr><td>Are the two series cointegrated at all</td><td>augmented Dickey-Fuller on each spread</td><td class="pass">stationary in 7 of 7</td></tr><tr><td>Does imposing a one-for-one error term matter</td><td>cointegrating vector fitted instead</td><td class="pass">same leader in 7 of 7</td></tr><tr><td>Does a second estimator agree</td><td>Hasbrouck information shares</td><td class="pass">same direction in 7 of 7</td></tr><tr><td>Can the token's own data support it</td><td>block bootstrap over the fitted rows</td><td class="pass">exchange ahead in 99% to 100% of resamples</td></tr><tr><td>Could sparse pool trading have invented it</td><td>simulation with the pool as known leader</td><td class="pass">error 2% to 19% at these fill rates</td></tr><tr><td>Does the answer depend on the lag order</td><td>refitted at 1, 3, 5 and 10 lags</td><td class="pass">leader changes in 0 of 7</td></tr><tr><td>Does it depend on the minute grid</td><td>refitted on five-minute bars</td><td class="pass">same leader in 7 of 7</td></tr><tr><td>Does it survive a different day</td><td>whole collection repeated 30 July</td><td class="pass">led on both days in 7 of 7</td></tr></tbody></table>
+<table><thead><tr><th>question</th><th>how it was answered</th><th>result</th></tr></thead><tbody><tr><td>Are the two series cointegrated at all</td><td>augmented Dickey-Fuller on each spread</td><td class="pass">stationary in 7 of 7</td></tr><tr><td>Does imposing a one-for-one error term matter</td><td>cointegrating vector fitted instead</td><td class="pass">same leader in 7 of 7</td></tr><tr><td>Does a second estimator agree</td><td>Hasbrouck information shares</td><td class="pass">same direction in 7 of 7</td></tr><tr><td>Can the token's own data support it</td><td>block bootstrap over the fitted rows</td><td class="pass">exchange ahead in 99% to 100% of resamples</td></tr><tr><td>Could sparse pool trading have invented it</td><td>simulation with the pool as known leader</td><td class="pass">error 2% to 19% at these fill rates</td></tr><tr><td>Does the answer depend on the lag order</td><td>refitted at 1, 3, 5 and 10 lags</td><td class="pass">leader changes in 0 of 7</td></tr><tr><td>Does it depend on the minute grid</td><td>refitted on five-minute bars</td><td class="pass">same leader in 7 of 7</td></tr><tr><td>Does it survive different days</td><td>collection repeated daily through 31 July</td><td class="pass">led in every window ranked, 7 of 8 tokens</td></tr></tbody></table>
 
 <h2>What sparse trading could explain</h2>
 <p class="lede">A pool that does not print every minute can look like a follower
@@ -84,11 +84,12 @@ Hasbrouck bounds and the bootstrap come from the series pass.</p>
 <table><thead><tr><th>token</th><th>exchange weight</th><th>exchange corrects</th><th>pool corrects</th><th>Hasbrouck bounds</th><th>bootstrap lead</th><th>paired minutes</th></tr></thead><tbody><tr><td>TSLAX</td><td>0.89</td><td>-0.04</td><td>0.34</td><td>0.74 to 0.96</td><td>100%</td><td>503</td></tr><tr><td>NVDAX</td><td>0.96</td><td>-0.01</td><td>0.25</td><td>0.80 to 1.00</td><td>100%</td><td>493</td></tr><tr><td>QQQX</td><td>1.06</td><td>+0.01</td><td>0.24</td><td>0.98 to 1.00</td><td>100%</td><td>457</td></tr><tr><td>CRCLX</td><td>0.90</td><td>-0.05</td><td>0.44</td><td>0.60 to 0.98</td><td>99%</td><td>378</td></tr><tr><td>MSTRX</td><td>0.90</td><td>-0.09</td><td>0.74</td><td>0.56 to 0.99</td><td>100%</td><td>244</td></tr><tr><td>GOOGLX</td><td>1.20</td><td>+0.08</td><td>0.46</td><td>0.88 to 0.94</td><td>100%</td><td>134</td></tr><tr><td>SPYX</td><td>1.03</td><td>+0.01</td><td>0.22</td><td>0.94 to 0.99</td><td>100%</td><td>124</td></tr></tbody></table>
 <figure><img src="post/weights-series.png" alt="Exchange weights with Hasbrouck bounds, and the correction speeds behind them"></figure>
 
-<h2>Measured again the next day</h2>
-<p class="lede">Every token rankable on both days leads on both, across
-25 tokens collected on the second day. The two largest moves sit
-inside the scatter the calibration declares for a single weight.</p>
-<table><thead><tr><th>token</th><th>29 July</th><th>30 July</th><th>change</th></tr></thead><tbody><tr><td>SPYX</td><td>1.03</td><td>1.05</td><td>0.01</td></tr><tr><td>MSTRX</td><td>0.90</td><td>0.91</td><td>0.01</td></tr><tr><td>TSLAX</td><td>0.89</td><td>0.92</td><td>0.02</td></tr><tr><td>QQQX</td><td>1.06</td><td>1.01</td><td>0.05</td></tr><tr><td>CRCLX</td><td>0.90</td><td>0.72</td><td>0.18</td></tr><tr><td>NVDAX</td><td>0.96</td><td>0.77</td><td>0.19</td></tr><tr><td>GOOGLX</td><td>1.20</td><td>0.94</td><td>0.26</td></tr></tbody></table>
+<h2>Measured daily, three days running</h2>
+<p class="lede">The correlation prints -0.94, -0.93 and -0.93 on the three days.
+Seven of eight tokens rankable in more than one window lead in every window
+they appear in; the two that break ranks, TSLAX near even on the third day and
+AMZNX led by its pool, are reported rather than smoothed over.</p>
+<table><thead><tr><th>token</th><th>29 July</th><th>30 July</th><th>31 July</th><th>span</th></tr></thead><tbody><tr><td>SPYX</td><td>1.03</td><td>1.05</td><td>-</td><td>0.01</td></tr><tr><td>GLDX</td><td>-</td><td>0.64</td><td>0.67</td><td>0.03</td></tr><tr><td>QQQX</td><td>1.06</td><td>1.01</td><td>0.92</td><td>0.15</td></tr><tr><td>MSTRX</td><td>0.90</td><td>0.91</td><td>0.72</td><td>0.18</td></tr><tr><td>NVDAX</td><td>0.96</td><td>0.77</td><td>0.76</td><td>0.20</td></tr><tr><td>GOOGLX</td><td>1.20</td><td>0.94</td><td>-</td><td>0.26</td></tr><tr><td>CRCLX</td><td>0.90</td><td>0.72</td><td>0.61</td><td>0.29</td></tr><tr><td>TSLAX</td><td>0.89</td><td>0.92</td><td>0.47</td><td>0.44</td></tr></tbody></table>
 
 <h2>The relation across the whole universe</h2>
 <figure><img src="post/relation.png" alt="Pool minutes traded against exchange dollars per on-chain dollar, log axes"></figure>

@@ -55,7 +55,10 @@ python analysis/robustness.py 2026-07-29b     # cointegration, Hasbrouck, bootst
 python analysis/sensitivity.py 2026-07-29b    # lags, grid, artefact risk, second window
 python analysis/vector.py 2026-07-29b         # imposed vector against fitted
 python analysis/robustness.py 2026-07-30      # the second collection day
-python analysis/windows.py 2026-07-29b 2026-07-30   # what survives a change of date
+python analysis/vector.py 2026-07-30          # its cointegrating vector
+python analysis/robustness.py 2026-07-31      # the third collection day
+python analysis/vector.py 2026-07-31          # its cointegrating vector
+python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31  # what survives the calendar
 python analysis/build_analysis.py             # redraw the figures
 python analysis/format_post.py --check        # wrapping is settled
 python analysis/check_post.py                 # formatting, spelling, links
@@ -104,8 +107,10 @@ average, so weights slightly above one are the bias rather than a real reading,
 and a single run lands anywhere from 0.33 below the truth to 0.28 above it
 across the whole grid. What holds up is the ordering: the estimator picks the
 right leader in 98 percent of runs where the true weight is plainly one-sided,
-92 percent where it is near even. The post therefore leans on every pair
-agreeing and on the correction speeds, not on any one weight.
+92 percent where it is near even. The post therefore leans on the pattern
+across pairs and days and on the correction speeds, not on any one weight, and
+it reports the pair-days where the exchange does not lead instead of smoothing
+them over.
 
 Two things are easy to get wrong when reusing this code.
 
