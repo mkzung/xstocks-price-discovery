@@ -229,10 +229,14 @@ checks = [
     ("gap max", round(allr.mean_gap_pct.max(), 2), 0.14,
      f"at most {allr.mean_gap_pct.max():.2f}\n  percent"),
     # The two wrong-sign coefficients the post dismisses as noise, named.
-    ("noise coefficients", round(noise.max(), 3), 0.008,
-     f"{noise.min():.3f} and {noise.max():.3f}"),
-    ("real wrong-sign", round(real_wrong.max(), 2), 0.08,
+    ("wrong-sign span", round(real_wrong.max(), 2), 0.08,
+     f"All four are small, from {noise.min():.3f} to {real_wrong.max():.2f}"),
+    ("wrong-sign largest two", round(real_wrong.min(), 2), 0.04,
      f"GLDX at {real_wrong.min():.2f} and GOOGLX at {real_wrong.max():.2f}"),
+    ("GOOGLX band includes zero",
+     int(ranked_pairs.set_index("symbol").loc["GOOGLX"].speed_cex_low <= 0
+         <= ranked_pairs.set_index("symbol").loc["GOOGLX"].speed_cex_high), 1,
+     "the band includes zero"),
     # Calibration, recomputed from the committed grid.
     ("calibration runs", len(cal), 96, "ninety-six runs over eight speed pairs"),
     ("calibration bias", round(lead.error.mean(), 2), 0.03,

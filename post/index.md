@@ -124,11 +124,13 @@ percent of it. The pool is chasing a price set somewhere else, and the
 somewhere else is the order book.
 
 Four of the exchange coefficients come out positive. That is the wrong sign,
-the book drifting away from the pool rather than toward it. Two are noise, at
-0.002 and 0.008. The other two, GLDX at 0.04 and GOOGLX at 0.08, are small but
-real, and they are the pairs whose weights print above one. A weight above one
-is the decomposition saying the pool contributed negatively, which it cannot
-really do, so those two readings are worth no more than a rank.
+the book drifting away from the pool rather than toward it. All four are small,
+from 0.002 to 0.08, and where the series pass can put a bootstrap band around
+one, the band includes zero, so none of them can be told from noise. The two
+largest, GLDX at 0.04 and GOOGLX at 0.08, are the pairs whose weights print
+above one, and a weight above one is the decomposition saying the pool
+contributed negatively, which it cannot really do. Those readings are worth no
+more than a rank.
 
 AMZNX is the exception and it points the right way: the only pair where the
 exchange itself corrects meaningfully, at 0.35, and also the pair with the
@@ -323,13 +325,17 @@ missing: at every partial fill rate tested it calls the exchange the leader in
 **95 to 100 percent** of runs, and at the fill rates the real pools actually
 show it is 100 percent every time. Dropping the untraded minutes instead, as
 this pipeline does, holds the error to **2 to 19 percent** on a long base
-series. Sample length matters too, and `data/staleness_matched.csv` prices it:
-shortening the base series to the sixteen-hour windows the real pairs occupy
-lifts the error to about 12 percent at half fill and 42 percent at an eighth.
-The deep pairs carry low risk; the thin ranked pairs carry real risk on any
-single day, which is what the daily repetition and the strict tally below are
-for. The artefact also runs one way, fabricating exchange leads, so AMZNX's
-pool lead stands against it, not because of it.
+series. The simulation drops minutes independently at random, while a real
+pool's silences follow price, liquidity and fees, and the fit treats surviving
+rows as consecutive whatever gap they span, so this bounds the artefact under a
+stated model rather than settling it. Sample length matters too, and
+`data/staleness_matched.csv` prices it: shortening the base series to the
+sixteen-hour windows the real pairs occupy lifts the error to about 12 percent
+at half fill and 42 percent at an eighth. The deep pairs carry low risk; the
+thin ranked pairs carry real risk on any single day, which is what the daily
+repetition and the strict tally below are for. The artefact also runs one way,
+fabricating exchange leads, so AMZNX's pool lead stands against it, not because
+of it.
 
 {{< figure src="staleness.png" alt="Two curves against pool fill rate. The forward-filling curve sits flat at one hundred percent. The drop curve falls from thirty-eight percent at the sparsest fills to two percent at half, with the seven ranked tokens marked along it" caption="The sampling choice is doing load-bearing work. The ranked pairs sit on the lower curve, between 2 and 19 percent." loading="lazy" >}}
 
@@ -469,11 +475,7 @@ this study as follows.
   because the estimator needs both series on one clock and the close is the
   value both public endpoints expose. This is a real substitution and the
   committed data cannot bound it: the bars carry no intra-minute detail, so how
-  far a close sits from that minute's VWAP is unmeasured here. The gaps the
-  estimator works on are small, a median of 0.10 percent and at most 0.14
-  percent across the nine ranked pairs, so a large enough intra-minute move
-  would matter. It would have to move both venues in opposite directions to
-  change the ranking, since a common move cancels in the difference.
+  far a close sits from that minute's VWAP is unmeasured here. The gaps the estimator works on are small, a median of 0.10 percent and at most 0.14 percent across the nine ranked pairs, so a large enough intra-minute divergence would matter. A close-versus-VWAP error common to both venues cancels in the spread; an error on one side alone does not, and thin minutes make one-sided errors likelier. That is a real, unmeasured term in every minute-bar study of this kind.
 - `tradecount` is the total number of trades in a timeframe. It appears here
   in a coarser form, the number of minutes in which a venue printed at all,
   because the public minute endpoints expose bars, not a trade feed.
