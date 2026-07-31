@@ -22,6 +22,10 @@ DATA = Path(__file__).resolve().parent.parent / "data"
 CTX = ssl.create_default_context(cafile=certifi.where())
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
 MINT_PREFIX = "Xs"  # Backed Finance vanity prefix for xStocks mints
+# Pairs printing less than this on the exchange in 24 hours are skipped when
+# the universe is built: a tape that thin cannot be ranked against anything.
+# The post discloses the floor, and verify.py ties its sentence to this value.
+MIN_CEX_VOLUME = 20_000.0
 
 __all__ = ["build_universe", "cex_bars", "dex_bars", "load_universe"]
 
@@ -39,7 +43,7 @@ def _get(url: str, timeout: int = 30, retries: int = 4) -> dict | list:
     raise RuntimeError("unreachable")
 
 
-def build_universe(min_cex_volume: float = 20_000.0) -> pd.DataFrame:
+def build_universe(min_cex_volume: float = MIN_CEX_VOLUME) -> pd.DataFrame:
     """Tokens quoted both on Gate and in a Solana pool, with the mint verified.
 
     Arguments:

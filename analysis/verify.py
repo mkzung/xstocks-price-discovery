@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pandas as pd
 
 from analysis.bootstrap import sign_test
+from analysis.collect import MIN_CEX_VOLUME
 from analysis.robustness import MIN_PAIRED
 from analysis.relation import spearman, test_relation
 
@@ -319,6 +320,12 @@ checks = [
      f"The exchange leads in {led_days} of {pair_days} rankable pair-days"),
     ("pair-days in the limits section", led_days * 100 + pair_days, 2123,
      f"It rests on {led_days} of {pair_days} pair-days pointing the same way"),
+    ("universe volume floor", int(MIN_CEX_VOLUME), 20000,
+     f"at least {'twenty thousand' if MIN_CEX_VOLUME == 20000 else 'ERR'} "
+     "dollars of 24-hour volume"),
+    ("floor is below every kept token",
+     int((u.cex_volume_24h >= MIN_CEX_VOLUME).all()), 1,
+     "printed at least twenty"),
     ("collision screen pools", len(collisions), 13,
      f"found {len(collisions)} Solana pools answering to "
      f"{collisions.symbol.nunique()} of these tickers"),

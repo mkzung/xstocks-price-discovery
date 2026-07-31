@@ -157,4 +157,4 @@ def run(labels: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    run(sys.argv[1:] or ["2026-07-29b", "2026-07-30"])
+    run(sys.argv[1:] or ["2026-07-29b", "2026-07-30", "2026-07-31"])

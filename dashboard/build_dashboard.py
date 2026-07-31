@@ -28,6 +28,17 @@ SERIES_PASS = "2026-07-29b"
 NEXT_DAY = "2026-07-30"
 THIRD_DAY = "2026-07-31"
 
+_MONTHS = {"07": "July", "08": "August"}
+
+
+def _spoken(label: str) -> str:
+    """A pass label like 2026-07-31 as the prose writes it."""
+    _, month, day = label.split("-")[:3]
+    return f"{int(day)} {_MONTHS[month]}"
+
+
+LAST_DAY_TEXT = _spoken(THIRD_DAY)
+
 __all__ = ["build"]
 
 STYLE = """
@@ -83,7 +94,7 @@ TEMPLATE = """<!doctype html>
 <p class="sub">{n_tokens} xStocks quoted at once on Gate and in Solana pools.
 The exchange sets the price in {led_days} of {pair_days} rankable pair-days,
 the quieter a token's pool the more the exchange prints against it, and the
-exceptions are named. Collected daily, 29 to 31 July 2026.</p>
+exceptions are named. Collected daily, {first_date} to {last_date}.</p>
 
 <div class="cards">
   <div class="card"><b>{rho}</b><span>rank correlation between pool activity
@@ -189,7 +200,7 @@ def _checks_table(rob: pd.DataFrame, vec: pd.DataFrame, lags: pd.DataFrame,
          f"same leader in {int((grid_ok.groupby('symbol').leads.nunique() == 1).sum())} "
          f"of {grid_ok.symbol.nunique()}"),
         ("Does it survive different days",
-         "collection repeated daily through 31 July",
+         f"collection repeated daily through {LAST_DAY_TEXT}",
          f"led in every window ranked, {int(cross.led_every_window.sum())} of "
          f"{len(cross)} tokens"),
     ]
@@ -267,6 +278,8 @@ def build() -> Path:
         rho=f"{spearman(groups.paired_min, groups.ratio):.2f}",
         led_days=led_days,
         pair_days=pair_days,
+        first_date=f"{_spoken(SERIES_PASS[:10])} 2026",
+        last_date=f"{LAST_DAY_TEXT} 2026",
         rho_low=f"{relation_days.rho.min():.2f}",
         rho_high=f"{relation_days.rho.max():.2f}",
         led_multi=int(cross.led_every_window.sum()),

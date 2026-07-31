@@ -54,14 +54,15 @@ sit six tokens with no on-chain market to check the exchange against at all.
 
 ## The universe
 
-Every Gate USDT pair whose ticker ends in X was matched to a Solana pool.
-Ticker matching alone is not safe here: a re-screen after the third collection
-day, committed as `data/collisions.csv`, found 13 Solana pools answering to 10
-of these tickers on mints that are not the issuer's. Their claimed liquidity
-was negligible that day, and the population is not stable: impostor pools
-appear and vanish between screens. Each pool was therefore checked against the
-mint prefix Backed uses for its issued tokens, and only exact-symbol pools on
-that issuer's mint were kept.
+Every Gate USDT pair whose ticker ends in X and printed at least twenty
+thousand dollars of 24-hour volume was matched to a Solana pool. Ticker
+matching alone is not safe here: a re-screen after the third collection day,
+committed as `data/collisions.csv`, found 13 Solana pools answering to 10 of
+these tickers on mints that are not the issuer's. Their claimed liquidity was
+negligible that day, and the population is not stable: impostor pools appear
+and vanish between screens. Each pool was therefore checked against the mint
+prefix Backed uses for its issued tokens, and only exact-symbol pools on that
+issuer's mint were kept.
 
 That leaves **24 tokens quoted on both venues**. Per dollar of on-chain volume
 in the same mint, Gate's 24-hour volume ranges from 16 cents to **7,311
@@ -225,9 +226,9 @@ show a market exists. They are named in `data/token_groups.csv` with the rest.
 Everything above rests on one estimator, one specification and one stretch of
 minutes. Five things could have produced it with no venue leading anything.
 Each is answered against the first day's series pass, whose minute series are
-committed under `raw/`, so every check can be re-run rather than taken on
-trust. The sixth question, whether any of it survives being measured again, has
-its own section after them.
+committed under `raw/`, so every check can be re-run instead of taken on trust.
+The sixth question, whether any of it survives being measured again, has its
+own section after them.
 
 ### Cointegration, tested rather than assumed
 
@@ -243,13 +244,13 @@ minutes and usually inside two.
 ### The error term, fitted instead of imposed
 
 Stationarity is tested on the spread of log prices, which imposes a
-cointegrating vector of one to minus one rather than fitting it. Two venues
+cointegrating vector of one to minus one instead of fitting it. Two venues
 quoting one mint should move one for one, and imposing that buys precision, but
 it is an assumption and it can fail: a pool at a proportional discount that
 widens with the price would need a coefficient away from one, and the spread
 built the wrong way would not be the error the model thinks it is.
 
-Fitted rather than imposed, the coefficient comes out between 0.85 and 1.00,
+Fitted instead of imposed, the coefficient comes out between 0.85 and 1.00,
 below one in every pair. That is what noise in a regressor does, not evidence
 of scaling: a pool quote carries error, and error in a regressor drags its
 slope toward zero. The test that survives that is whether one sits inside the
@@ -265,8 +266,8 @@ of the same data.
 Gonzalo-Granger reads leadership off the correction speeds and ignores how
 correlated the two venues' innovations are. Hasbrouck (1995) splits the
 variance of the efficient price innovation instead, and the two are different
-quantities rather than two names for one: with uncorrelated innovations and
-equal variances the second reduces to the square of the first over the sum of
+quantities, not two names for one: with uncorrelated innovations and equal
+variances the second reduces to the square of the first over the sum of
 squares, so a weight of 0.80 corresponds to a share near 0.94. Only the
 direction can be compared, and it agrees in **7 of 7** pairs. Hasbrouck's
 bounds are informative here because the innovation correlation is a median 0.39
@@ -393,7 +394,7 @@ hours the exchange window reaches, after 142 paired minutes the day before. A
 pool that is a venue one day and absent the next is the volatility of the thin
 end of this market, measured.
 
-Three collection notes rather than footnotes. The second and third days both
+Three collection notes, none of them footnotes. The second and third days both
 lost their network mid-run and were topped up within hours, so each holds two
 collection sessions; per-token timestamps are in each run's `coverage.csv`, and
 each day's ratios use that day's own morning snapshot. Tokens whose pools could
@@ -408,7 +409,8 @@ strongest form of the pattern the measurement shows.
 Both sides are free and need no key: Gate's public candlestick endpoint and
 Bybit's spot kline endpoint for the exchange minutes, GeckoTerminal's pool
 OHLCV endpoint for the on-chain minutes, and Dexscreener for pool discovery
-with the mint prefix check.
+with the mint prefix check. The exchange endpoints serve the last thousand
+one-minute bars, which is the sixteen-hour window every pass works inside.
 
 ### Which collection each number comes from
 
@@ -450,7 +452,7 @@ this study as follows.
   change the ranking, since a common move cancels in the difference.
 - `tradecount` is the total number of trades in a timeframe. It appears here
   in a coarser form, the number of minutes in which a venue printed at all,
-  because the public minute endpoints expose bars rather than a trade feed.
+  because the public minute endpoints expose bars, not a trade feed.
   That is the form that matters when one venue prints in four minutes out of
   four hundred and eighty.
 - `volumedist` analyses the distribution of trading volumes. This post does not
@@ -470,7 +472,7 @@ weights are read off the two error-correction speeds.
 ### The estimator and its limits
 
 The estimator is calibrated against a simulator whose answer is fixed by
-construction, so it can be checked rather than trusted. The calibration is
+construction, so it can be checked instead of trusted. The calibration is
 `analysis/calibrate.py`, ninety-six runs over eight speed pairs, and it is
 committed as `data/calibration.csv`. It says the fit is worse than a single
 weight makes it look.
@@ -480,9 +482,9 @@ average, in every speed pair tested. That is why four of the nine exchange
 weights sit slightly above one, a value the decomposition cannot really take.
 
 The scatter is not small. A single run lands anywhere from 0.33 below the truth
-to 0.28 above it, and that holds across the whole grid rather than only where
-the two venues correct at similar speeds. One token's weight is therefore a
-weak reading on its own, and no weight in this post should be read as a point
+to 0.28 above it, and that holds across the whole grid, not only where the two
+venues correct at similar speeds. One token's weight is therefore a weak
+reading on its own, and no weight in this post should be read as a point
 estimate.
 
 What survives that scatter is the ordering. Across the runs where the true
@@ -533,7 +535,7 @@ python analysis/format_post.py --check             # wrapping is settled
 python analysis/check_post.py                      # formatting, spelling, links
 ```
 
-A fresh window is a new directory rather than an overwrite:
+A fresh window is a new directory, never an overwrite:
 
 ```bash
 python analysis/collect_raw.py 2026-08-05 --refresh-universe
@@ -547,10 +549,10 @@ of July 2026. Nothing here is a claim about other issuers, other chains,
 coarser horizons, or other months.
 
 The underlying equities trade on NYSE and NASDAQ, and during US hours both
-venues in every pair are importing a price from there rather than discovering
-it. The open-against-shut split separates the two regimes and the answer holds
-in both, but no third leg reads the primary listing, so this measures which of
-the two crypto venues moves first, not where the price is born.
+venues in every pair are importing a price from there, not discovering it. The
+open-against-shut split separates the two regimes and the answer holds in both,
+but no third leg reads the primary listing, so this measures which of the two
+crypto venues moves first, not where the price is born.
 
 Leadership claims are made only for pairs with at least 120 paired minutes, and
 near-even weights are read as shared discovery, never as a lead. The volume

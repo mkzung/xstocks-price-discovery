@@ -33,6 +33,7 @@ page. Everything in both is reproducible from this repository, and
 | `analysis/vector.py` | whether imposing a cointegrating vector of one to minus one changes any conclusion |
 | `analysis/windows.py` | the headline correlation and the per-token leadership, recomputed inside each collection day |
 | `analysis/calibrate.py` | what the estimator does to an answer it already knows |
+| `analysis/collisions.py` | records the ticker collisions the universe screen filters out |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
 | `analysis/check_post.py` | the post's formatting, spelling and link rules |

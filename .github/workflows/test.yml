@@ -44,3 +44,8 @@ jobs:
         run: python analysis/format_post.py --check
       - name: the post's formatting, spelling and links
         run: python analysis/check_post.py
+      - name: regenerated artefacts match the committed ones
+        # PNGs are excluded: freetype and matplotlib versions shift bytes
+        # between machines without changing content. The CSVs and the page are
+        # deterministic, and drift in them means a stale commit.
+        run: git diff --exit-code -- data post/data index.html

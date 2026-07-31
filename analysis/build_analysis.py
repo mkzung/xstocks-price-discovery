@@ -86,10 +86,13 @@ def figure_weights(panel: pd.DataFrame) -> None:
                label="pool", zorder=3)
     right.set_yticks(y, allr.symbol, fontsize=8.5)
     right.set_xlabel("share of the gap closed per minute", fontsize=9.5)
-    right.set_title("Who moves toward whom", fontsize=10.5, pad=20)
-    # Inside the axes this lands on the bottom token's bars, so it goes above.
-    right.legend(frameon=False, fontsize=8.5, loc="lower center",
-                 bbox_to_anchor=(0.5, 1.02), ncol=2)
+    right.set_title("Who moves toward whom", fontsize=10.5, pad=30)
+    # Inside the axes this lands on the bottom token's bars; directly above,
+    # it landed on the title. The title gets extra padding and the legend sits
+    # in the gap between the two.
+    right.legend(frameon=False, fontsize=8, loc="lower center",
+                 bbox_to_anchor=(0.5, 1.005), ncol=2, handlelength=1.6,
+                 columnspacing=1.2)
     _style(right)
     fig.tight_layout()
     fig.savefig(FIGS / "weights.png", dpi=150)
@@ -122,9 +125,12 @@ def figure_sessions(panel: pd.DataFrame) -> None:
 def figure_controls(matrix: pd.DataFrame) -> None:
     """A second exchange leads too; two pools on one mint do not."""
     rows = matrix.dropna(subset=["weight_a"]).copy()
+    short = {"bybit": "Bybit", "pool": "pool", "pool_deep": "deep pool",
+             "pool_second": "second pool"}
     rows["label"] = rows.apply(
-        lambda r: f"{r.token}\n{r.venue_a} vs {r.venue_b}", axis=1)
-    fig, ax = plt.subplots(figsize=(7.2, 4.0))
+        lambda r: f"{r.token}\n{short[r.venue_a]} vs {short[r.venue_b]}",
+        axis=1)
+    fig, ax = plt.subplots(figsize=(7.8, 4.0))
     colours = [ACCENT if r.venue_a in ("bybit", "mexc") else INK
                for _, r in rows.iterrows()]
     x = np.arange(len(rows))
