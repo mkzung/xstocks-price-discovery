@@ -34,7 +34,20 @@ check("figures present", "{{< figure" in post,
 check("metric mapping section", "buysellratio" in post or "volumedist" in post
       or "timeoftrade" in post)
 check("metrics-docs link", "dn.institute/market-health/docs" in post)
-check("links a prior wiki post", "dn-institute" in post or "dn.institute" in post)
+# Every markdown link URL must be contiguous. The wrapper once split a URL in
+# the middle of its domain, which killed both wiki links in any renderer, and
+# the substring check that stood here kept passing because fragments of the
+# domain were still present somewhere in the text.
+_urls = re.findall(r"\]\(([^)]*)\)", post)
+_broken = [u[:50] for u in _urls if re.search(r"\s", u)]
+check("no link URL is broken across lines", not _broken,
+      f"whitespace inside: {_broken}")
+_flat_urls = [re.sub(r"\s+", "", u) for u in _urls]
+check("links the two prior wiki posts", all(
+    any(path in u for u in _flat_urls) for path in (
+        "content/research/market-health/posts/2021-01-19-Gate-io",
+        "content/research/market-health/posts/2026-06-13-bybit",
+    )))
 # The analysis used to live in a separate repository, so the post had to pin it
 # at a commit. It lives here now, and a stale pin is worse than none: the one
 # that was in the post pointed three commits back, before the robustness work

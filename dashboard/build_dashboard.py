@@ -81,9 +81,9 @@ TEMPLATE = """<!doctype html>
 
 <h1>Tokenized stocks are priced on the exchange</h1>
 <p class="sub">{n_tokens} xStocks quoted at once on Gate and in Solana pools.
-The exchange sets the price in 21 of 23 rankable pair-days, the quieter a
-token's pool the more the exchange prints against it, and the exceptions are
-reported. Collected daily, 29 to 31 July 2026.</p>
+The exchange sets the price in {led_days} of {pair_days} rankable pair-days,
+the quieter a token's pool the more the exchange prints against it, and the
+exceptions are named. Collected daily, 29 to 31 July 2026.</p>
 
 <div class="cards">
   <div class="card"><b>{rho}</b><span>rank correlation between pool activity
@@ -98,8 +98,9 @@ reported. Collected daily, 29 to 31 July 2026.</p>
 
 <h2>Why believe it</h2>
 <p class="lede">Every way the result could have been an artefact, and what the
-check returned. All of it runs from the committed data, and the counts below are
-the rankable pairs in the pass that keeps its minute series.</p>
+check returned. All of it runs from the committed data; the per-check counts
+come from the first day's series pass, and the last row spans all three
+days.</p>
 {checks_table}
 
 <h2>What sparse trading could explain</h2>
@@ -119,10 +120,11 @@ Hasbrouck bounds and the bootstrap come from the series pass.</p>
 <figure><img src="post/weights-series.png" alt="Exchange weights with Hasbrouck bounds, and the correction speeds behind them"></figure>
 
 <h2>Measured daily, three days running</h2>
-<p class="lede">The correlation prints -0.94, -0.93 and -0.93 on the three days.
-Seven of eight tokens rankable in more than one window lead in every window
-they appear in; the two that break ranks, TSLAX near even on the third day and
-AMZNX led by its pool, are reported rather than smoothed over.</p>
+<p class="lede">The correlation prints between {rho_low} and {rho_high} across
+the three days, recomputed each day from that day's own volume snapshot.
+{led_multi} of {n_multi} tokens rankable in more than one window lead in every
+window they appear in; the two that break ranks, TSLAX near even on the third
+day and AMZNX led by its pool, have their own paragraphs in the write-up.</p>
 {cross_table}
 
 <h2>The relation across the whole universe</h2>
@@ -248,12 +250,27 @@ def build() -> Path:
         pair_days += len(day)
         led_days += int((day.w_cex > 0.5).sum())
 
+    relation_days = pd.read_csv(DATA / "windows_relation.csv")
+
+    # Two claims in the template prose cannot be computed into it and are
+    # asserted instead, so a data refresh that falsifies either breaks the
+    # build loudly rather than shipping a page that lies.
+    day3_check = pd.read_csv(DATA / f"robustness_{THIRD_DAY}.csv").set_index("symbol")
+    assert float(day3_check.loc["TSLAX"].w_cex) < 0.55, \
+        "template says TSLAX reads near even on the third day"
+    assert float(day3_check.loc["AMZNX"].w_cex) < 0.5, \
+        "template says AMZNX is led by its pool"
+
     html = TEMPLATE.format(
         style=STYLE,
         n_tokens=len(groups),
         rho=f"{spearman(groups.paired_min, groups.ratio):.2f}",
         led_days=led_days,
         pair_days=pair_days,
+        rho_low=f"{relation_days.rho.min():.2f}",
+        rho_high=f"{relation_days.rho.max():.2f}",
+        led_multi=int(cross.led_every_window.sum()),
+        n_multi=len(cross),
         dead=len(dead),
         ratio_max=groups.ratio.max(),
         risk_low=risk.false_lead_drop.min() * 100,

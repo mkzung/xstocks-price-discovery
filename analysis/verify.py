@@ -12,12 +12,14 @@ post at all. Every number in the text could have been wrong and it would still
 have printed FAILED: 0. Whenever a check is added here, mutate the post and
 confirm the check goes red before trusting it.
 
-The current state of that sweep: bumping each of the 123 distinct numbers in
-the post by one unit in its last digit turns 110 of them red. The 13 that stay
+The current state of that sweep: bumping each of the 135 distinct numbers in
+the post by one unit in its last digit turns 120 of them red. The 15 that stay
 green are day, month and year components inside URLs and the frontmatter date,
 plus the Hasbrouck citation year, which the sweep also hits when it bumps a
 two-digit number that first occurs as a substring of 1995. None of them restates
-a computed value.
+a computed value. The sweep has caught real gaps twice: the whole robustness
+table once shipped uncompared, and the lede's joint 21-of-23 tally was
+unguarded in both places it is made.
 """
 import re
 import sys
@@ -155,7 +157,8 @@ checks = [
     ("min ratio", round(u.ratio.min(), 2), 0.16, f"{u.ratio.min():.2f} cents".replace("0.", "")),
     ("median ratio", round(u.ratio.median(), 1), 6.8, f"The median is {u.ratio.median():.1f}."),
     ("nine rankable", len(allr), 9, f"| {len(allr)} | {ranked.paired_min.median():.0f} |"),
-    ("all exchange-led", int((allr.w_cex > 0.5).all()), 1, "The exchange leads every one"),
+    ("all exchange-led", int((allr.w_cex > 0.5).all()), 1,
+     "in that pass the exchange leads every one"),
     ("four weights above one", int((allr.w_cex > 1).sum()), 4,
      f"That is why {'four' if (allr.w_cex > 1).sum() == 4 else 'ERR'} of the nine exchange"),
     ("eight-pair exchange speed", round(rest.speed_cex.abs().max(), 2), 0.08,
@@ -311,6 +314,8 @@ checks = [
      f"follows in {led_days} of the {pair_days} pair-days that can be ranked"),
     ("pair-days in the description", led_days * 100 + pair_days, 2123,
      f"The exchange leads in {led_days} of {pair_days} rankable pair-days"),
+    ("pair-days in the limits section", led_days * 100 + pair_days, 2123,
+     f"It rests on {led_days} of {pair_days} pair-days pointing the same way"),
     # The daily replication, three days in.
     ("registry row, second day", len(day2_coverage), 25,
      f"| next day | 30 July, two sessions | {len(day2_coverage)} |"),
@@ -376,7 +381,8 @@ checks = [
      1, "ABTX and PMX, paired for the first time on the third day"),
     # Out-of-sample.
     ("replication count", int(rep.leads_both.sum()), 7,
-     f"{int(rep.leads_both.sum())} of {len(rep)} in the second"),
+     f"In this pass {'seven of seven' if rep.leads_both.sum() == 7 else 'ERR'} "
+     "point the same way"),
     ("sign test p-value", round(float(sign_test(len(ranked_pairs), len(ranked_pairs))), 4), 0.0156,
      f"p = {sign_test(len(ranked_pairs), len(ranked_pairs)):.4f}"),
     ("replication drift", round((rep.w_second - rep.w_first).abs().max(), 2), 0.11,

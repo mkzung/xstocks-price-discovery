@@ -50,6 +50,19 @@ def _rejoin_split_compounds(block: str) -> str:
     return re.sub(r"(\w)-\n(\w)", r"\1-\2", block)
 
 
+def _rejoin_split_urls(block: str) -> str:
+    """Close up any whitespace inside a markdown link's URL.
+
+    An early wrap broke a URL in the middle of its domain, because long words
+    are split at the width by default, and a link with a newline in its URL is
+    dead in every renderer. break_long_words is off now, so new breaks cannot
+    happen; this heals ones already in the text.
+    """
+    return re.sub(r"\]\(([^)]*)\)",
+                  lambda m: "](" + re.sub(r"\s+", "", m.group(1)) + ")",
+                  block)
+
+
 def normalise(text: str) -> str:
     """Return the post with prose paragraphs filled and everything else intact."""
     if text.startswith("---"):
@@ -64,9 +77,13 @@ def normalise(text: str) -> str:
         if _is_prose(block):
             # break_on_hyphens off, or "Dickey-Fuller" and "error-correction"
             # split across lines and read as typos.
-            mended = _rejoin_split_compounds(block)
+            mended = _rejoin_split_urls(_rejoin_split_compounds(block))
+            # break_long_words off as well: a URL longer than the width lands
+            # on its own overlong line, which renders; a URL split at the width
+            # does not.
             out.append(textwrap.fill(" ".join(mended.split()), width=WIDTH,
-                                     break_on_hyphens=False))
+                                     break_on_hyphens=False,
+                                     break_long_words=False))
         else:
             out.append(block.strip("\n"))
     # Collapse the runs of blank lines that repeated insertions leave behind.

@@ -16,23 +16,23 @@ has to come from someone who knows something, and the venue where it appears
 first is the venue doing the pricing. Measuring that separates a market from a
 tape.
 
-This wiki has read Gate before. The [2021 Gate.io article](https://github.com/1
-712n/dn-institute/tree/main/content/research/market-health/posts/2021-01-19-Gat
-e-io) tested the digit distribution of the venue's own executed sizes, and the
-[Bybit low-cap tape](https://github.com/1712n/dn-institute/tree/main/content/re
-search/market-health/posts/2026-06-13-bybit) read one book's cadence and clip
-sizes. Both check a venue against a statistical expectation. This one checks it
-against a second venue quoting the same mint. That is what makes the leadership
-question answerable at all.
+This wiki has read Gate before. The [2021 Gate.io
+article](https://github.com/1712n/dn-institute/tree/main/content/research/market-health/posts/2021-01-19-Gate-io)
+tested the digit distribution of the venue's own executed sizes, and the [Bybit
+low-cap
+tape](https://github.com/1712n/dn-institute/tree/main/content/research/market-health/posts/2026-06-13-bybit)
+read one book's cadence and clip sizes. Both check a venue against a
+statistical expectation. This one checks it against a second venue quoting the
+same mint. That is what makes the leadership question answerable at all.
 
 The answer for Backed Finance's xStocks, collected daily from 29 to 31 July
 2026, is that the exchange leads and the Solana pool follows in 21 of the 23
 pair-days that can be ranked. It holds when the sample is cut to the hours when
 the US equity market is shut and it holds on a second exchange. The two
-exceptions are reported below rather than smoothed over, and both sit where the
-first day already pointed: TSLAX reads near even on the third day, and AMZNX,
-the one pair the first day flagged as the exchange giving up pricing, is a
-clear pool lead the one day it can be measured.
+exceptions get their own paragraphs below, and both sit where the first day
+already pointed: TSLAX reads near even on the third day, and AMZNX, the one
+pair the first day flagged as the exchange giving up pricing, is a clear pool
+lead the one day it can be measured.
 
 The more useful finding sits underneath it. Rank the twenty-four tokens by how
 much their pool trades, and by how many exchange dollars are printed per
@@ -80,11 +80,11 @@ between their log quotes is the error each is pulled back toward, and each
 venue's speed of closing it says who is anchoring whom. The Gonzalo-Granger
 common-factor weights fall out of those speeds: the venue that corrects less
 carries more of the permanent price move. Whether the two series really are
-cointegrated is a testable claim rather than a definition, and it is tested
-later rather than assumed here.
+cointegrated is a testable claim, not a definition, and it is tested below
+instead of assumed.
 
-Nine pairs had enough overlapping minutes with both sides moving. The exchange
-leads every one:
+Nine pairs had enough overlapping minutes with both sides moving in the first
+day's session panel, and in that pass the exchange leads every one:
 
 {{< figure src="weights.png" alt="Left panel, exchange weight in the common factor for nine tokens, all at or above 0.63. Right panel, the share of the gap each side closes per minute, with the pool bars far longer than the exchange bars" caption="The exchange weight, and underneath it the reason: the pool closes the gap, the book does not." loading="lazy" >}}
 
@@ -117,7 +117,9 @@ exchange itself corrects meaningfully, at 0.35, and also the pair with the
 lowest exchange weight at 0.63. A venue that adjusts to the other side is a
 venue giving up some of the pricing, and showing that is what the decomposition
 is for. It is also the thinnest sample in the table, 82 paired minutes against
-480 for TSLAX, so it is the row to lean on least.
+480 for TSLAX. Two days later, with enough minutes to rank properly, this stops
+being a caveat: AMZNX turns out to be the study's one clear pool lead, in the
+daily section below.
 
 The ranking is not an artefact of the hours covered. Cutting the sample to the
 minutes when the US equity market is shut, 86 percent of the window, leaves
@@ -209,10 +211,11 @@ show a market exists. They are named in `data/token_groups.csv` with the rest.
 ## What would have to be true for this to be wrong
 
 Everything above rests on one estimator, one specification and one stretch of
-minutes. Five things could have produced it with no venue leading anything, and
-each is answered against the minute series themselves rather than against the
-fitted panel. The sixth question, whether any of it survives being measured
-again, gets its own section after them.
+minutes. Five things could have produced it with no venue leading anything.
+Each is answered against the first day's series pass, whose minute series are
+committed under `raw/`, so every check can be re-run rather than taken on
+trust. The sixth question, whether any of it survives being measured again, has
+its own section after them.
 
 ### Cointegration, tested rather than assumed
 
@@ -275,9 +278,10 @@ shown, because it is useless. The weight is a ratio whose denominator is the
 difference between two similar speeds, so a resample that nudges them together
 sends it to infinity and the interval stays wide however long the sample.
 
-Nine of nine agreeing in the first window and 7 of 7 in the second is the
-claim, not any single weight. Under a coin-flip null, seven of seven falling
-one way carries p = 0.0156.
+The claim is never a single weight. In this pass seven of seven point the same
+way, which carries p = 0.0156 under a coin-flip null; the session panel's nine
+of nine and the daily repeats are tallied in their own sections, and across all
+three days the count is 21 of 23.
 
 ### Could sparse trading have invented all of it
 
@@ -312,12 +316,12 @@ five and ten lags changes the leader in **0 of 7** pairs. Coarsening the grid
 to five minutes handicaps the test on purpose, since pools arbitrage inside a
 block, and it leaves the same leader in **7 of 7**.
 
-## Measured again, twice
+## Measured again, and then daily
 
 A result that exists in one stretch of minutes is a result about that stretch.
 The leadership was therefore refitted on a second pass over the same day, and
-then the whole collection was repeated the following day, on its own volume
-snapshot, so that nothing at all is carried over.
+the whole collection then became a daily routine, each day on its own volume
+snapshot so that nothing at all is carried over.
 
 Against the session panel first: the 7 tokens rankable in both the panel and
 the series pass lead in both every time, with weights moving by at most 0.11.
@@ -326,10 +330,9 @@ closer still.
 
 {{< figure src="replication.png" alt="Left, exchange weights for seven tokens measured in the session panel and in the series pass, all well above the even line in both. Right, pool correction speed in one pass against the other, with the points sitting on the diagonal" caption="Same day, two passes, seven tokens, one answer." loading="lazy" >}}
 
-The next days are the harder test, and the collection now repeats daily, each
-day on its own volume snapshot. The headline number replicates without wobble.
-The correlation between how much a pool trades and how many exchange dollars
-are printed against it prints -0.93 on 25 tokens on the second day and
+The next days are the harder test. The headline number replicates without
+wobble. The correlation between how much a pool trades and how many exchange
+dollars are printed against it prints -0.93 on 25 tokens on the second day and
 **-0.93** on 24 on the third, each with a permutation p below 0.0001, and each
 surviving its own tail check: dropping the six most extreme ratios leaves the
 third day at -0.92 on 18 tokens. Pool liquidity ranks with pool activity at
@@ -411,10 +414,11 @@ came from.
 | next day | 30 July, two sessions | 25 | the repeat, on its own volume snapshot |
 | third day | 31 July, two sessions | 24 | the repeat of the repeat, likewise |
 
-Only the last two keep the underlying minute series, so the checks below run on
-those and the tables above cannot. Where a sentence quotes a sample size it
-quotes the pass that produced the table it sits under, and the pass is named
-wherever two of them could be confused.
+The last three keep their underlying minute series. The robustness checks below
+run on the first of those, the daily comparison reads all three, and the tables
+above come from passes whose minutes were never kept. Where a sentence quotes a
+sample size it quotes the pass that produced the table it sits under, and the
+pass is named wherever two of them could be confused.
 
 ### Mapping to the DN market-health metrics
 
@@ -471,21 +475,21 @@ estimate.
 
 What survives that scatter is the ordering. Across the runs where the true
 weight is plainly one-sided the estimator picks the right leader 98 percent of
-the time, falling to 92 percent where the truth sits near even. The claim this
-post rests on is not any single weight but that nine of nine pairs point the
-same way, and underneath the weights, that the two correction speeds are far
-apart: the pool closes 22 to 74 percent of the gap per minute while the
-exchange closes at most 8. Those speeds are read straight off the fit rather
-than through the ratio that forms the weight, and they are what the ordering is
-built on. Pool-against-pool weights land near even, where the estimator is
-weakest, so they are reported as a scale and not a ranking.
+the time, falling to 92 percent where the truth sits near even. So the post
+never rests on one weight. It rests on 21 of 23 pair-days pointing the same way
+across three days, and underneath the weights, on the correction speeds: in the
+first day's panel the pool closes 22 to 74 percent of the gap per minute while
+the exchange closes at most 8. Those speeds are read straight off the fit
+rather than through the ratio that forms the weight, and they are what the
+ordering is built on. Pool-against-pool weights land near even, where the
+estimator is weakest, so they are reported as a scale and not a ranking.
 
 ### Provenance
 
 Within a pass the 24-hour volumes are a snapshot taken when the universe was
 built and the minute bars were pulled afterwards, so the two are minutes apart
-rather than simultaneous. The next-day pass carries its own snapshot in
-`raw/2026-07-30/universe.csv` and borrows nothing from the first day.
+rather than simultaneous. Each daily pass carries its own snapshot in
+`raw/<day>/universe.csv` and borrows nothing from the days before it.
 
 The bar CSVs carry epoch timestamps per row, so the series passes date
 themselves. The two earlier panels do not, and their date is the date they were
@@ -507,16 +511,21 @@ if one has drifted.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest tests -q                            # known-answer tests
-python analysis/verify.py                            # every number, against data/
-python analysis/calibrate.py                         # what the fit does to a known answer
-python analysis/staleness.py                         # can sparse trading fake this
-python analysis/robustness.py 2026-07-29b            # the series pass
-python analysis/vector.py 2026-07-29b                # imposed vector against fitted
-python analysis/sensitivity.py 2026-07-29b           # lags, grid, artefact risk
-python analysis/robustness.py 2026-07-30             # the next-day pass
-python analysis/windows.py 2026-07-29b 2026-07-30    # what survives a change of date
-python analysis/build_analysis.py                    # redraw every figure
+python -m pytest tests -q                          # known-answer tests
+python analysis/verify.py                          # every number, against data/
+python analysis/calibrate.py                       # what the fit does to a known answer
+python analysis/staleness.py                       # can sparse trading fake this
+python analysis/robustness.py 2026-07-29b          # the series pass
+python analysis/vector.py 2026-07-29b              # imposed vector against fitted
+python analysis/sensitivity.py 2026-07-29b         # lags, grid, artefact risk
+python analysis/robustness.py 2026-07-30           # the second day
+python analysis/vector.py 2026-07-30               # its cointegrating vector
+python analysis/robustness.py 2026-07-31           # the third day
+python analysis/vector.py 2026-07-31               # its cointegrating vector
+python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31  # across the calendar
+python analysis/build_analysis.py                  # redraw every figure
+python analysis/format_post.py --check             # wrapping is settled
+python analysis/check_post.py                      # formatting, spelling, links
 ```
 
 A fresh window is a new directory rather than an overwrite:
