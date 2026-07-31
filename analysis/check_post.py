@@ -63,7 +63,12 @@ check("first figure eager, the rest lazy",
       len(_figs) > 1 and "lazy" not in _figs[0]
       and all("lazy" in g for g in _figs[1:]))
 # The accepted article template opens with Summary and closes with Scope.
-check("opens with a Summary section", post.find("## Summary") < post.find("## The universe"))
+# find() returns -1 for a missing heading, and -1 sorts before everything, so
+# the naive ordering comparison passed precisely when Summary was absent. The
+# mutation drill caught it before it could not-catch anything else.
+_summary_at = post.find("## Summary")
+check("opens with a Summary section",
+      _summary_at != -1 and _summary_at < post.find("## The universe"))
 check("closes with a Scope section", post.rstrip().split("## ")[-1].startswith("Scope"))
 check("no chestnut emoji", "\U0001f330" not in post)
 check("no shipit", "shipit" not in post.lower())

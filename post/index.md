@@ -55,11 +55,13 @@ sit six tokens with no on-chain market to check the exchange against at all.
 ## The universe
 
 Every Gate USDT pair whose ticker ends in X was matched to a Solana pool.
-Ticker matching alone is not safe here: several of these symbols collide with
-unrelated mints, and two of the collisions carry hundreds of millions of
-dollars of phantom liquidity. Each pool was therefore checked against the mint
-prefix Backed uses for its issued tokens, and only exact-symbol pools on that
-issuer's mint were kept.
+Ticker matching alone is not safe here: a re-screen after the third collection
+day, committed as `data/collisions.csv`, found 13 Solana pools answering to 10
+of these tickers on mints that are not the issuer's. Their claimed liquidity
+was negligible that day, and the population is not stable: impostor pools
+appear and vanish between screens. Each pool was therefore checked against the
+mint prefix Backed uses for its issued tokens, and only exact-symbol pools on
+that issuer's mint were kept.
 
 That leaves **24 tokens quoted on both venues**. Per dollar of on-chain volume
 in the same mint, Gate's 24-hour volume ranges from 16 cents to **7,311
@@ -202,8 +204,8 @@ nothing to check it against:
 
 ACNX is the sharpest. The exchange reports a hundred and twenty-seven thousand
 dollars of turnover in a token whose entire on-chain market is two hundred and
-twenty-five dollars of liquidity, and whose pool printed in eleven minutes
-across the last fifty-one hours.
+twenty-five dollars of liquidity, and whose pool overlapped the exchange tape
+for seven minutes in the pass above.
 
 This is a flag, not a verdict. Nothing here shows those prints are fake. What
 it shows is that they cannot be checked. For CRCLX or NVDAX an outside observer

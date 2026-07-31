@@ -139,6 +139,8 @@ hold_false = (sim[sim.scheme == "hold"].groupby("keep")
               .apply(lambda s: float((s.w_cex > 0.5).mean()),
                      include_groups=False))
 
+collisions = pd.read_csv(base / "data" / "collisions.csv")
+
 cal = pd.read_csv(base / "data" / "calibration.csv")
 lead = cal[~cal.even]
 near = lead[(lead.truth - 0.5).abs() < 0.2]
@@ -317,6 +319,21 @@ checks = [
      f"The exchange leads in {led_days} of {pair_days} rankable pair-days"),
     ("pair-days in the limits section", led_days * 100 + pair_days, 2123,
      f"It rests on {led_days} of {pair_days} pair-days pointing the same way"),
+    ("collision screen pools", len(collisions), 13,
+     f"found {len(collisions)} Solana pools answering to "
+     f"{collisions.symbol.nunique()} of these tickers"),
+    ("collision liquidity negligible",
+     int(collisions.claimed_liquidity_usd.max() < 1), 1,
+     "Their claimed liquidity was negligible that day"),
+    ("ACNX seven minutes",
+     int(g.set_index("symbol").loc["ACNX"].paired_min), 7,
+     f"whose pool overlapped the exchange tape for "
+     f"{'seven' if int(g.set_index('symbol').loc['ACNX'].paired_min) == 7 else 'ERR'} minutes"),
+    # Every mint in the universe carries the issuer's vanity prefix; the post
+    # says the screen enforced it, so the data has to show it.
+    ("mint prefix on every token",
+     int(u.mint.str.startswith("Xs").sum()), 24,
+     "the mint prefix Backed uses for its issued tokens"),
     ("ranking floor in scope", MIN_PAIRED, 120,
      f"pairs with at least {MIN_PAIRED} paired minutes"),
     # The daily replication, three days in.
