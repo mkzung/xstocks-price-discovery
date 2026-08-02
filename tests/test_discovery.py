@@ -214,6 +214,19 @@ def test_sign_test_matches_the_binomial() -> None:
         assert sign_test(led, total) == pytest.approx(expected)
 
 
+
+def test_sign_test_refuses_an_empty_sample() -> None:
+    # The guard on an empty tally was uncovered: relaxing it from `total <= 0`
+    # to `total < 0` left every test green, so nothing said what the function
+    # does when there is nothing to test. Zero pairs is not evidence of
+    # anything and must not come back as a p-value of 1.
+    import math
+
+    from analysis.bootstrap import sign_test
+
+    assert math.isnan(sign_test(0, 0))
+    assert math.isnan(sign_test(3, -1))
+
 def test_sparse_sampling_does_not_manufacture_a_leader() -> None:
     # The objection that would sink the study. A pool that trades in a fraction
     # of minutes could look like a follower purely through sampling. Dropping
@@ -352,6 +365,7 @@ def test_imposing_the_vector_matches_fitting_it_when_it_holds() -> None:
 def test_spearman_matches_a_hand_computed_case() -> None:
     # Perfectly reversed orders must give exactly -1, and identical orders +1,
     # so the no-scipy implementation is doing what its name says.
+    import numpy as np
     import pandas as pd
 
     from analysis.relation import spearman
@@ -360,6 +374,20 @@ def test_spearman_matches_a_hand_computed_case() -> None:
     assert spearman(a, a) == pytest.approx(1.0)
     assert spearman(a, a[::-1].reset_index(drop=True)) == pytest.approx(-1.0)
     assert abs(spearman(a, pd.Series([2.0, 1.0, 4.0, 3.0, 5.0]))) < 1.0
+
+    # The three assertions above pass just as happily on a Pearson
+    # correlation, because the ranks of 1..5 are 1..5 and the two coincide on
+    # data like that. Dropping the .rank() calls from the implementation left
+    # the whole suite green, which is a test agreeing with itself rather than
+    # checking anything. This case separates them: the relation is perfectly
+    # monotone, so a rank correlation is exactly 1, while Pearson sees the
+    # curvature and lands near 0.66. It is the property the study leans on,
+    # since the volume ratios it correlates span four and a half orders of
+    # magnitude.
+    steps = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    powers = pd.Series([1.0, 1e1, 1e2, 1e3, 1e4, 1e6])
+    assert spearman(steps, powers) == pytest.approx(1.0)
+    assert np.corrcoef(steps, powers)[0, 1] < 0.7
 
 
 def test_permutation_test_calls_noise_noise() -> None:
@@ -376,3 +404,198 @@ def test_permutation_test_calls_noise_noise() -> None:
 
     monotone = pd.Series(range(40))
     assert test_relation(monotone, monotone, draws=2000).p_value < 0.01
+
+
+def test_a_change_across_a_gap_is_not_a_one_minute_change() -> None:
+    # The first version of the dependence module differenced a sparse series
+    # directly, which turns a jump across a seven-minute hole into a "one
+    # minute change" and inflates every correlation built on it. Only steps
+    # where the previous bar is exactly sixty seconds earlier may survive.
+    import pandas as pd
+
+    from analysis.dependence import minute_changes
+
+    stamps = pd.to_datetime([0, 60, 120, 600, 660], unit="s", utc=True)
+    series = pd.Series([1.0, 2.0, 3.0, 99.0, 100.0], index=stamps)
+
+    changes = minute_changes(series)
+    assert list(changes) == [1.0, 1.0, 1.0]
+    assert 96.0 not in list(changes)
+    assert len(series.diff().dropna()) == 4
+
+
+def test_effective_pairs_discounts_only_what_is_shared() -> None:
+    # Independent pairs must be worth their count, perfectly shared ones must
+    # collapse to a single observation, and a negative correlation must not be
+    # allowed to manufacture extra evidence.
+    from analysis.dependence import effective_pairs
+
+    assert effective_pairs(7, 0.0) == pytest.approx(7.0)
+    assert effective_pairs(7, 1.0) == pytest.approx(1.0)
+    assert effective_pairs(7, -0.5) == pytest.approx(7.0)
+    assert effective_pairs(7, 0.12) < 7.0
+    assert effective_pairs(7, 0.12) > effective_pairs(7, 0.30)
+
+
+def test_the_floor_is_applied_to_the_sample_not_the_answer() -> None:
+    # The threshold table exists to show the 120-minute floor does not select
+    # on the outcome, which it can only do if membership is decided by sample
+    # size alone. A row above the floor marked as dropped, or one below it
+    # marked as kept, would mean the cut is reading something else.
+    import pandas as pd
+
+    from analysis.robustness import MIN_PAIRED
+
+    table = pd.read_csv("data/threshold.csv")
+    assert (table[table.kept].minutes >= MIN_PAIRED).all()
+    assert (table[~table.kept].minutes < MIN_PAIRED).all()
+
+
+def test_every_bar_reader_takes_the_close() -> None:
+    # Each venue's array orders its fields differently and nothing pinned which
+    # index meant what. Gate's reader took field five, the open, while the pool
+    # reader took the close, so the two series described instants a minute
+    # apart at every stamp. These payloads are shaped like the real ones, with
+    # a distinct value in every slot, so an index swapped in any reader shows
+    # up as the wrong number rather than as a subtle lead.
+    import analysis.collect as collect
+    import analysis.venues as venues
+
+    gate = [["1700000000", "9999", "222", "333", "111", "555", "88", "true"]]
+    gecko = {"data": {"attributes": {"ohlcv_list":
+             [[1700000000, 111.0, 333.0, 44.0, 222.0, 88.0]]}}}
+    bybit = {"result": {"list":
+             [["1700000000000", "111", "333", "44", "222", "88", "9999"]]}}
+    mexc = [[1700000000000, "111", "333", "44", "222", "88", 1700000059999, "9"]]
+
+    collect._get = lambda url: gecko if "geckoterminal" in url else gate
+    venues._get = lambda url: bybit if "bybit" in url else mexc
+
+    # 222 is the close in every one of the four layouts above.
+    assert collect.cex_bars("X_USDT").iloc[0] == pytest.approx(222.0)
+    assert collect.dex_bars("pool").iloc[0] == pytest.approx(222.0)
+    assert venues.bybit_bars("XUSDT").iloc[0] == pytest.approx(222.0)
+    assert venues.mexc_bars("XUSDT").iloc[0] == pytest.approx(222.0)
+
+    # And every reader stamps the bar with the second it opens, not milliseconds.
+    assert collect.cex_bars("X_USDT").index[0] == 1700000000
+    assert venues.bybit_bars("XUSDT").index[0] == 1700000000
+
+
+def test_realigning_puts_both_venues_on_one_instant() -> None:
+    # Built so the answer is known. One price path, quoted by both venues with
+    # no lead either way: the exchange column holds each minute's open, which
+    # is the path at that minute, and the pool column holds each minute's
+    # close, which is the path a minute later. As collected the two columns
+    # differ by one step even though nothing led anything. Realigned they must
+    # agree to the last digit, because they are then the same instant.
+    import pandas as pd
+
+    from analysis.alignment import realign
+
+    path = [100.0, 101.0, 103.0, 106.0, 110.0, 115.0]
+    stamps = [0, 60, 120, 180, 240, 300]
+    paired = pd.DataFrame({"cex": path, "dex": path[1:] + [121.0]}, index=stamps)
+
+    assert not (paired.cex == paired.dex).any()
+    fixed = realign(paired)
+    assert list(fixed.cex) == list(fixed.dex)
+    assert len(fixed) == len(paired) - 1
+
+
+def test_realigning_refuses_to_step_across_a_gap() -> None:
+    # The next row is only the next minute if it is sixty seconds later. Where
+    # collection dropped a minute, taking the following row would hand the
+    # exchange a price from further in the future than the pool's, which is the
+    # error this function exists to remove, in the other direction.
+    import pandas as pd
+
+    from analysis.alignment import realign
+
+    stamps = [0, 60, 300, 360]
+    paired = pd.DataFrame({"cex": [1.0, 2.0, 3.0, 4.0],
+                           "dex": [9.0, 9.0, 9.0, 9.0]}, index=stamps)
+
+    fixed = realign(paired)
+    assert list(fixed.index) == [0, 300]
+    assert list(fixed.cex) == [2.0, 4.0]
+
+
+def test_the_lag_profile_finds_a_planted_one_minute_offset() -> None:
+    # A pool series that is the exchange series one minute ahead must peak at
+    # plus one and nowhere else. This is the measurement that caught the real
+    # misalignment, so it is held to a case where the offset was put there on
+    # purpose.
+    import numpy as np
+    import pandas as pd
+
+    from analysis.alignment import lag_profile
+
+    rng = np.random.default_rng(0)
+    path = 100 * np.exp(np.cumsum(rng.normal(scale=1e-4, size=400)))
+    stamps = [60 * i for i in range(len(path) - 1)]
+    paired = pd.DataFrame({"cex": path[:-1], "dex": path[1:]}, index=stamps)
+
+    profile = lag_profile(paired)
+    assert max(profile, key=lambda k: profile[k]) == 1
+    assert profile[1] == pytest.approx(1.0, abs=1e-9)
+    assert abs(profile[0]) < 0.2
+
+
+def test_the_floor_table_splits_on_sample_size_alone() -> None:
+    # threshold.below_the_floor exists to show the paired-minute floor does not
+    # select on the outcome, so its own split has to be decided by nothing but
+    # the row count, and a pair too short for the estimator has to come back
+    # with no weight rather than a fabricated one.
+    import pandas as pd
+
+    from analysis.robustness import MIN_PAIRED
+    from analysis.threshold import below_the_floor
+
+    table = below_the_floor("2026-07-29b")
+    assert (table[table.kept].minutes >= MIN_PAIRED).all()
+    assert (table[~table.kept].minutes < MIN_PAIRED).all()
+    assert table[table.w_cex.isna()].minutes.max() < MIN_PAIRED
+    assert pd.notna(table[table.kept].w_cex).all()
+
+
+def test_each_coverage_row_describes_its_own_series() -> None:
+    # coverage.csv is where the post's fill rates and gap structure come from,
+    # and nothing recomputed it from the minutes it summarises. Every field is
+    # derivable, so every field is derived here: a stale summary beside a
+    # re-collected series would otherwise put wrong fill rates into the
+    # write-up with every other check still green.
+    import numpy as np
+    import pandas as pd
+
+    for label in ("2026-07-29b", "2026-07-30", "2026-07-31"):
+        folder = Path("raw") / label
+        coverage = pd.read_csv(folder / "coverage.csv").set_index("symbol")
+        for symbol, row in coverage.iterrows():
+            series = pd.read_csv(folder / f"{symbol}.csv", index_col="ts")
+            stamps = np.sort(series.index.to_numpy())
+            gaps = np.diff(stamps) // 60
+
+            assert int(row.paired_minutes) == len(stamps), symbol
+            assert row.fill_rate == pytest.approx(
+                round(len(stamps) / int(row.window_minutes), 4)), symbol
+            assert int(row.first_ts) == int(stamps.min()), symbol
+            assert int(row.last_ts) == int(stamps.max()), symbol
+            if len(stamps) > 1:
+                assert int(row.median_gap_min) == int(np.median(gaps)), symbol
+                assert int(row.max_gap_min) == int(gaps.max()), symbol
+                assert row.consecutive_share == pytest.approx(
+                    round(float((gaps == 1).mean()), 4)), symbol
+
+
+def test_no_series_file_is_missing_from_its_coverage() -> None:
+    # And the other direction: a token collected but left out of the summary
+    # would be invisible to every count the post makes.
+    import pandas as pd
+
+    for label in ("2026-07-29b", "2026-07-30", "2026-07-31"):
+        folder = Path("raw") / label
+        listed = set(pd.read_csv(folder / "coverage.csv").symbol)
+        on_disk = {p.stem for p in folder.glob("*.csv")} - {"coverage", "universe"}
+        assert on_disk == listed, f"{label}: {on_disk ^ listed}"
+

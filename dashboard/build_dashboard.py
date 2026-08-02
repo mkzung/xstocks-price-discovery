@@ -109,9 +109,9 @@ exceptions are named. Collected daily, {first_date} to {last_date}.</p>
 
 <h2>Why believe it</h2>
 <p class="lede">Every way the result could have been an artefact, and what the
-check returned. All of it runs from the committed data; the per-check counts
-come from the first day's series pass, and the last row spans all three
-days.</p>
+check returned. All of it runs from the committed data. The first row is a
+mistake found in the collection itself, that row and the last three span all
+three days, and the rest come from the first day's series pass.</p>
 {checks_table}
 
 <h2>What sparse trading could explain</h2>
@@ -155,13 +155,23 @@ estimators are held to known answers by <code>python -m pytest tests</code>.
 """
 
 
-def _table(frame: pd.DataFrame, classes: dict[str, str] | None = None) -> str:
+def _table(frame: pd.DataFrame, tone: str | None = None) -> str:
+    """Render a frame, optionally letting each row set the tone of one cell.
+
+    The checks table used to paint its whole result column green. That was
+    already coarse and became wrong once a row reported a mistake found in the
+    collection rather than a check that passed: a reader scanning the colours
+    would have read an error as a clean bill. A row can now carry its own tone
+    in a column that is used for styling and then dropped.
+    """
+    tones = frame[tone].tolist() if tone else None
+    frame = frame.drop(columns=[tone]) if tone else frame
     head = "".join(f"<th>{c}</th>" for c in frame.columns)
     body = ""
-    for _, row in frame.iterrows():
+    for i, (_, row) in enumerate(frame.iterrows()):
         cells = ""
         for col, value in row.items():
-            css = (classes or {}).get(col, "")
+            css = tones[i] if tones is not None and col == "result" else ""
             attr = f' class="{css}"' if css else ""
             cells += f"<td{attr}>{value}</td>"
         body += f"<tr>{cells}</tr>"
@@ -169,42 +179,64 @@ def _table(frame: pd.DataFrame, classes: dict[str, str] | None = None) -> str:
 
 
 def _checks_table(rob: pd.DataFrame, vec: pd.DataFrame, lags: pd.DataFrame,
-                  grid: pd.DataFrame, risk: pd.DataFrame,
-                  cross: pd.DataFrame) -> pd.DataFrame:
+                  grid: pd.DataFrame, risk: pd.DataFrame, cross: pd.DataFrame,
+                  align: pd.DataFrame, dep: pd.DataFrame,
+                  below: pd.DataFrame) -> pd.DataFrame:
     n = len(rob)
     grid_ok = grid.dropna(subset=["w_cex"])
+    fitted = align.dropna(subset=["w_realigned"])
     rows = [
+        # First, because it is a question about the data rather than about the
+        # model, and because a reader who sees only this page would otherwise
+        # never learn that the two tapes had been a minute apart.
+        # Deliberately not green. This row reports a mistake that was found
+        # and corrected, not a check that came back clean, and colouring it
+        # like the others would let a reader skim past it.
+        ("Did both tapes mean the same instant",
+         "they did not; refitted on the corrected alignment",
+         f"exchange ahead in {int((fitted.w_realigned > 0.5).sum())} of "
+         f"{len(fitted)}, against "
+         f"{int((fitted.w_as_collected > 0.5).sum())} as collected", ""),
         ("Are the two series cointegrated at all",
          "augmented Dickey-Fuller on each spread",
-         f"stationary in {int(rob.spread_stationary.sum())} of {n}"),
+         f"stationary in {int(rob.spread_stationary.sum())} of {n}", "pass"),
         ("Does imposing a one-for-one error term matter",
          "cointegrating vector fitted instead",
-         f"same leader in {int(vec.same_leader.sum())} of {len(vec)}"),
+         f"same leader in {int(vec.same_leader.sum())} of {len(vec)}", "pass"),
         ("Does a second estimator agree",
          "Hasbrouck information shares",
-         f"same direction in {int(rob.agree.sum())} of {n}"),
+         f"same direction in {int(rob.agree.sum())} of {n}", "pass"),
         ("Can the token's own data support it",
          "block bootstrap over the fitted rows",
          f"exchange ahead in {rob.lead_share.min():.0%} to "
-         f"{rob.lead_share.max():.0%} of resamples"),
+         f"{rob.lead_share.max():.0%} of resamples", "pass"),
         ("Could sparse pool trading have invented it",
          "simulation with the pool as known leader",
          f"error {risk.false_lead_drop.min():.0%} to "
-         f"{risk.false_lead_drop.max():.0%} at these fill rates"),
+         f"{risk.false_lead_drop.max():.0%} at these fill rates", "pass"),
         ("Does the answer depend on the lag order",
          "refitted at 1, 3, 5 and 10 lags",
          f"leader changes in {int((lags.groupby('symbol').leads.nunique() > 1).sum())} "
-         f"of {lags.symbol.nunique()}"),
+         f"of {lags.symbol.nunique()}", "pass"),
         ("Does it depend on the minute grid",
          "refitted on five-minute bars",
          f"same leader in {int((grid_ok.groupby('symbol').leads.nunique() == 1).sum())} "
-         f"of {grid_ok.symbol.nunique()}"),
+         f"of {grid_ok.symbol.nunique()}", "pass"),
+        ("Are the pairs seven separate draws or one market",
+         "cross-token correlation of the spread the model fits",
+         f"{dep.loc['spread']['median']:.2f}, against "
+         f"{dep.loc['exchange']['median']:.2f} on the exchange legs", "pass"),
+        ("Does the 120-minute floor pick its own answer",
+         "the estimator run below the floor as well",
+         f"{int((below.w_cex > 0.5).sum())} of {len(below)} lean the same way, "
+         f"median {below.w_cex.median():.2f}", "pass"),
         ("Does it survive different days",
          f"collection repeated daily through {LAST_DAY_TEXT}",
          f"led in every window ranked, {int(cross.led_every_window.sum())} of "
-         f"{len(cross)} tokens"),
+         f"{len(cross)} tokens", "pass"),
     ]
-    return pd.DataFrame(rows, columns=["question", "how it was answered", "result"])
+    return pd.DataFrame(
+        rows, columns=["question", "how it was answered", "result", "tone"])
 
 
 def build() -> Path:
@@ -217,6 +249,11 @@ def build() -> Path:
     grid = pd.read_csv(DATA / f"sensitivity_grid_{SERIES_PASS}.csv")
     risk = pd.read_csv(DATA / f"sensitivity_staleness_{SERIES_PASS}.csv")
     risk = risk[risk.symbol.isin(rob.symbol)]
+    align = pd.read_csv(DATA / "alignment.csv")
+    dep = pd.read_csv(DATA / "dependence.csv")
+    dep = dep[dep.window == SERIES_PASS].set_index("leg")
+    below = pd.read_csv(DATA / "threshold.csv").dropna(subset=["w_cex"])
+    below = below[~below.kept]
     cross = pd.read_csv(DATA / "windows_leadership.csv", index_col=0)
     cross = cross[cross.windows_ranked >= 2].sort_values("spread_across_windows")
 
@@ -288,8 +325,9 @@ def build() -> Path:
         ratio_max=groups.ratio.max(),
         risk_low=risk.false_lead_drop.min() * 100,
         risk_high=risk.false_lead_drop.max() * 100,
-        checks_table=_table(_checks_table(rob, vec, lags, grid, risk, cross),
-                            {"result": "pass"}),
+        checks_table=_table(_checks_table(rob, vec, lags, grid, risk, cross,
+                                          align, dep, below),
+                            tone="tone"),
         weights_table=_table(weights),
         cross_table=_table(cross_rows),
         dead_table=_table(dead_rows),

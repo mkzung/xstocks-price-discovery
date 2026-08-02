@@ -38,16 +38,32 @@ jobs:
         run: python analysis/vector.py 2026-07-31
       - name: does anything hold across days
         run: python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31
-      - name: mints against an outside registry
+      - name: mints against the issuer's own published list
         run: python analysis/registry.py
       - name: the session split, from the series passes
         run: python analysis/sessions.py
+
+      - name: whether the sign test's null is entitled to its draws
+        run: python analysis/dependence.py
+
+      - name: whether the paired-minute floor chooses the answer
+        run: python analysis/threshold.py
+
+      - name: whether both venues' bars describe the same instant
+        run: python analysis/alignment.py
       - name: figures redraw from the committed data
         run: python analysis/build_analysis.py
       - name: the post's line wrapping is settled
         run: python analysis/format_post.py --check
       - name: the post's formatting, spelling and links
         run: python analysis/check_post.py
+      - name: the single-page view rebuilds
+        # Without this the diff below could never fail on index.html: nothing
+        # else in this job writes it, so a hand-edited or stale page passed
+        # every step. Verified by corrupting the committed page and watching
+        # the whole workflow stay green.
+        run: python dashboard/build_dashboard.py
+
       - name: regenerated artefacts match the committed ones
         # PNGs are excluded: freetype and matplotlib versions shift bytes
         # between machines without changing content. The CSVs and the page are

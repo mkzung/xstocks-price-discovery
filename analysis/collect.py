@@ -94,13 +94,35 @@ def load_universe() -> pd.DataFrame:
     return pd.read_csv(DATA / "universe.csv")
 
 
+# The two tapes order their fields differently and neither says so in the
+# payload. Naming the orders once, and selecting by name below, is what stops a
+# reader from quietly taking the open of one venue against the close of the
+# other, which is what happened here. The post states both orders and
+# verify.py checks it against these tuples.
+GATE_FIELDS = ("timestamp", "quote volume", "close", "high", "low", "open",
+               "base volume", "closed")
+GECKO_FIELDS = ("timestamp", "open", "high", "low", "close", "volume")
+
 def cex_bars(pair: str, limit: int = 1000) -> pd.Series:
-    """Gate 1m closes, indexed by epoch second."""
+    """Gate 1m closes, indexed by epoch second.
+
+    Gate returns `[timestamp, quote volume, close, high, low, open, base
+    volume, closed]`, so the close is field two. This read field five, the
+    open, while `dex_bars` below correctly reads GeckoTerminal's close, which
+    put the two series a minute apart at every stamp: the exchange price was
+    the one at the timestamp and the pool price the one sixty seconds later.
+    `analysis/alignment.py` measures what that cost and the tests pin both
+    layouts against payloads shaped like the real ones. The committed windows
+    in `raw/` were collected before this fix and are analysed as they stand;
+    the post says so and reports the refit.
+    """
     rows = _get(
         "https://api.gateio.ws/api/v4/spot/candlesticks"
         f"?currency_pair={pair}&interval=1m&limit={limit}"
     )
-    return pd.Series({int(r[0]): float(r[5]) for r in rows}).sort_index()
+    close = GATE_FIELDS.index("close")
+    return pd.Series({int(r[0]): float(r[close])
+                      for r in rows}).sort_index()
 
 
 def dex_bars(pool: str, limit: int = 1000, before: int | None = None) -> pd.Series:
@@ -111,7 +133,9 @@ def dex_bars(pool: str, limit: int = 1000, before: int | None = None) -> pd.Seri
         url += f"&before_timestamp={before}"
     payload = _get(url)
     bars = payload["data"]["attributes"]["ohlcv_list"]
-    return pd.Series({int(r[0]): float(r[4]) for r in bars}).sort_index()
+    close = GECKO_FIELDS.index("close")
+    return pd.Series({int(r[0]): float(r[close])
+                      for r in bars}).sort_index()
 
 
 def dex_history(pool: str, pages: int = 4) -> pd.Series:

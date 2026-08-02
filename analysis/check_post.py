@@ -10,13 +10,19 @@ These are checks on form. `verify.py` checks the numbers, and the two are kept
 apart so that neither can quietly pass by doing the other's job.
 """
 import re
-from pathlib import Path
-
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from analysis.build_analysis import POST_DATA  # noqa: E402
+from analysis.collect import GATE_FIELDS, GECKO_FIELDS  # noqa: E402
 from analysis.format_post import normalise  # noqa: E402
+
+# Field indices are single digits by construction, so this covers every value
+# it can be asked for rather than a table that could be outgrown.
+_DIGIT_WORDS = ("zero", "one", "two", "three", "four", "five",
+                "six", "seven", "eight", "nine")
 
 base = Path(__file__).resolve().parent.parent
 post = (base / "post" / "index.md").read_text()
@@ -34,6 +40,73 @@ check("figures present", "{{< figure" in post,
 check("metric mapping section", "buysellratio" in post or "volumedist" in post
       or "timeoftrade" in post)
 check("metrics-docs link", "dn.institute/market-health/docs" in post)
+# Every dataset the post names has to be one the build mirrors. Three were
+# added by hand into post/data/ and left out of POST_DATA, so nothing synced
+# them and verify.py's byte-check skipped them: a dataset the article points at
+# could have gone stale without a single check noticing.
+_named = set(re.findall(r"data/([A-Za-z0-9_.\-]+\.csv)", post))
+_unmirrored = sorted(_named - set(POST_DATA))
+check("every dataset the post names is mirrored by the build",
+      not _unmirrored, f"not in POST_DATA: {_unmirrored}")
+
+# And every module that writes one of those datasets has to appear in the
+# post's reproduce block. Three modules were added without it and the block
+# quietly described a shorter pipeline than the one behind the numbers.
+_writes = {p.name for p in (Path(__file__).resolve().parent).glob("*.py")
+           if re.search(r'to_csv\(\s*DATA\s*/', p.read_text())}
+_missing = sorted(m for m in _writes if f"analysis/{m}" not in post)
+check("the reproduce block runs every module that writes a dataset",
+      not _missing, f"absent from the post: {_missing}")
+
+# The README repeats the post's account of the bar layouts and nothing checked
+# it. Three documents now state which field is which -- the post, the README
+# and alignment.py -- and only the first was tied to the tuples the collector
+# selects by, so the other two could drift the moment a layout changed.
+_readme = (base / "README.md").read_text()
+for _label, _fields, _text in (("Gate", GATE_FIELDS, _readme),
+                               ("Gate", GATE_FIELDS, post),
+                               ("GeckoTerminal", GECKO_FIELDS, post)):
+    _layout = "`[" + ", ".join(_fields) + "]`"
+    check(f"{_label}'s field order, as {'the README' if _text is _readme else 'the post'} states it",
+          re.sub(r"\s+", " ", _layout) in re.sub(r"\s+", " ", _text),
+          _layout[:44])
+# The README opens with the finding, in the post's own figures. Three
+# documents carrying the same numbers is three chances to drift, so each
+# headline claim is required in the README and its figure required in the post.
+_flat_readme = re.sub(r"\s+", " ", _readme)
+_flat_post = re.sub(r"\s+", " ", post)
+for _in_readme, _in_post in (
+        ("in 21 of the 23 pair-days that can be ranked",
+         "in 21 of the 23 pair-days that can be ranked"),
+        ("a rank correlation of -0.93", "Rank correlation -0.93"),
+        ("collected daily from 29 to 31 July 2026",
+         "collected daily from 29 to 31 July 2026")):
+    check(f"README and post agree on {_in_readme[:34]}",
+          _in_readme in _flat_readme and _in_post in _flat_post,
+          f"readme={_in_readme in _flat_readme} post={_in_post in _flat_post}")
+
+check("the README names the field the collector wrongly read",
+      f"field {_DIGIT_WORDS[GATE_FIELDS.index('open')]}, the open" in _readme,
+      f"expected field {_DIGIT_WORDS[GATE_FIELDS.index('open')]}")
+# The two DOIs, pinned digit for digit. The number sweep cannot check them --
+# bumping a digit inside a DOI leaves every figure in the post correct -- and a
+# DOI that is one character wrong resolves to nothing or, worse, to a different
+# paper. Both were resolved against doi.org and returned Gonzalo and Granger,
+# "Estimation of Common Long-Memory Components in Cointegrated Systems", JBES
+# 1995, and Hasbrouck, "One Security, Many Markets", Journal of Finance 1995.
+for _label, _doi in (("Gonzalo-Granger", "10.1080/07350015.1995.10524576"),
+                     ("Hasbrouck", "10.1111/j.1540-6261.1995.tb04054.x")):
+    check(f"{_label} DOI is exact", f"https://doi.org/{_doi}" in post)
+# The year a reader sees, next to the identifier a reader does not. Both DOIs
+# and both wiki paths carry their dates and are pinned above, but the years in
+# the running prose are separate strings and the number sweep leaves them
+# green: a citation can read 1996 beside a DOI that resolves to 1995 and every
+# figure in the post stays correct.
+for _label, _year in (("Gonzalo and Granger", "1995"), ("Hasbrouck", "1995"),
+                      ("the earlier Gate.io article", "2021")):
+    check(f"{_label} is cited as {_year}",
+          re.search(rf"\[?{re.escape(_label)}\s+{_year}|\[{_year} Gate\.io", post)
+          is not None)
 # Every markdown link URL must be contiguous. The wrapper once split a URL in
 # the middle of its domain, which killed both wiki links in any renderer, and
 # the substring check that stood here kept passing because fragments of the
@@ -67,9 +140,47 @@ check("first figure eager, the rest lazy",
 # the naive ordering comparison passed precisely when Summary was absent. The
 # mutation drill caught it before it could not-catch anything else.
 _summary_at = post.find("## Summary")
+# Every figure the README quotes in its prose has to be one the post carries,
+# because the post's figures are the ones verify.py holds to the data. Fenced
+# blocks are stripped first: a runtime estimate beside a command is not a claim
+# about the study. One operational number survives that and is named rather
+# than silently tolerated.
+_OPERATIONAL = {"429"}  # the HTTP status GeckoTerminal rate-limits with
+_readme_prose = re.sub(r"```.*?```", " ", _readme, flags=re.S)
+_readme_prose = "\n".join(
+    line for line in _readme_prose.splitlines()
+    if not line.startswith(("|", "[!", "python ", "pip ")))
+_FIGURE = re.compile(r"(?<![\w.\-/])\d+(?:\.\d+)?(?![\d])(?![a-zA-Z/])")
+_orphans = sorted(set(_FIGURE.findall(_readme_prose))
+                  - set(_FIGURE.findall(post)) - _OPERATIONAL)
+check("every figure the README quotes appears in the post",
+      not _orphans, f"only in the README: {_orphans}")
+
+# The robustness section counts itself in words. Adding a check without
+# updating the count, or the reverse, leaves the article miscounting its own
+# argument, which no number sweep would notice.
+_WORD_COUNTS = {"Four": 4, "Five": 5, "Six": 6, "Seven": 7, "Eight": 8}
+_section = post[post.index("## What would have to be true"):
+                post.index("## Measured again")]
+_stated = re.search(r"(\w+) things could have gone wrong underneath it",
+                    re.sub(r"\s+", " ", _section))
+check("the robustness section counts its own checks",
+      _stated is not None
+      and _WORD_COUNTS.get(_stated.group(1)) == len(re.findall(r"^### ", _section, re.M)),
+      f"says {_stated.group(1) if _stated else '?'}, "
+      f"has {len(re.findall(r'^### ', _section, re.M))}")
+
 check("opens with a Summary section",
-      _summary_at != -1 and _summary_at < post.find("## The universe"))
-check("closes with a Scope section", post.rstrip().split("## ")[-1].startswith("Scope"))
+      _summary_at != -1 and _summary_at < post.find("## The universe")
+      and post[_summary_at:].splitlines()[0].strip() == "## Summary",
+      f"found {post[_summary_at:].splitlines()[0].strip()!r}"
+      if _summary_at != -1 else "no Summary heading")
+# The heading has to be Scope, not merely start with it. Renaming it to
+# "Scopey" left this rule green, because a substring test cannot tell a section
+# from one whose name it happens to begin.
+_last_heading = post.rstrip().split("## ")[-1].splitlines()[0].strip()
+check("closes with a Scope section", _last_heading == "Scope",
+      f"last heading is {_last_heading!r}")
 check("no chestnut emoji", "\U0001f330" not in post)
 check("no shipit", "shipit" not in post.lower())
 check("pure ASCII", all(ord(c) < 128 for c in post))
@@ -106,6 +217,10 @@ for name, ok in files.items():
 bad = 0
 for label, ok, detail in checks:
     bad += not ok
-    print(f"  [{'OK ' if ok else 'GAP'}] {label}{'  ' + detail if detail else ''}")
+    # Detail only when something is wrong. A passing run printing "not in
+    # POST_DATA: []" beside every green line buries the names a reader is
+    # scanning for, and an empty list is not information.
+    print(f"  [{'OK ' if ok else 'GAP'}] {label}"
+          f"{'  ' + detail if detail and not ok else ''}")
 print(f"\nGAPS: {bad} of {len(checks)}")
 raise SystemExit(1 if bad else 0)

@@ -99,7 +99,15 @@ def run(*, draws: int = 40) -> pd.DataFrame:
                     "speed_pool": fit.speed_b, "minutes": fit.n_obs,
                 })
     frame = pd.DataFrame(rows)
-    frame.to_csv(DATA / "staleness.csv", index=False)
+    # Written at ten decimals rather than at full float64 repr. These three files
+    # are the only pipeline outputs that stored raw doubles, and a fresh run on
+    # Linux reproduced them to about 1e-13 rather than exactly: BLAS differs
+    # between platforms, so the last digits of a repr are machine detail, not
+    # results. That was enough to redden the workflow's "regenerated artefacts
+    # match the committed ones" step on any machine but the one that wrote them.
+    # Ten decimals is far past anything read downstream, where the coarsest use is
+    # a share of runs whose weight clears an even split.
+    frame.round(10).to_csv(DATA / "staleness.csv", index=False)
     return frame
 
 
@@ -133,7 +141,8 @@ def run_matched(*, draws: int = 40) -> pd.DataFrame:
                              "w_cex": fit.weight_a, "rows": fit.n_obs,
                              "fitted": True})
     frame = pd.DataFrame(rows)
-    frame.to_csv(DATA / "staleness_matched.csv", index=False)
+    # Ten decimals, for the reason given above.
+    frame.round(10).to_csv(DATA / "staleness_matched.csv", index=False)
     return frame
 
 

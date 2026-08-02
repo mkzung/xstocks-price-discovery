@@ -58,18 +58,18 @@ sit six tokens whose pools are too close to dead to check the exchange against.
 Every Gate USDT pair whose ticker ends in X and printed at least twenty
 thousand dollars of 24-hour volume was matched to a Solana pool. Ticker
 matching alone is not safe here: a re-screen after the third collection day,
-committed as `data/collisions.csv`, found 13 Solana pools answering to 10 of
-these tickers on mints that are not the issuer's. Their claimed liquidity was
-negligible that day, and the population is not stable: impostor pools appear
-and vanish between screens. Each pool was therefore checked against the vanity
-prefix Backed uses for its issued mints, and only exact-symbol pools on such
-mints were kept. A prefix is a screen, not authentication. Backed publishes no
-machine-readable token list, so every kept mint was checked against Jupiter's
-verified registry, curated independently of this study and of the issuer: all
-24 appear there, under the matching symbol and a name that says xStock.
-`data/registry_check.csv` records the check and `data/universe.csv` carries the
-full addresses. Third-party corroboration is not proof of issuance, and the two
-are not claimed to be the same thing.
+run by `analysis/collisions.py` and committed as `data/collisions.csv`, found
+13 Solana pools answering to 10 of these tickers on mints that are not the
+issuer's. Their claimed liquidity was negligible that day, and the population
+is not stable: impostor pools appear and vanish between screens. Each pool was
+therefore checked against the vanity prefix Backed uses for its issued mints,
+and only exact-symbol pools on such mints were kept. A prefix is a screen, not
+authentication, so every kept mint is checked against the issuer's own
+published list at `api.xstocks.fi`, which gives each asset's deployment address
+per network. All 24 match the Solana address Backed publishes for that symbol,
+and the same 24 also appear in Jupiter's independently curated verified list.
+`data/registry_check.csv` records both, `data/universe.csv` carries the full
+addresses, and `analysis/registry.py` rebuilds the check.
 
 That leaves **24 tokens quoted on both venues**. Per dollar of on-chain volume
 in the same mint, Gate's 24-hour volume ranges from 16 cents to **7,311
@@ -90,8 +90,9 @@ dollars**:
 | QQQX  | $263,542 | $1,683,226   | $2,489,640 | 0.16  |
 
 Eleven of the twenty-four are shown; all of them are in
-`data/token_groups.csv`. Four and a half orders of magnitude, inside one asset
-class, one issuer, and one pair of venues. The median is 6.8.
+`data/token_groups.csv`, which `analysis/relation.py` builds along with the
+rank correlation and its permutation test. Four and a half orders of magnitude,
+inside one asset class, one issuer, and one pair of venues. The median is 6.8.
 
 ## Which venue moves first
 
@@ -108,7 +109,7 @@ twenty moves on each side, and in that pass the exchange leads every one. Two
 sit under the stricter 120-minute floor the series passes use, GOOGLX at 119
 and AMZNX at 82, and the text below leans on them accordingly:
 
-{{< figure src="weights.png" alt="Left panel, exchange weight in the common factor for nine tokens, all at or above 0.63. Right panel, the share of the gap each side closes per minute, with the pool bars far longer than the exchange bars" caption="The exchange weight, and underneath it the reason: the pool closes the gap, the book does not." loading="lazy" >}}
+{{< figure src="weights.png" alt="Left panel, exchange weight in the common factor for nine tokens, the lowest at 0.63. Right panel, the share of the gap each side closes per minute, with the pool bars far longer than the exchange bars" caption="The exchange weight, and underneath it the reason: the pool closes the gap, the book does not." loading="lazy" >}}
 
 | token  | Gate weight | Gate correction speed | pool correction speed |
 |--------|------------:|----------------------:|----------------------:|
@@ -145,17 +146,23 @@ is for. It is also the thinnest sample in the table, 82 paired minutes against
 being a caveat: AMZNX turns out to be the study's one clear pool lead, in the
 daily section below.
 
-The ranking is not an artefact of the hours covered. Cutting the panel to the
-minutes when the US equity market is shut, 86 percent of the window, leaves
-eight pairs measurable and the exchange ahead in all eight, at weights of 0.96
-to 1.24. That panel kept no minutes, so its split cannot be re-fitted from
-anything committed here. The same cut runs on the three series passes, which do
-keep theirs: 19 pair-days carry at least 120 shut-hours minutes, the exchange
-leads in 17, and AMZNX stays a pool lead in both regimes.
+Is the ranking an artefact of the hours covered? The panel's own answer is no,
+at weights of 0.96 to 1.24 across the eight pairs measurable when the US equity
+market is shut, which is 86 percent of the window. That panel kept no minutes,
+though, so nobody can refit it from anything committed here, and a saved
+aggregate is a record of a result rather than a way to check it. The claim
+therefore rests on the three series passes, where the same cut does refit. 19
+pair-days carry at least 120 shut-hours minutes, and the exchange leads 17 of
+them on the shut hours against 17 on the whole window. That equality is two
+offsetting flips rather than nothing moving: METAX falls from 0.57 to 0.41 and
+TSLAX rises from 0.47 to 0.51, each crossing an even split, and the strict rule
+declines to call either of them in either regime. AMZNX stays a pool lead in
+both. So the ranking does not depend on the market being open, which is the
+question asked; it says nothing to firm up a pair that was already near even.
 `data/sessions_from_series.csv` holds it and `analysis/sessions.py` rebuilds
 it.
 
-{{< figure src="sessions.png" alt="Exchange weights for eight tokens measured on the whole window and on the closed-market hours, both sets sitting near or above one" caption="Whatever sets these prices overnight is doing it on the order book." loading="lazy" >}}
+{{< figure src="sessions.png" alt="Exchange weights for eight tokens measured on the whole window and on the closed-market hours, both sets sitting near or above one" caption="The session panel's reading of the overnight hours. It is the saved aggregate, not a refittable one; the series passes below carry the weight of the claim." loading="lazy" >}}
 
 A pool tracking a deeper venue is a pool doing its job, and the exchange volume
 in these nine names is buying real price discovery. The question is what the
@@ -245,11 +252,70 @@ show a market exists. They are named in `data/token_groups.csv` with the rest.
 ## What would have to be true for this to be wrong
 
 Everything above rests on one estimator, one specification and one stretch of
-minutes. Five things could have produced it with no venue leading anything.
-Each is answered against the first day's series pass, whose minute series are
-committed under `raw/`, so every check can be re-run instead of taken on trust.
-The sixth question, whether any of it survives being measured again, has its
-own section after them.
+minutes. Six things could have gone wrong underneath it. The first is a mistake
+in how the two tapes were read, and it opens this section because it comes
+before the rest; it is answered across all three series passes. The other five
+are ways the result could have appeared with no venue leading anything, and
+each is answered against the first day's pass, whose minute series are
+committed under `raw/` so the check can be re-run instead of taken on trust.
+Whether any of it survives being measured again has its own section after them.
+
+### Whether the two series describe the same instant
+
+Before any of the rest, the two prices have to be the same moment. They were
+not.
+
+Gate's candlestick endpoint, which supplies the exchange minutes, returns a bar
+as `[timestamp, quote volume, close, high, low, open, base volume, closed]`,
+and the collector read field five, the open, which is the price at the stamp.
+GeckoTerminal's pool OHLCV endpoint, which supplies the on-chain minutes,
+returns `[timestamp, open, high, low, close, volume]`, and the collector read
+field four, the close, sixty seconds later. So at every timestamp the pool
+price was a minute newer than the exchange price beside it.
+
+Both tapes say which field is which, because on each the open of a bar equals
+the close of the one before. The study's own minutes say what it cost:
+correlate one-minute returns at lags of minus three to plus three, and the
+strongest correlation sits at plus one rather than zero on **14 of 23** ranked
+pairs.
+
+A pool holding newer information than the venue it is measured against has been
+given a head start. The error pushes towards calling the pool the leader, the
+opposite of what is reported here.
+
+Correcting it needs no new collection. Gate's close for a minute is Gate's open
+for the next one, the following row of the same committed file, so the exchange
+series moves onto the same instant at the cost of the rows whose next minute
+was never collected. Refitted that way, the exchange leads **22 of 23** rather
+than 21 and the median weight rises from 0.90 to **1.17**. The exchange's own
+correction speed collapses towards zero, far enough that most weights leave the
+range the decomposition can express, and that is the reason this post reads the
+speeds and not the weights.
+
+The relation itself is not an artefact of the misalignment. The spread is the
+same size either way, a median standard deviation of 20.9 basis points as
+collected against 20.7 realigned, and it stays stationary in 21 of 23 pairs
+after the correction against 23 of 23 before it. The difference is a sample cut
+roughly in half, not a weaker relation.
+
+The tables in this post are the as-collected fit, and the reason is not that it
+reads better. Every other check here was run on those series: the bootstrap,
+the Hasbrouck bounds, the stationarity tests, the session split, the daily
+comparison and the sensitivity sweeps. Refitting all of it on a sample cut in
+half would be a second study rather than a correction, and it would be a second
+study whose answer is already known to be the same one, more strongly. What is
+reported is therefore the conservative side of the error, said plainly here
+rather than left for a reader to find.
+
+One thing this does not touch. Bybit and MEXC return their closes at field four
+and the collector read field four, so the second exchange and the
+pool-against-pool controls were on the same instant throughout. The misreading
+was Gate's alone.
+
+`analysis/alignment.py` rebuilds the comparison into `data/alignment.csv` and
+`analysis/collect.py` now reads Gate's close. A test pins the field layout of
+all four venue readers against payloads shaped like the real ones, since
+nothing had held any of them to a known answer.
 
 ### Cointegration, tested rather than assumed
 
@@ -319,6 +385,24 @@ way, which carries p = 0.0156 under a coin-flip null; the session panel's nine
 of nine and the daily repeats are tallied in their own sections, and across all
 three days the count is 21 of 23.
 
+That null treats the seven pairs as seven separate draws, and these are all US
+equities, so the obvious objection is that one market moved and the seven
+agreed for one reason. The objection is right about the prices and misses what
+the model is fitted to. It is not fitted to a price but to the gap between two
+venues quoting one mint, and a market-wide move enters both sides of that gap
+at once. Measured on the ten token pairs of this pass with enough jointly
+observed minutes: the exchange legs move together at a median 0.51, the pool
+legs at 0.14, and the spread the model actually uses at **0.08**. What is
+shared is the price, not the arbitrage relation. Some sharing survives, and
+discounting the sample by the mean spread correlation leaves seven pairs worth
+about four, which would put the same tally at p = 0.125. The discount is
+deliberately harsh: a correlation only costs a draw if it pushes a weight
+across an even split. The reading that survives it is that one pass of seven is
+suggestive on its own, and that the case rests on the repeats and the controls
+rather than on this p-value. `analysis/dependence.py` rebuilds it into
+`data/dependence.csv`, overlap counts included, since eleven of the twenty-one
+pairings do not clear the floor and are left out.
+
 ### Could sparse trading have invented all of it
 
 This is the objection that would sink the study. A pool does not print every
@@ -361,6 +445,17 @@ Five lags and one-minute bars were choices. Refitting every pair at one, three,
 five and ten lags changes the leader in **0 of 7** pairs. Coarsening the grid
 to five minutes handicaps the test on purpose, since pools arbitrage inside a
 block, and it leaves the same leader in **7 of 7**.
+
+The 120-minute floor is the third such choice, and a cut is only innocent if it
+does not select on the outcome, so the estimator was run below it as well. The
+16 pairs it can fit there lean the same way, 12 of them to the exchange at a
+median 0.93, against 21 of 23 at 0.90 above it. Those readings are not evidence
+and are not counted anywhere: at 43 to 111 paired minutes the estimator
+scatters, and 6 of the 16 print outside the range a weight can take, which is
+what the floor is for. What they establish is only that the floor is not
+choosing the answer. A further 26 pairs the estimator refuses outright, on too
+few rows to fit at all. `analysis/threshold.py` rebuilds this into
+`data/threshold.csv`.
 
 ## Measured again, and then daily
 
@@ -424,14 +519,16 @@ because a tally needs a rule that cannot be argued with after the fact. The
 calibration says weights near even are weak readings, so here is the same count
 under a stricter predeclared rule that only classifies weights outside 0.3 to
 0.7: **17 pair-days are clear exchange leads, 1 is a clear pool lead, and 5 are
-unclassified**. The conclusion does not move; the near-even rows stop being
-counted as victories. GLDX repeats at 0.64 and 0.67 across its two days, stably
-short of a clear lead under either rule. METAX printed 0.57 on the second day,
-the one pair where the estimators disagreed, and on the third day its pool went
-completely silent: not a single print in the sixteen hours the exchange window
-reaches, after 142 paired minutes the day before. A pool that is a venue one
-day and absent the next is the volatility of the thin end of this market,
-measured.
+unclassified**. The direction is the same and the resolution is not: 21 of 23
+under the loose rule becomes 17 classified one way, 1 the other, and 5 that the
+strict rule declines to call. GLDX shows what the difference costs. Its 0.64
+and 0.67 count as exchange leads under the loose rule and fall into the
+unclassified band under the strict one, which is the honest reading of a weight
+that close to even. METAX printed 0.57 on the second day, the one pair where
+the estimators disagreed, and on the third day its pool went completely silent:
+not a single print in the sixteen hours the exchange window reaches, after 142
+paired minutes the day before. A pool that is a venue one day and absent the
+next is the volatility of the thin end of this market, measured.
 
 Three collection notes, none of them footnotes. The second and third days both
 lost their network mid-run and were topped up within hours, so each holds two
@@ -522,10 +619,13 @@ venues correct at similar speeds. One token's weight is therefore a weak
 reading on its own, and no weight in this post should be read as a point
 estimate.
 
-What survives that scatter is the ordering. Across the runs where the true
+What survives that scatter is the ordering. Across the 60 runs where the true
 weight is plainly one-sided the estimator picks the right leader 98 percent of
-the time, falling to 92 percent where the truth sits near even. So the post
-never rests on one weight. It rests on 21 of 23 pair-days pointing the same way
+the time. Nearer an even split the grid holds a single point, and there it is
+right in 11 of 12 runs, which is a direction rather than a rate. The runs where
+the truth is an even split are excluded from both, because neither venue leads
+in them and there is nothing for the estimator to recover. So the post never
+rests on one weight. It rests on 21 of 23 pair-days pointing the same way
 across three days, and underneath the weights, on the correction speeds: in the
 first day's panel the pool closes 22 to 74 percent of the gap per minute while
 the exchange closes at most 8. Those speeds are read straight off the fit
@@ -541,8 +641,21 @@ rather than simultaneous. Each daily pass carries its own snapshot in
 `raw/<day>/universe.csv` and borrows nothing from the days before it.
 
 The bar CSVs carry epoch timestamps per row, so the series passes date
-themselves. The two earlier panels do not, and their date is the date they were
+themselves, and those timestamps say something the pass labels do not. Each
+pass is the last thousand minutes before it ran, so its window reaches back
+into the previous calendar day: the three run from 28 July 23:35 to 29 July
+16:20, from 29 July 15:39 to 30 July 10:02, and from 30 July 18:02 to 31 July
+10:48, all UTC. A pass named for 31 July is therefore mostly the evening of the
+30th, which is the same fact the open-against-shut split turns on. The two
+earlier panels carry no timestamps at all, and their date is the date they were
 committed.
+
+The registry check is a live read of the issuer's list and of the
+second-opinion registry, and `data/registry_check.csv` is the answer those
+endpoints gave when it was committed. A list can be edited after the fact, so
+the committed file is a record of what was published then rather than a
+standing guarantee; rerunning `analysis/registry.py` says what is published
+now.
 
 ### Reproducing
 
@@ -551,10 +664,13 @@ re-fits from the committed minute series in `raw/`: every robustness check, the
 daily comparison, the vector and session splits. The two earliest passes, the
 universe snapshot and the session panel, kept only their outputs, so their
 tables are reported rather than re-fittable, and the series passes carry the
-same claims where it matters. The code, the tests that hold each estimator to
-an answer it was not told, and `analysis/verify.py`, which reads every number
-in this post back out of the CSVs and exits non-zero if one has drifted, are
-all here.
+same claims where it matters. The modules behind them, `analysis/panel.py` for
+the session split and `analysis/venues.py` for the second exchange and the
+pool-against-pool controls, are here and will run, but they collect afresh from
+the live endpoints rather than replaying those windows, which no longer exist.
+The code, the tests that hold each estimator to an answer it was not told, and
+`analysis/verify.py`, which reads every number in this post back out of the
+CSVs and exits non-zero if one has drifted, are all here.
 
 ```bash
 pip install -r requirements.txt
@@ -570,8 +686,11 @@ python analysis/vector.py 2026-07-30               # its cointegrating vector
 python analysis/robustness.py 2026-07-31           # the third day
 python analysis/vector.py 2026-07-31               # its cointegrating vector
 python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31  # across the calendar
-python analysis/registry.py                        # mints against an outside registry
+python analysis/registry.py                        # mints against the issuer's own list
 python analysis/sessions.py                        # open-against-shut, from the series
+python analysis/dependence.py                      # are the pairs separate draws
+python analysis/threshold.py                       # what the pairs below the floor say
+python analysis/alignment.py                       # do both tapes mean the same instant
 python analysis/build_analysis.py                  # redraw every figure
 python analysis/format_post.py --check             # wrapping is settled
 python analysis/check_post.py                      # formatting, spelling, links
@@ -596,9 +715,10 @@ open-against-shut split separates the two regimes and the answer holds in both,
 but no third leg reads the primary listing, so this measures which of the two
 crypto venues moves first, not where the price is born.
 
-The daily series passes rank only pairs with at least 120 paired minutes; the
-first day's session panel used a looser gate of eighty minutes and twenty moves
-per side, and its two thinnest rows are named where they appear. Near-even
-weights are read as shared discovery, never as a lead. The volume finding makes
-no claim that any print is fake, only that for a quarter of these listings
-nothing outside the exchange could tell you either way.
+The daily series passes rank only pairs with at least 120 paired minutes, a
+floor shown above not to select on the outcome; the first day's session panel
+used a looser gate of eighty minutes and twenty moves per side, and its two
+thinnest rows are named where they appear. Near-even weights are read as shared
+discovery, never as a lead. The volume finding makes no claim that any print is
+fake, only that for a quarter of these listings nothing outside the exchange
+could tell you either way.

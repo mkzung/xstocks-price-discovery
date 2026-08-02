@@ -12,9 +12,9 @@ pool, on the same issuer's mint, with arbitrage tying the two quotes together.
 That makes it possible to ask which venue actually sets the price, and to check
 an exchange's tape against something outside the exchange.
 
-`post/index.md` is the write-up and `index.html` is the same findings on one
-page. Everything in both is reproducible from this repository, and
-`analysis/verify.py` fails if a number in the text stops matching the data.
+Across 24 xStocks quoted at once on Gate and in Solana pools, collected daily from 29 to 31 July 2026, the exchange leads and the pool follows in 21 of the 23 pair-days that can be ranked. Underneath that sits the more useful finding. Rank the tokens by how much their pool trades, and by how many exchange dollars are printed per on-chain dollar, and the two orders come out close to reversed, at a rank correlation of -0.93. Six of the 24 have pools too close to dead to check the exchange against at all.
+
+`post/index.md` is the write-up and `index.html` is the same findings on one page. Everything in both is reproducible from this repository, and `analysis/verify.py` fails if a number in the text stops matching the data.
 
 ## What is here
 
@@ -34,8 +34,11 @@ page. Everything in both is reproducible from this repository, and
 | `analysis/windows.py` | the headline correlation and the per-token leadership, recomputed inside each collection day |
 | `analysis/calibrate.py` | what the estimator does to an answer it already knows |
 | `analysis/collisions.py` | records the ticker collisions the universe screen filters out |
-| `analysis/registry.py` | checks every kept mint against a registry curated outside this study |
+| `analysis/registry.py` | checks every kept mint against the issuer's own published asset list, with a third-party registry as a second opinion |
 | `analysis/sessions.py` | the open-against-shut split, refitted on the passes that keep their minutes |
+| `analysis/dependence.py` | whether the sign test's coin-flip null may treat the pairs as separate draws |
+| `analysis/threshold.py` | what the pairs below the paired-minute floor say, so the cut can be shown not to select on the outcome |
+| `analysis/alignment.py` | the one-minute bar misalignment, what it cost, and the refit on the corrected series |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
 | `analysis/check_post.py` | the post's formatting, spelling and link rules |
@@ -63,9 +66,15 @@ python analysis/vector.py 2026-07-30          # its cointegrating vector
 python analysis/robustness.py 2026-07-31      # the third collection day
 python analysis/vector.py 2026-07-31          # its cointegrating vector
 python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31  # what survives the calendar
+python analysis/sessions.py                   # open against shut, on the passes that keep minutes
+python analysis/dependence.py                 # are the pairs separate draws, or one market
+python analysis/threshold.py                  # what the pairs below the floor say
+python analysis/alignment.py                  # do both venues' bars describe the same instant
+python analysis/registry.py                   # every mint against the issuer's own list (network)
 python analysis/build_analysis.py             # redraw the figures
 python analysis/format_post.py --check        # wrapping is settled
 python analysis/check_post.py                 # formatting, spelling, links
+python dashboard/build_dashboard.py           # rebuild index.html, then `git diff --exit-code`
 ```
 
 To collect a new window, which becomes its own directory under `raw/` rather
@@ -109,9 +118,7 @@ The estimator was calibrated against a simulator with a known answer. Run
 Read a single weight as weak evidence. The fit sits 0.03 above the truth on
 average, so weights slightly above one are the bias rather than a real reading,
 and a single run lands anywhere from 0.33 below the truth to 0.28 above it
-across the whole grid. What holds up is the ordering: the estimator picks the
-right leader in 98 percent of runs where the true weight is plainly one-sided,
-92 percent where it is near even. The post therefore leans on the pattern
+across the whole grid. What holds up is the ordering: the estimator picks the right leader in 98 percent of the 60 runs where the true weight is plainly one-sided, and in 11 of the 12 at the one grid point near an even split. Runs whose truth is an even split are excluded from both, having no leader to recover. The post therefore leans on the pattern
 across pairs and days and on the correction speeds, not on any one weight, and
 it reports the pair-days where the exchange does not lead instead of smoothing
 them over.
@@ -129,6 +136,16 @@ partial fill rate the estimator then calls the exchange the leader in 95 to 100
 percent of runs, whoever actually leads. Dropping the untraded minutes, which is
 what the pipeline does, keeps the error to 2 to 19 percent at the fill rates the
 ranked pairs show.
+
+One correction worth knowing before reusing any of this. Gate returns a minute
+bar as `[timestamp, quote volume, close, high, low, open, base volume,
+closed]`, and `cex_bars` read field five, the open, while `dex_bars` read
+GeckoTerminal's close. The two series were therefore a minute apart at every
+stamp. `cex_bars` reads the close now and `tests/` pins the field layout of all
+four venue readers, but the windows committed under `raw/` were collected
+before the fix and are analysed as collected, which is the conservative side of
+the error; `analysis/alignment.py` refits them the other way and reports the
+difference.
 
 Two provenance notes. The 24-hour volumes in `universe.csv` are a snapshot
 taken when the universe was built; the minute bars were pulled afterwards, so

@@ -279,7 +279,8 @@ POST_DATA = ("universe.csv", "token_groups.csv", "panel_run1.csv",
              "sensitivity_replication_2026-07-29b.csv",
              "windows_relation.csv", "windows_leadership.csv", "collisions.csv",
              "staleness_matched.csv", "registry_check.csv",
-             "sessions_from_series.csv")
+             "sessions_from_series.csv", "dependence.csv", "threshold.csv",
+             "alignment.csv")
 
 
 def sync_post_data() -> None:
