@@ -34,6 +34,8 @@ page. Everything in both is reproducible from this repository, and
 | `analysis/windows.py` | the headline correlation and the per-token leadership, recomputed inside each collection day |
 | `analysis/calibrate.py` | what the estimator does to an answer it already knows |
 | `analysis/collisions.py` | records the ticker collisions the universe screen filters out |
+| `analysis/registry.py` | checks every kept mint against a registry curated outside this study |
+| `analysis/sessions.py` | the open-against-shut split, refitted on the passes that keep their minutes |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
 | `analysis/check_post.py` | the post's formatting, spelling and link rules |

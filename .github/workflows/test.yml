@@ -38,6 +38,10 @@ jobs:
         run: python analysis/vector.py 2026-07-31
       - name: does anything hold across days
         run: python analysis/windows.py 2026-07-29b 2026-07-30 2026-07-31
+      - name: mints against an outside registry
+        run: python analysis/registry.py
+      - name: the session split, from the series passes
+        run: python analysis/sessions.py
       - name: figures redraw from the committed data
         run: python analysis/build_analysis.py
       - name: the post's line wrapping is settled

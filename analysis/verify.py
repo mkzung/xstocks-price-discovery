@@ -141,6 +141,9 @@ hold_false = (sim[sim.scheme == "hold"].groupby("keep")
                      include_groups=False))
 
 collisions = pd.read_csv(base / "data" / "collisions.csv")
+registry = pd.read_csv(base / "data" / "registry_check.csv")
+shut_pairs = (pd.read_csv(base / "data" / "sessions_from_series.csv")
+              .dropna(subset=["w_shut"]))
 
 # The strict predeclared tally: only weights outside 0.3 to 0.7 classify.
 strict_ex = strict_pool = strict_near = 0
@@ -357,6 +360,13 @@ checks = [
     ("mint prefix on every token",
      int(u.mint.str.startswith("Xs").sum()), 24,
      "the vanity prefix Backed uses for its issued mints"),
+    ("registry corroboration", int(registry.corroborated.sum()), 24,
+     f"all {int(registry.corroborated.sum())} appear there, under the matching symbol"),
+    ("shut-hours pairs from series", len(shut_pairs), 19,
+     f"{len(shut_pairs)} pair-days carry at least {MIN_PAIRED} shut-hours minutes"),
+    ("shut-hours exchange leads",
+     int((shut_pairs.w_shut > 0.5).sum()), 17,
+     f"the exchange leads in {int((shut_pairs.w_shut > 0.5).sum())}"),
     ("ranking floor in scope", MIN_PAIRED, 120,
      f"pairs with at least {MIN_PAIRED} paired minutes"),
     ("numerator-only control", round(spearman(g.paired_min, g.cex_volume_24h), 2),
