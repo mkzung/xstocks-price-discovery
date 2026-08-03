@@ -599,3 +599,30 @@ def test_no_series_file_is_missing_from_its_coverage() -> None:
         on_disk = {p.stem for p in folder.glob("*.csv")} - {"coverage", "universe"}
         assert on_disk == listed, f"{label}: {on_disk ^ listed}"
 
+
+def test_every_written_table_has_a_total_order() -> None:
+    # pandas' default sort is not stable, so a table sorted on a key that ties
+    # comes out in a different row order on a different machine. That is how
+    # the workflow's artefact diff failed on CI while passing here: nothing but
+    # row order moved. Each writer now sorts on a key that cannot tie, and this
+    # asserts the key really is unique and the file really is in that order.
+    import pandas as pd
+
+    ordered = {
+        "robustness_2026-07-29b.csv": (["paired_minutes", "symbol"], [False, True]),
+        "robustness_2026-07-30.csv": (["paired_minutes", "symbol"], [False, True]),
+        "robustness_2026-07-31.csv": (["paired_minutes", "symbol"], [False, True]),
+        "threshold.csv": (["window", "minutes", "symbol"], [True, False, True]),
+        "alignment.csv": (["window", "symbol"], [True, True]),
+        "dependence.csv": (["window", "leg"], [True, True]),
+        "sensitivity_staleness_2026-07-29b.csv": (["fill_rate", "symbol"], [False, True]),
+        "collisions.csv": (["claimed_liquidity_usd", "symbol", "impostor_mint"],
+                           [False, True, True]),
+        "token_groups.csv": (["paired_min", "symbol"], [False, True]),
+    }
+    for name, (keys, ascending) in ordered.items():
+        frame = pd.read_csv(Path("data") / name)
+        assert not frame.duplicated(subset=keys).any(), f"{name}: key ties"
+        expected = frame.sort_values(keys, ascending=ascending).reset_index(drop=True)
+        assert frame.reset_index(drop=True).equals(expected), f"{name}: not in key order"
+

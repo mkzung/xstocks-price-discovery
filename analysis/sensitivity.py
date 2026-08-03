@@ -123,7 +123,12 @@ def staleness_risk(label: str) -> pd.DataFrame:
                 float(np.interp(token.fill_rate, curve.index.to_numpy(),
                                 curve.to_numpy())), 3)
         rows.append(entry)
-    return pd.DataFrame(rows).sort_values("fill_rate", ascending=False)
+    # Sorted with an explicit tie-break. pandas' default sort is not
+    # stable, so rows sharing a key came out in a different order on the
+    # CI runner than on the machine that wrote the file, and the workflow's
+    # artefact diff failed on nothing but row order.
+    return pd.DataFrame(rows).sort_values(
+        ["fill_rate", "symbol"], ascending=[False, True])
 
 
 def replication(label: str) -> pd.DataFrame:

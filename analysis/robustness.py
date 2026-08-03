@@ -118,7 +118,12 @@ def run(label: str) -> pd.DataFrame:
             continue
         paired = pd.read_csv(path, index_col="ts")
         rows.append(_one(symbol, paired, coverage.loc[symbol]))
-    frame = pd.DataFrame(rows).sort_values("paired_minutes", ascending=False)
+    # Sorted with an explicit tie-break. pandas' default sort is not
+    # stable, so rows sharing a key came out in a different order on the
+    # CI runner than on the machine that wrote the file, and the workflow's
+    # artefact diff failed on nothing but row order.
+    frame = pd.DataFrame(rows).sort_values(
+        ["paired_minutes", "symbol"], ascending=[False, True])
     DATA.mkdir(parents=True, exist_ok=True)
     frame.to_csv(DATA / f"robustness_{label}.csv", index=False)
     return frame

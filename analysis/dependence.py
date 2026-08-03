@@ -117,7 +117,8 @@ def effective_pairs(n: int, mean_correlation: float) -> float:
 
 def run(labels: list[str]) -> pd.DataFrame:
     table = pd.concat([cross_token_correlation(x) for x in labels],
-                      ignore_index=True)
+                      ignore_index=True).sort_values(
+        ["window", "leg"]).reset_index(drop=True)
     table.to_csv(DATA / "dependence.csv", index=False)
     return table
 

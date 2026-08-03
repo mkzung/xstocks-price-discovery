@@ -64,6 +64,7 @@ def build_groups(rankable: set[str], dead_below: int = 10) -> pd.DataFrame:
     merged["group"] = np.where(
         merged.paired_min < dead_below, "no on-chain market",
         np.where(merged.symbol.isin(rankable), "ranked", "thin"))
-    merged = merged.sort_values("paired_min", ascending=False)
+    merged = merged.sort_values(
+        ["paired_min", "symbol"], ascending=[False, True])
     merged.to_csv(DATA / "token_groups.csv", index=False)
     return merged

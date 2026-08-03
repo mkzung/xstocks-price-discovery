@@ -60,7 +60,8 @@ def screen(pause: float = 1.5) -> pd.DataFrame:
             })
         time.sleep(pause)
     frame = (pd.DataFrame(rows)
-             .sort_values("claimed_liquidity_usd", ascending=False)
+             .sort_values(["claimed_liquidity_usd", "symbol", "impostor_mint"],
+                          ascending=[False, True, True])
              .reset_index(drop=True))
     frame.to_csv(DATA / "collisions.csv", index=False)
     return frame

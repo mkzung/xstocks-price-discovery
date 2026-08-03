@@ -121,7 +121,10 @@ def run(labels: list[str]) -> pd.DataFrame:
                                      if pd.notna(profile[0]) else None)
             entry["corr_at_best"] = round(best[0], 3) if usable else None
             rows.append(entry)
-    table = pd.DataFrame(rows)
+    # Own the row order rather than inheriting whatever order the
+    # robustness table happened to be in.
+    table = pd.DataFrame(rows).sort_values(
+        ["window", "symbol"]).reset_index(drop=True)
     table.to_csv(DATA / "alignment.csv", index=False)
     return table
 

@@ -120,8 +120,16 @@ def leadership_across_windows(labels: list[str]) -> pd.DataFrame:
     wide["spread_across_windows"] = (wide[cols].max(axis=1)
                                      - wide[cols].min(axis=1)).round(3)
     wide.loc[wide.windows_ranked < 2, "spread_across_windows"] = None
-    return wide.sort_values(["windows_ranked", "spread_across_windows"],
-                            ascending=[False, True])
+    # The index carries the symbol, so it is the tie-break of last resort:
+    # two tokens ranked in the same number of windows with the same spread
+    # would otherwise come out in whatever order the sort happened to leave
+    # them, which differs between machines.
+    # The symbol index is the tie-break of last resort: two tokens ranked in
+    # the same number of windows with the same spread would otherwise land in
+    # whatever order an unstable sort left them, which differs by machine.
+    return (wide.sort_index()
+            .sort_values(["windows_ranked", "spread_across_windows"],
+                         ascending=[False, True], kind="stable"))
 
 
 def run(labels: list[str]) -> None:

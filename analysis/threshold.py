@@ -57,7 +57,12 @@ def below_the_floor(label: str) -> pd.DataFrame:
 
 
 def run(labels: list[str]) -> pd.DataFrame:
-    table = pd.concat([below_the_floor(x) for x in labels], ignore_index=True)
+    # Own the row order rather than inheriting the robustness table's,
+    # which pandas produced with an unstable sort.
+    table = pd.concat([below_the_floor(x) for x in labels],
+                      ignore_index=True).sort_values(
+        ["window", "minutes", "symbol"],
+        ascending=[True, False, True]).reset_index(drop=True)
     table.to_csv(DATA / "threshold.csv", index=False)
     return table
 
