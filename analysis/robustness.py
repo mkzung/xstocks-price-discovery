@@ -79,7 +79,7 @@ def _one(symbol: str, paired: pd.DataFrame, coverage: pd.Series) -> dict:
     unit_root = adf(spread - spread.mean())
     row.update(adf_statistic=round(unit_root.statistic, 2),
                spread_stationary=bool(unit_root.rejects_unit_root()),
-               spread_half_life_min=round(unit_root.half_life_min, 1))
+               spread_half_life_obs=round(unit_root.half_life_obs, 1))
 
     gg = information_share(cex, dex)
     row.update(w_cex=round(gg.weight_a, 3),

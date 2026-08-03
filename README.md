@@ -39,6 +39,7 @@ Across 24 xStocks quoted at once on Gate and in Solana pools, collected daily fr
 | `analysis/dependence.py` | whether the sign test's coin-flip null may treat the pairs as separate draws |
 | `analysis/threshold.py` | what the pairs below the paired-minute floor say, so the cut can be shown not to select on the outcome |
 | `analysis/alignment.py` | the one-minute bar misalignment, what it cost, and the refit on the corrected series |
+| `analysis/spacing.py` | whether how far apart the rows sit predicts what the fit says |
 | `analysis/relation.py` | the rank correlation behind the grouping, with a permutation test |
 | `analysis/verify.py` | reads every number in `post/index.md` back out of the CSVs |
 | `analysis/check_post.py` | the post's formatting, spelling and link rules |
@@ -70,6 +71,7 @@ python analysis/sessions.py                   # open against shut, on the passes
 python analysis/dependence.py                 # are the pairs separate draws, or one market
 python analysis/threshold.py                  # what the pairs below the floor say
 python analysis/alignment.py                  # do both venues' bars describe the same instant
+python analysis/spacing.py                    # does row spacing predict the reading
 python analysis/registry.py                   # every mint against the issuer's own list (network)
 python analysis/build_analysis.py             # redraw the figures
 python analysis/format_post.py --check        # wrapping is settled
@@ -81,7 +83,7 @@ To collect a new window, which becomes its own directory under `raw/` rather
 than overwriting anything:
 
 ```bash
-python analysis/collect_raw.py 2026-08-01 --refresh-universe
+python analysis/collect_raw.py 2026-08-05 --refresh-universe
 ```
 
 The `--refresh-universe` flag snapshots the paired universe and its 24-hour
@@ -102,8 +104,15 @@ from analysis.relation import build_groups
 build_universe()        # data/universe.csv
 run_panel()             # data/panel_sessions.csv, about 55 minutes
 run_venue_matrix()      # data/venue_matrix.csv
-build_groups(rankable)  # data/token_groups.csv
+build_groups(rankable)  # data/token_groups.csv, from data/panel_run1.csv
 ```
+
+`build_groups` reads `data/panel_run1.csv`, not the file `run_panel` writes.
+That first pass kept one row per token and is the only one that measured all
+24. `panel.py` replaced it with a session split, which drops any token too thin
+to fit in a regime and so covers 13. So panel_run1 is committed as an input,
+like the minute series under `raw/`, and nothing in the tree regenerates it.
+`check_post.py` fails if any other dataset turns up without a producer.
 
 Both data sources are free and need no key. GeckoTerminal rate-limits hard, so
 `collect._get` backs off on 429 and the panel sleeps between tokens; a full
@@ -143,9 +152,14 @@ closed]`, and `cex_bars` read field five, the open, while `dex_bars` read
 GeckoTerminal's close. The two series were therefore a minute apart at every
 stamp. `cex_bars` reads the close now and `tests/` pins the field layout of all
 four venue readers, but the windows committed under `raw/` were collected
-before the fix and are analysed as collected, which is the conservative side of
-the error; `analysis/alignment.py` refits them the other way and reports the
-difference.
+before the fix and are analysed as collected. For the headline that is the
+conservative side of the error, which the correction only strengthens. For its
+exception it is the easier side: AMZNX is the study's one clear pool lead at
+-0.24, and realigned it is 0.33, which the strict rule declines to call for
+either side. A correction that moves 21 of 23 weights towards the exchange has
+to cost the one reading that ran the other way. So "conservative" is true of
+the aggregate and cannot be left to stand for each part.
+`analysis/alignment.py` refits both ways and reports the difference.
 
 Two provenance notes. The 24-hour volumes in `universe.csv` are a snapshot
 taken when the universe was built; the minute bars were pulled afterwards, so

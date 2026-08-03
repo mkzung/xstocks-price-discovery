@@ -47,8 +47,11 @@ def collect(run: str, *, pages: int = 3, pause: float = 4.0,
         top_up: Collect only the tokens this run does not already hold, and
             merge their coverage into the existing summary instead of replacing
             it. This exists because a collection can lose its network part way
-            through, which happened on 30 July: 9 of 27 tokens landed and the
-            rest errored out. Re-running whole would have thrown away the
+            through, which happened on 30 July: 9 of 27 tokens landed on the
+            first attempt and the rest errored out. The committed run holds 25
+            of 27, which `coverage.csv` records and which is the number to read;
+            the 9 is what the top-up was written for and is not recoverable from
+            anything here. Re-running whole would have thrown away the
             morning's series; skipping the run would have left the window
             partial forever. The per-token timestamps in the coverage file
             record that a topped-up run holds two collection times.

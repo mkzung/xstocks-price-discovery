@@ -1,5 +1,11 @@
+# Upper bounds because the workflow asserts that every committed CSV and the
+# single-page view regenerate byte for byte. A major release is free to change
+# float formatting or sort semantics, and this repository would report that as
+# a stale commit rather than as a new pandas. The committed artefacts were
+# produced under Python 3.10 with pandas 2.3, numpy 2.2 and matplotlib 3.10;
+# CI runs 3.11 with the same bounds and gets the same bytes.
 certifi
-matplotlib>=3.7
-numpy>=1.24
-pandas>=2.0
-pytest>=7
+matplotlib>=3.7,<4
+numpy>=1.24,<3
+pandas>=2.0,<3
+pytest>=7,<9

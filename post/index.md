@@ -43,7 +43,8 @@ the US equity market is shut and it holds on a second exchange. The two
 exceptions get their own paragraphs below, and both sit where the first day
 already pointed: TSLAX reads near even on the third day, and AMZNX, the one
 pair the first day flagged as the exchange giving up pricing, is a clear pool
-lead the one day it can be measured.
+lead the one day it can be measured, on the alignment these tables use. The
+correction described below is the one thing that takes it away.
 
 The more useful finding sits underneath it. Rank the twenty-four tokens by how
 much their pool trades, and by how many exchange dollars are printed per
@@ -109,7 +110,7 @@ twenty moves on each side, and in that pass the exchange leads every one. Two
 sit under the stricter 120-minute floor the series passes use, GOOGLX at 119
 and AMZNX at 82, and the text below leans on them accordingly:
 
-{{< figure src="weights.png" alt="Left panel, exchange weight in the common factor for nine tokens, the lowest at 0.63. Right panel, the share of the gap each side closes per minute, with the pool bars far longer than the exchange bars" caption="The exchange weight, and underneath it the reason: the pool closes the gap, the book does not." loading="lazy" >}}
+{{< figure src="weights.png" alt="Left panel, exchange weight in the common factor for nine tokens, the lowest at 0.63. Right panel, the share of the gap each side closes per observation, with the pool bars far longer than the exchange bars" caption="The exchange weight, and underneath it the reason: the pool closes the gap, the book does not." loading="lazy" >}}
 
 | token  | Gate weight | Gate correction speed | pool correction speed |
 |--------|------------:|----------------------:|----------------------:|
@@ -124,9 +125,21 @@ and AMZNX at 82, and the text below leans on them accordingly:
 | AMZNX  | 0.63 | -0.35 | 0.59 |
 
 Read the speed columns rather than the weights. In eight of the nine pairs Gate
-moves at most 0.08 of the gap per minute, while the pool closes 22 to 74
+moves at most 0.08 of the gap per observation, while the pool closes 22 to 74
 percent of it. The pool is chasing a price set somewhere else, and the
 somewhere else is the order book.
+
+An observation is a minute both venues traded in, and the untraded minutes are
+dropped rather than filled, so consecutive rows are not always a minute apart.
+The median gap between them is one minute for four of the seven ranked pairs on
+the first series pass, two or three for the rest, and the mean runs from 2.0 to
+8.1 minutes because a handful of long silences pull it. So these coefficients
+are per observation and not per minute, and the two readings are the same only
+where a pool traded in nearly every minute. That does not touch which venue
+leads, since both sides of a pair are read off the same rows, and it does mean
+a speed here is not a rate per clock minute. The grid sweep below shows the
+same thing from the other end: refitting TSLAX on five-minute bars takes the
+pool's coefficient from 0.34 to 0.67, because a coarser bar is a longer step.
 
 Four of the exchange coefficients come out positive. That is the wrong sign,
 the book drifting away from the pool rather than toward it. All four are small,
@@ -144,7 +157,9 @@ venue giving up some of the pricing, and showing that is what the decomposition
 is for. It is also the thinnest sample in the table, 82 paired minutes against
 480 for TSLAX. Two days later, with enough minutes to rank properly, this stops
 being a caveat: AMZNX turns out to be the study's one clear pool lead, in the
-daily section below.
+daily section below. On the corrected alignment it is 0.33 rather than -0.24,
+which is no longer a clear lead for either side; the correction reported below
+moves 21 of 23 weights the same way, so the exception is the reading it costs.
 
 Is the ranking an artefact of the hours covered? The panel's own answer is no,
 at weights of 0.96 to 1.24 across the eight pairs measurable when the US equity
@@ -176,15 +191,15 @@ faster than a constant-product pool whoever runs it.
 
 Bybit lists TSLAX, so the same test runs against a different book on the same
 pool. Bybit leads too, at a weight of 0.75 over 498 paired minutes: it corrects
-at 0.09 of the gap per minute while the pool closes 0.28.
+at 0.09 of the gap per observation while the pool closes 0.28.
 
 The mirror control is two pools on the same mint, where the pattern disappears.
 Both pools correct hard against each other, the deeper one by 0.58 to 0.88 of
-the gap per minute, against at most 0.08 for a listing exchange in eight of the
-nine pairs above. Two of the three weights, 0.41 and 0.43, sit in the range the
-calibration calls shared discovery rather than a lead; the third, NVDAX at
-0.06, points the other way and is also the pair where the deeper pool corrects
-hardest.
+the gap per observation, against at most 0.08 for a listing exchange in eight
+of the nine pairs above. Two of the three weights, 0.41 and 0.43, sit in the
+range the calibration calls shared discovery rather than a lead; the third,
+NVDAX at 0.06, points the other way and is also the pair where the deeper pool
+corrects hardest.
 
 {{< figure src="controls.png" alt="Bar chart of first-venue weights: the Bybit against pool bar sits at 0.75, the three pool against pool bars scatter around and below the even line" caption="A second exchange leads. Two pools on one mint do not behave that way at all." loading="lazy" >}}
 
@@ -298,6 +313,17 @@ collected against 20.7 realigned, and it stays stationary in 21 of 23 pairs
 after the correction against 23 of 23 before it. The difference is a sample cut
 roughly in half, not a weaker relation.
 
+One reading does not survive the correction, and it is the one that runs
+against the headline. AMZNX is the study's single clear pool lead at -0.24;
+realigned it is 0.33, inside the band the strict rule declines to call. A
+correction that moves 21 of 23 weights towards the exchange has to do that. The
+other two move the other way by 0.01 and less, and no pair loses a lead it had,
+so the correction takes the one pool reading and hands back none. It is why
+"conservative" cannot be said of the whole and left to stand for each part: the
+as-collected fit is the harder test of the headline and the easier one for its
+exception. The exception is named where it appears, with the corrected reading
+beside it.
+
 The tables in this post are the as-collected fit, and the reason is not that it
 reads better. Every other check here was run on those series: the bootstrap,
 the Hasbrouck bounds, the stationarity tests, the session split, the daily
@@ -325,8 +351,11 @@ arbitrage binds, and arbitrage cannot bind on a pool holding two hundred
 dollars of liquidity. Tested rather than assumed, with an augmented
 Dickey-Fuller regression on each pair's spread, it holds: the spread is
 stationary in **7 of 7** rankable pairs, and it reverts fast: half-lives of 0.6
-to 3.9 minutes, so a gap between the two venues is half gone inside four
-minutes and usually inside two.
+to 3.9 observations. Those are steps and not clock minutes, for the reason the
+correction speeds are: the regression runs on the rows it is given. Multiplying
+each pair by its own mean spacing puts the reversion between 2.4 and 25.0
+minutes, and the slow end is the pairs whose pools trade least, which is the
+same ordering everything else in this post keeps finding.
 
 ### The error term, fitted instead of imposed
 
@@ -363,8 +392,8 @@ bounds are informative here because the innovation correlation is a median 0.39
 rather than the near-collinear case that makes them useless, and every interval
 sits entirely above an even split.
 
-| token | paired minutes | pool fill | GG weight | Hasbrouck bounds | bootstrap lead | spread half-life |
-|-------|---------------:|----------:|----------:|:----------------:|---------------:|-----------------:|
+| token | paired minutes | pool fill | GG weight | Hasbrouck bounds | bootstrap lead | half-life, obs |
+|-------|---------------:|----------:|----------:|:----------------:|---------------:|---------------:|
 | TSLAX | 503 | 50% | 0.89 | 0.74 to 0.96 | 100% | 1.6 |
 | NVDAX | 493 | 49% | 0.96 | 0.80 to 1.00 | 100% | 2.8 |
 | QQQX | 457 | 46% | 1.06 | 0.98 to 1.00 | 100% | 3.9 |
@@ -393,13 +422,16 @@ venues quoting one mint, and a market-wide move enters both sides of that gap
 at once. Measured on the ten token pairs of this pass with enough jointly
 observed minutes: the exchange legs move together at a median 0.51, the pool
 legs at 0.14, and the spread the model actually uses at **0.08**. What is
-shared is the price, not the arbitrage relation. Some sharing survives, and
-discounting the sample by the mean spread correlation leaves seven pairs worth
-about four, which would put the same tally at p = 0.125. The discount is
-deliberately harsh: a correlation only costs a draw if it pushes a weight
-across an even split. The reading that survives it is that one pass of seven is
-suggestive on its own, and that the case rests on the repeats and the controls
-rather than on this p-value. `analysis/dependence.py` rebuilds it into
+shared is the price, not the arbitrage relation. Some sharing survives.
+Discounting the sample by the mean spread correlation of 0.12 leaves seven
+pairs worth about four, and four of four one way is 0.125 under the same
+coin-flip null. That is arithmetic, not a second test. The discount is borrowed
+from the correlated-mean case and applied to binary outcomes, so read it as the
+order of magnitude the sharing costs. It is harsh, since a correlation only
+costs a draw if it pushes a weight across an even split, and it is rough, since
+nothing here shows this is the right discount to take. What it settles is that
+a single pass of seven is suggestive on its own, and that the case rests on the
+repeats and the controls. `analysis/dependence.py` rebuilds it into
 `data/dependence.csv`, overlap counts included, since eleven of the twenty-one
 pairings do not clear the floor and are left out.
 
@@ -428,7 +460,9 @@ at half fill and 42 percent at an eighth. The deep pairs carry low risk; the
 thin ranked pairs carry real risk on any single day, which is what the daily
 repetition and the strict tally below are for. The artefact also runs one way,
 fabricating exchange leads, so AMZNX's pool lead stands against it, not because
-of it.
+of it. The bar misalignment runs the same way, and on the corrected series that
+reading is 0.33 rather than -0.24, so this particular exception survives only
+the sampling objection and not the alignment one.
 
 {{< figure src="staleness.png" alt="Two curves against pool fill rate. The forward-filling curve sits flat at one hundred percent. The drop curve falls from thirty-eight percent at the sparsest fills to two percent at half, with the seven ranked tokens marked along it" caption="The sampling choice is doing load-bearing work. The ranked pairs sit on the lower curve, between 2 and 19 percent." loading="lazy" >}}
 
@@ -438,6 +472,30 @@ eighth sits at 19 percent. The thin tokens further down the universe, at one to
 nine percent fill, sit where the test errs up to 38 percent of the time, which
 is why none of them is ranked here and why the volume finding below rests on
 their trading frequency rather than on any leadership claim about them.
+
+That is a simulation answering for the data. The data can answer for itself,
+and it had not been asked: if sparse trading were driving the reading, the
+sparser pairs would read differently from the dense ones. Across the 23
+pair-days the rank correlation between the exchange weight and the mean minutes
+between rows is -0.01, against the count of paired minutes +0.02, and against
+the fill rate +0.01, none of them distinguishable from nothing on a permutation
+test. Split the pair-days at the median spacing and the tally is 11 of 12 on
+the tighter-spaced side against 10 of 11 on the wider. A sample this size
+resolves a rank correlation of about 0.42, so this rules out a strong relation
+and not a weak one, and it is the empirical half of an objection the simulation
+answers from the other end. `analysis/spacing.py` rebuilds it into
+`data/spacing.csv`.
+
+A prediction went in here and did not come out, which belongs in the record.
+Reversion over a gap is concave in the length of the gap, so a long enough gap
+saturates both venues' correction and pulls the ratio between them toward an
+even split. That would have shown up as the wider-spaced pairs sitting nearer
+an even split than the tighter-spaced ones. They sit further from it: the rank
+correlation between spacing and distance from an even split is +0.13, the
+opposite sign to the prediction and small enough to mean nothing either way at
+23 pair-days. So the saturation is not reached at these gaps, against a spread
+that reverts in single-digit steps, and the argument is unavailable. What
+stands is the measurement.
 
 ### Lags, grids and the other free choices
 
@@ -452,10 +510,15 @@ does not select on the outcome, so the estimator was run below it as well. The
 median 0.93, against 21 of 23 at 0.90 above it. Those readings are not evidence
 and are not counted anywhere: at 43 to 111 paired minutes the estimator
 scatters, and 6 of the 16 print outside the range a weight can take, which is
-what the floor is for. What they establish is only that the floor is not
-choosing the answer. A further 26 pairs the estimator refuses outright, on too
-few rows to fit at all. `analysis/threshold.py` rebuilds this into
-`data/threshold.csv`.
+what the floor is for. What they establish is weaker than it first looks. A
+further 26 pairs the estimator refuses outright, on too few rows to fit at all.
+Those are not missing at random. A pair is refused because its pool barely
+traded, and how much a pool trades is the thing this post shows tracks the
+exchange's dominance. The 16 that can be fitted are therefore a selected sample
+too, and agreement inside them cannot rule out that the excluded 26 would have
+pointed the other way. It is a sensitivity check on the floor, not a
+demonstration that the floor is neutral. `analysis/threshold.py` rebuilds this
+into `data/threshold.csv`.
 
 ## Measured again, and then daily
 
@@ -500,19 +563,24 @@ nine, at a sign-test p of 0.0039. The third day is softer: five of seven, and
 the two that break ranks are the honest content of the table.
 
 TSLAX prints 0.47 on the third day after 0.89 and 0.92, with the exchange for
-once correcting meaningfully, at 0.21 of the gap per minute. A move of that
-size sits at the edge of the scatter the calibration declares for one weight
-from one sample, so the reading is shared discovery on that day rather than a
-measured handover, and the two clear days still carry the token's ranking.
+once correcting meaningfully, at 0.21 of the gap per observation. A move of
+that size sits at the edge of the scatter the calibration declares for one
+weight from one sample, so the reading is shared discovery on that day rather
+than a measured handover, and the two clear days still carry the token's
+ranking.
 
 AMZNX is not noise. The first day's panel already flagged it as the only pair
 where the exchange corrects meaningfully and the weight sits lowest; the third
 day, the first with enough paired minutes to rank it in a series pass, prints a
 weight of -0.24 with the pool ahead in 98 percent of bootstrap resamples and
-both estimators agreeing. That is a pool lead, stated plainly. One pair out of
-twenty-three pair-days prices on the chain, and it is the pair the very first
-measurement pointed at. A method that can only find exchange leads would be
-describing itself; this one found the exception.
+both estimators agreeing. That is a pool lead, stated plainly, on the alignment
+these tables use. It is also the reading the bar correction costs: realigned,
+AMZNX is 0.33, which the strict rule declines to call for either side. Both are
+true and the second is the less comfortable, which is why it is here and not
+only in the robustness section. One pair out of twenty-three pair-days prices
+on the chain as measured, and it is the pair the very first measurement pointed
+at. A method that can only find exchange leads would be describing itself; this
+one found the exception.
 
 The 21-of-23 tally uses one mechanical rule, a weight above an even split,
 because a tally needs a rule that cannot be argued with after the fact. The
@@ -627,8 +695,8 @@ the truth is an even split are excluded from both, because neither venue leads
 in them and there is nothing for the estimator to recover. So the post never
 rests on one weight. It rests on 21 of 23 pair-days pointing the same way
 across three days, and underneath the weights, on the correction speeds: in the
-first day's panel the pool closes 22 to 74 percent of the gap per minute while
-the exchange closes at most 8. Those speeds are read straight off the fit
+first day's panel the pool closes 22 to 74 percent of the gap per observation
+while the exchange closes at most 8. Those speeds are read straight off the fit
 rather than through the ratio that forms the weight, and they are what the
 ordering is built on. Pool-against-pool weights land near even, where the
 estimator is weakest, so they are reported as a scale and not a ranking.
@@ -691,6 +759,7 @@ python analysis/sessions.py                        # open-against-shut, from the
 python analysis/dependence.py                      # are the pairs separate draws
 python analysis/threshold.py                       # what the pairs below the floor say
 python analysis/alignment.py                       # do both tapes mean the same instant
+python analysis/spacing.py                         # does row spacing predict the reading
 python analysis/build_analysis.py                  # redraw every figure
 python analysis/format_post.py --check             # wrapping is settled
 python analysis/check_post.py                      # formatting, spelling, links
@@ -716,9 +785,9 @@ but no third leg reads the primary listing, so this measures which of the two
 crypto venues moves first, not where the price is born.
 
 The daily series passes rank only pairs with at least 120 paired minutes, a
-floor shown above not to select on the outcome; the first day's session panel
-used a looser gate of eighty minutes and twenty moves per side, and its two
-thinnest rows are named where they appear. Near-even weights are read as shared
-discovery, never as a lead. The volume finding makes no claim that any print is
-fake, only that for a quarter of these listings nothing outside the exchange
-could tell you either way.
+floor the sensitivity check above probes rather than clears; the first day's
+session panel used a looser gate of eighty minutes and twenty moves per side,
+and its two thinnest rows are named where they appear. Near-even weights are
+read as shared discovery, never as a lead. The volume finding makes no claim
+that any print is fake, only that for a quarter of these listings nothing
+outside the exchange could tell you either way.

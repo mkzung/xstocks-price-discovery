@@ -12,31 +12,88 @@ post at all. Every number in the text could have been wrong and it would still
 have printed FAILED: 0. Whenever a check is added here, mutate the post and
 confirm the check goes red before trusting it.
 
-The post is not the only surface. index.html ships the same findings on one
-page, and until this round nothing tied its figures to the data: the workflow
-diff catches a stale page, not one built from the wrong column. Its headline
-figures are checked here too, each anchored on the element it sits in rather
-than searched for bare, because the correlation appears twice and a bare search
-passed while one of the two sites carried a wrong number.
+The post is not the only surface, and the other two took two rounds to cover.
+index.html ships the same findings on one page, and the workflow diff catches a
+stale page, not one built from the wrong column. Its headline figures are
+checked here, each anchored on the element it sits in rather than searched for
+bare, because the correlation appears twice and a bare search passed while one
+of the two sites carried a wrong number. That left its three data tables
+untied, which is the hole the post had before every cell of its own tables was
+compared; they are compared cell for cell now, from what each column means
+rather than from what the builder writes, so swapping speed_cex for speed_dex
+in the builder fails here while the page still regenerates and diffs clean.
+
+The README is the third surface and the one a reader who never opens the post
+still sees. Nothing here read it. Its figures were held only by check_post's
+rule that every number the README quotes must appear somewhere in the post,
+which is real but is not verification: it fires because 99 happens to be absent
+from the post and it stops firing the day some other sentence introduces a 99.
+Bumping each of the twenty-eight numbers in the README left fourteen standing.
+Eleven were claims: the calibration bias and the scatter around it, the
+recovery rate away from an even split and the run count near one, both ends of
+the staleness band, the size of the universe, the reach of the session panel,
+and AMZNX's weight either way. They are tied to the same computed values the
+post's copies are tied to, and one of them was wrong by two when it was
+written. 26 of 28 now. The two left are a bump that lands on another collected
+window, which leaves the command it sits in valid, and the runtime estimate
+beside run_panel, which asserts nothing. Neither is guarded, for the reason 429
+is named in check_post rather than guarded.
+
+The fourth surface is the one nobody thinks of as a surface. The module
+docstrings carry 39 figures between them, read by whoever reuses the
+code and by nobody else, so they drift in private, and two had: discovery.py
+still gave the near-even recovery as a rate off twelve runs, which is the
+framing the article corrected in two places this round, and dependence.py said
+two tokens share 86 usable minutes when they share 79. 31 of the 39 go red
+now. The eight left are the symbols in the estimator's own formula and the 0.5
+that names an even split, the unit in "24-hour volumes", the date in a note
+about a collection that failed and the count from that failed attempt, which
+nothing committed can confirm and which is labelled as such, and one half of
+"1,000", which a comma splits in two.
+
+The other two sweeps reached the README last and found it worse than the post.
+Swapping exchange for pool and leads for follows in each of its ten
+claim-bearing sentences reddened one, and the sentence that survived was the
+headline: "the pool leads and the exchange follows in 21 of the 23 pair-days"
+passed every gate, because the rule tying the README to the post asks for the
+tally and never asks who won it. Deleting the negation from each of its negated
+sentences reddened none of them. Five of ten and five of nine now, and the
+residue is prose whose inversion is ungrammatical or merely odd, which is where
+a check would be testing the sentence against itself.
 
 The current state of that sweep, run against both gates, this file and
 check_post.py, because the two divide the work and a number can be held by
-either. Bumping each of the 231 distinct numbers in the post by one unit in its
-last digit turns 229 of them red. Prepending a digit to each instead,
-which turns 16 into 916 and is the corruption a bump cannot make, turns
-the same 229 red; before the phrase searches were anchored it left one
-more standing, because a plain substring test finds "16 cents" inside
-"916 cents" and fifty-four of the searches below open with the value they
-are checking. The two survivors are the day and month of
-the example date in the fenced collection command, which illustrates how to
-start a new run and asserts nothing. Two things about running that sweep, both
-learned by getting them wrong. Match numbers with a pattern that allows a
-full stop after them, or every figure ending a sentence is invisible to it:
-six were, including the discounted p-value and both DOI fragments. And
-ignore the two docstring checks below when judging, because they count
-distinct numbers and so fire whenever a mutation merges or splits a token,
-which says nothing about whether the claim was guarded and quietly reports
-full coverage. The sweep has caught real gaps five times:
+either. Bumping each of the 238 distinct numbers in the post by one unit in its
+last digit turns every one of them red. Prepending a digit does the same, and
+it is the corruption a bump cannot make: it turns 16 into 916. Before the
+phrase searches were anchored that one left another number standing, because a
+plain substring test finds "16 cents" inside "916 cents" and fifty-four of the
+searches below open with the value they check. The last two to fall were
+the day and month of the example collection date, which asserts nothing on its
+own and now has to agree with the README's copy of the same command.
+
+Four things about running that sweep, each learned by getting it wrong. Match
+numbers with a pattern that allows a full stop after them, or every figure
+ending a sentence is invisible to it: six were, including the discounted
+p-value and both DOI fragments. Run the sweep against `--sweep`, which drops
+the five checks that count distinct numbers: a bump to a value the document
+already holds merges two tokens, the total falls and the check goes red whether
+or not the claim beside it was guarded. 93 of the post's bumps collide that
+way, 37 of the page's and 6 of the README's, so this is most of the sweep and
+not an edge of it. This paragraph used to ask a reader to ignore the counting
+checks while judging, which worked on the post and was then forgotten on the
+other two, where the numbers those runs reported were the counter's and not the
+guards'. The flag is the fix and the instruction it replaced is what needed
+fixing. Rewrap the post before judging, or a mutation that changes a line's
+length trips the wrapping rule and is scored as caught while its meaning went
+untested; that alone moved the direction figure from 85 of 89 to 72 of 93. And
+clear the results file before re-running a range, because a chunk re-run after
+a timeout appends a second time and the accumulated file reports gaps that are
+green when tested one by one: three did, and all three were phantoms. And check
+that the gate is green before the first mutation, because a gate that cannot
+import scores every mutation as caught: a name defined below the list that read
+it turned a run of nine into nine of nine, which is what a perfect score should
+look like from across the room and never does up close. The sweep has caught real gaps five times:
 the whole robustness table once shipped uncompared, the lede's 21-of-23 tally
 was unguarded in both places it is made, the comparison paragraph restated both
 tallies in words nothing checked, the strict rule's own 0.3-to-0.7 band could
@@ -45,31 +102,34 @@ the running text could disagree with the DOIs beside them.
 
 Numbers are not the only thing a sentence can get wrong. A second sweep flips
 direction words in every claim-bearing sentence, swapping leads for follows,
-above for below, more for less and exchange for pool. Against both gates 85 of
-89 such flips now go red. The twenty-one DIRECTIONS entries below are what closed
-most of that gap, by tying a phrase to a sign in the data rather than merely
-requiring it to exist; before they existed the same sweep left 39 reversals
-green against this file alone, one of them moving the headline from the
-exchange to the pool. Four of them cover the headline, the figure captions and
-the alt text, because alt text is the entire figure for a reader using a screen
-reader and carried three reversible claims.
+above for below, more for less and exchange for pool. Against both gates 72 of
+93 such flips go red, and the thirty-five DIRECTIONS entries below are what
+closed most of that gap, by tying a phrase to a sign in the data rather than
+merely requiring it to exist. Four of them cover the headline, the figure
+captions and the alt text, because alt text is the entire figure for a reader
+using a screen reader and carried three reversible claims.
 
-The four flips still uncaught are three inside the fenced reproduce block and
-one that turns "a Solana pool" into "a Solana exchange" in the screen
-description, which is nonsense rather than a false reading of the data. They
-are named here instead of being papered over with checks that assert a phrase
-exists, which is form-checking wearing the costume of verification.
+That 72 was 85 until the sweep itself was fixed, and the correction is worth
+recording. A word swap changes the length of a line, so unless the post is
+rewrapped before judging, check_post's wrapping rule fires and the flip is
+counted as caught when nothing about its meaning was checked at all. Rewrap
+first, or a formatter stands in for a proof. The residue is prose where the
+inverted sentence is odd rather than false, or sits inside the fenced reproduce
+block, and it is named here rather than papered over with checks that assert a
+phrase exists, which is form-checking wearing the costume of verification.
 
 A third sweep deletes the negation from every sentence that carries one, since
 dropping a "not" inverts a claim without moving a number or touching any of the
-words the flip sweep tries. Sixty-nine sentences qualify and 60 of the
-deletions still pass, which is the honest state of it: most are ordinary prose
-where the inverted sentence is merely odd. Seven of the DIRECTIONS entries
-below cover the ones where the inversion would contradict the data instead,
-among them that the misalignment did not manufacture the relation, that the
-paired-minute floor does not choose its own answer, and that the ranking does
-not depend on the market being open. The rest are left uncovered rather than
-transcribed into a check apiece, which would test the sentence against itself.
+words the flip sweep tries. 76 sentences qualify and 60 of the deletions still
+pass, which is the honest state of it: most are ordinary prose where the
+inverted sentence is merely odd. Twelve of the DIRECTIONS entries cover the
+ones where the inversion would contradict the data instead, among them that
+the misalignment did not manufacture the relation, that the pairs below the
+floor are refused for thinness rather than at random, that exactly one pool
+reading is lost to the correction, and that the ranking does not depend on
+the market being open.
+The rest are left uncovered rather than transcribed into a check apiece, which
+would test the sentence against itself.
 
 Two smaller sweeps followed. Swapping a unit or a comparator moves no digit at
 all, and three claims fell to it: the exchange's correction speed given as a
@@ -80,18 +140,43 @@ hundred and twenty-seven thousand dollars of turnover, two hundred and
 twenty-five dollars of liquidity and the count of pairs the sign test is asked
 about all sat unguarded. All are checked now, each proven red by the mutation
 that found it.
+
+A fifth sweep exists because the first four had a blind spot they could not
+report. Every number pattern above refuses a leading minus, so no signed figure
+in any of the three documents had ever been mutated: not the rank correlation
+the whole second finding rests on, not AMZNX's pool lead, not a single
+correction speed. A minus sign is the cheapest possible reversal, changing a
+claim's direction without touching a digit or any word the flip sweep tries.
+Dropping the sign and bumping the last digit of each of the seventeen signed
+figures now goes red everywhere: nine in the post, two in the README, six on
+the page, where eight of the twelve mutations had passed before the tables were
+compared. The lesson generalises past this file. A sweep reports what its own
+pattern can see, so its silence is evidence only about the part of the document
+the pattern matches, and the pattern is worth reading as carefully as the
+checks are.
+
+Where the page stands after all of this: 100 of its 105 distinct numbers go red
+under a last-digit bump, and the five survivors are the line heights and font
+weights in its stylesheet. The last four claims to fall were a lag order, the
+lag sweep's own result, the paired-minute floor and the collection year, all of
+which describe what was done rather than what came out, which is why no result
+check had ever touched them and why a reader cannot tell they are wrong.
 """
+import ast
 import re
 import sys
+from collections import Counter
+from itertools import combinations
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+import numpy as np
 import pandas as pd
 
 from analysis.bootstrap import sign_test
 from analysis.collect import GATE_FIELDS, GECKO_FIELDS
-from analysis.dependence import effective_pairs
+from analysis.dependence import MIN_OVERLAP, effective_pairs, minute_changes
 from analysis.collect import MIN_CEX_VOLUME
 from analysis.robustness import MIN_PAIRED
 from analysis.relation import spearman, test_relation
@@ -113,7 +198,8 @@ _SPELLED = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
             12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
             16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen",
             20: "twenty", 21: "twenty-one", 22: "twenty-two",
-            23: "twenty-three", 24: "twenty-four", 26: "twenty-six"}
+            23: "twenty-three", 24: "twenty-four", 26: "twenty-six",
+            35: "thirty-five", 60: "sixty", 96: "ninety-six"}
 
 
 def _WORDS_LOW(n: int) -> str:
@@ -184,6 +270,25 @@ LABEL = "2026-07-29b"
 FIRST_DAY = LABEL.rstrip("ab")
 rob = pd.read_csv(base / "data" / f"robustness_{LABEL}.csv")
 ranked_pairs = rob[rob.verdict == "ranked"]
+# Minutes between one paired observation and the next, per ranked pair, read
+# off the committed series rather than assumed to be one.
+_steps = pd.DataFrame({
+    _s: pd.Series(pd.read_csv(base / "raw" / LABEL / f"{_s}.csv",
+                              index_col="ts").index).diff().dropna() / 60
+    for _s in ranked_pairs.symbol})
+_spacing = pd.read_csv(base / "data" / "spacing.csv")
+_spacing_tight = _spacing[_spacing.mean_step_min <= _spacing.mean_step_min.median()]
+_spacing_wide = _spacing[_spacing.mean_step_min > _spacing.mean_step_min.median()]
+# The largest of the three correlations against what a sample this size can
+# resolve. Both halves of the null the article states rest on this comparison.
+_spacing_strongest = max(
+    abs(spearman(_col, _spacing.w_cex))
+    for _col in (_spacing.mean_step_min, _spacing.paired_minutes,
+                 _spacing.fill_rate))
+_spacing_resolvable = 1.96 / (len(_spacing) - 1) ** 0.5
+_grid_tslax = pd.read_csv(
+    base / "data" / f"sensitivity_grid_{LABEL}.csv"
+).query("symbol == 'TSLAX'").set_index("grid")
 stale_risk = pd.read_csv(base / "data" / f"sensitivity_staleness_{LABEL}.csv")
 ranked_risk = stale_risk[stale_risk.symbol.isin(ranked_pairs.symbol)]
 rep = pd.read_csv(base / "data" / f"sensitivity_replication_{LABEL}.csv")
@@ -300,6 +405,37 @@ thr_refused = int(thr.w_cex.isna().sum())
 # cost, refitted from the same committed minutes.
 align = pd.read_csv(base / "data" / "alignment.csv")
 align_fit = align.dropna(subset=["w_realigned"])
+_amznx = align[align.symbol == "AMZNX"].iloc[0]
+# Three documents said the correction moves "every" weight towards the
+# exchange. It moves twenty-one of twenty-three; two move the other way. The
+# argument survives -- both are smaller than a hundredth and neither changes a
+# leader -- but "every" was a word nothing could have caught, since it carries
+# no digit for a number sweep and no direction word for a flip sweep. What is
+# load-bearing is not that the move is universal, it is that the exchange side
+# gains nothing to set against the pool reading the correction costs, so that
+# is what is stated and what is checked.
+_align_move = align_fit.w_realigned - align_fit.w_as_collected
+# Strictly towards. No pair sits at exactly zero today, so the two readings
+# agree, but "moves towards the exchange" is not a thing a weight that did not
+# move has done, and the check should mean what the sentence means.
+_align_towards = int((_align_move > 0).sum())
+_align_against_max = float(_align_move[_align_move < 0].abs().max())
+_align_leads_lost = int(((align_fit.w_as_collected > 0.5)
+                         & (align_fit.w_realigned <= 0.5)).sum())
+
+
+def _strict_class(weight: float) -> str:
+    if weight > STRICT_HIGH:
+        return "exchange"
+    return "pool" if weight < STRICT_LOW else "unclassified"
+
+
+# Defined beside the rest of the alignment arithmetic rather than beside the
+# first check that wanted it. Two lists further down both read these, and the
+# one written earlier in the file crashed on a name the one written later had
+# introduced.
+_pool_before = sum(_strict_class(w) == "pool" for w in align_fit.w_as_collected)
+_pool_after = sum(_strict_class(w) == "pool" for w in align_fit.w_realigned)
 
 # The strict predeclared tally. The band is named here rather than typed into
 # three comparisons and again into the post: the sweep found that moving 0.3 or
@@ -341,7 +477,7 @@ checks = [
     ("four weights above one", int((allr.w_cex > 1).sum()), 4,
      f"That is why {'four' if (allr.w_cex > 1).sum() == 4 else 'ERR'} of the nine exchange"),
     ("eight-pair exchange speed", round(rest.speed_cex.abs().max(), 2), 0.08,
-     f"moves at most {rest.speed_cex.abs().max():.2f} of the gap per minute"),
+     f"moves at most {rest.speed_cex.abs().max():.2f} of the gap per observation"),
     # The caption's unit, not only its numbers. Swapping "percent" for "basis
     # points" there is a hundredfold change in the artefact risk being claimed,
     # and it passed. Written as an ordinary two-leg check: the first attempt
@@ -377,8 +513,61 @@ checks = [
     ("the speeds where the argument restates them",
      round(rest.speed_dex.min(), 2), 0.22,
      f"the pool closes {rest.speed_dex.min() * 100:.0f} to "
-     f"{rest.speed_dex.max() * 100:.0f} percent of the gap per minute while "
-     f"the exchange closes at most {rest.speed_cex.abs().max() * 100:.0f}"),
+     f"{rest.speed_dex.max() * 100:.0f} percent of the gap per observation "
+     f"while the exchange closes at most {rest.speed_cex.abs().max() * 100:.0f}"),
+    # What one step of the fit actually spans. The coefficients were read as a
+    # rate per minute in six places, and a rate per minute is what they are
+    # only where a pool traded in nearly every minute. Untraded minutes are
+    # dropped, so a step is one observation to the next, and on the ranked
+    # pairs that is a median of one minute for four of the seven and a mean of
+    # two to eight. Nothing had measured the spacing the whole reading rests on.
+    ("ranked pairs whose median step is one minute",
+     int((_steps.median() == 1).sum()) * 10 + len(_steps.columns), 47,
+     f"one minute for {_WORDS_LOW(int((_steps.median() == 1).sum()))} of the "
+     f"{_WORDS_LOW(len(_steps.columns))} ranked pairs"),
+    ("the span of the mean step", round(_steps.mean().min(), 1), 2.0,
+     f"the mean runs from {_steps.mean().min():.1f} to "
+     f"{_steps.mean().max():.1f} minutes"),
+    ("a coarser bar is a longer step",
+     round(float(_grid_tslax.loc["5min"].speed_dex), 2), 0.67,
+     f"from {float(_grid_tslax.loc['1min'].speed_dex):.2f} to "
+     f"{float(_grid_tslax.loc['5min'].speed_dex):.2f}"),
+    # Whether sparseness predicts the reading, asked of the data rather than of
+    # a simulation. Three readings of sparseness, one weight, no relation in
+    # any of them. The rank correlations are recomputed here; the permutation
+    # p-values stay in spacing.py, because twenty thousand draws three times
+    # over would double the time this file takes for a number that cannot move
+    # without one of these moving first.
+    ("spacing against the weight",
+     round(spearman(_spacing.mean_step_min, _spacing.w_cex), 2), -0.01,
+     f"between the exchange weight and the mean minutes between rows is "
+     f"{spearman(_spacing.mean_step_min, _spacing.w_cex):+.2f}"),
+    ("paired minutes against the weight",
+     round(spearman(_spacing.paired_minutes, _spacing.w_cex), 2), 0.02,
+     f"the count of paired minutes {spearman(_spacing.paired_minutes, _spacing.w_cex):+.2f}"),
+    ("fill rate against the weight",
+     round(spearman(_spacing.fill_rate, _spacing.w_cex), 2), 0.01,
+     f"the fill rate {spearman(_spacing.fill_rate, _spacing.w_cex):+.2f}"),
+    # Two checks rather than one. Packing four counts into a single integer is
+    # the house pattern stretched past the point where a reader can see what
+    # the expected value means, and the first attempt at it was arithmetic I
+    # got wrong.
+    ("the tally on the tighter-spaced side",
+     int((_spacing_tight.w_cex > 0.5).sum()) * 100 + len(_spacing_tight), 1112,
+     f"{int((_spacing_tight.w_cex > 0.5).sum())} of {len(_spacing_tight)} on "
+     f"the tighter-spaced side"),
+    ("the tally on the wider-spaced side",
+     int((_spacing_wide.w_cex > 0.5).sum()) * 100 + len(_spacing_wide), 1011,
+     f"against {int((_spacing_wide.w_cex > 0.5).sum())} of {len(_spacing_wide)} "
+     f"on the wider"),
+    ("what a sample this size can resolve",
+     round(1.96 / (len(_spacing) - 1) ** 0.5, 2), 0.43,
+     "resolves a rank correlation of about 0.42"),
+    ("the saturation argument the data declined",
+     round(spearman(_spacing.mean_step_min,
+                    (_spacing.w_cex - 0.5).abs()), 2), 0.13,
+     f"distance from an even split is "
+     f"{spearman(_spacing.mean_step_min, (_spacing.w_cex - 0.5).abs()):+.2f}"),
     ("four wrong-way", int((allr.speed_cex > 0).sum()), 4,
      f"{'Four' if (allr.speed_cex > 0).sum() == 4 else 'ERR'} of the exchange coefficients come out positive"),
     ("AMZNX speed", round(byrow.loc["AMZNX"].speed_cex, 2), -0.35,
@@ -396,7 +585,8 @@ checks = [
     ("bybit weight", round(bybit.weight_a, 2), 0.75, f"at a weight of {bybit.weight_a:.2f}"),
     ("bybit minutes", int(bybit.minutes), 498, f"over {int(bybit.minutes)} paired minutes"),
     ("bybit speeds", round(bybit.speed_a, 2), -0.09,
-     f"at {abs(bybit.speed_a):.2f} of the gap per minute while the pool closes {bybit.speed_b:.2f}"),
+     f"at {abs(bybit.speed_a):.2f} of the gap per observation while the pool "
+     f"closes {bybit.speed_b:.2f}"),
     ("pool-pair weights", round(pools.weight_a.max(), 2), 0.43,
      f"Two of the three weights, {pools.weight_a.nsmallest(2).max():.2f} and "
      f"{pools.weight_a.max():.2f}"),
@@ -482,9 +672,16 @@ checks = [
     ("spread stationary count", int(ranked_pairs.spread_stationary.sum()), 7,
      f"**{int(ranked_pairs.spread_stationary.sum())} of {len(ranked_pairs)}** rankable pairs"),
     ("spread half-life span",
-     round(ranked_pairs.spread_half_life_min.max(), 1), 3.9,
-     f"half-lives of {ranked_pairs.spread_half_life_min.min():.1f} to "
-     f"{ranked_pairs.spread_half_life_min.max():.1f} minutes"),
+     round(ranked_pairs.spread_half_life_obs.max(), 1), 3.9,
+     f"half-lives of {ranked_pairs.spread_half_life_obs.min():.1f} to "
+     f"{ranked_pairs.spread_half_life_obs.max():.1f} observations"),
+    # And the same span read on a clock, each pair scaled by its own mean
+    # spacing. The post gave only the first reading and called it minutes.
+    ("the half-life span in clock minutes",
+     round((ranked_pairs.set_index("symbol").spread_half_life_obs
+            * _steps.mean()).max(), 1), 25.0,
+     f"between {(ranked_pairs.set_index('symbol').spread_half_life_obs * _steps.mean()).min():.1f} and "
+     f"{(ranked_pairs.set_index('symbol').spread_half_life_obs * _steps.mean()).max():.1f}\nminutes"),
     # The collection registry. Four passes, and the sentence that tells them
     # apart quotes all four of TSLAX's minute counts.
     ("TSLAX across the five passes", int(tslax_counts[-1]), 433,
@@ -648,10 +845,15 @@ checks = [
     ("the spread the model fits is near-idiosyncratic",
      float(dep_first.loc["spread"]["median"]), 0.080,
      f"the model actually uses at **{float(dep_first.loc['spread']['median']):.2f}**"),
+    ("the discount rate the sample is cut by",
+     round(float(dep_first.loc["spread"]["mean"]), 3), 0.12,
+     f"mean spread correlation of {float(dep_first.loc['spread']['mean']):.2f}"),
     ("the discounted tally, and its p-value",
      round(float(sign_test(round(n_effective), round(n_effective))), 4), 0.125,
-     f"worth about {_WORDS_LOW(round(n_effective))}, which would put the same "
-     f"tally at p = {sign_test(round(n_effective), round(n_effective)):.3f}"),
+     f"worth about {_WORDS_LOW(round(n_effective))}, and "
+     f"{_WORDS_LOW(round(n_effective))} of {_WORDS_LOW(round(n_effective))} one "
+     f"way is {sign_test(round(n_effective), round(n_effective)):.3f} under the "
+     f"same coin-flip null"),
     ("pairs fittable below the floor", len(thr_below), 16,
      f"The {len(thr_below)} pairs it can fit there lean the same way"),
     ("which way they lean, and how far",
@@ -714,6 +916,43 @@ checks = [
      GECKO_FIELDS.index("close"), 4,
      f"the collector read field {_WORDS_LOW(GECKO_FIELDS.index('close'))}, the "
      f"close"),
+    # The one pool lead, and what the correction does to it. Review pointed
+    # out that "conservative" was being said of the aggregate and quietly
+    # extended to every claim: a correction that moves all weights towards the
+    # exchange must weaken the study's only reading in the other direction, and
+    # it does, from a clear lead to an unclassified one.
+    # The Summary and the AMZNX section state the pool lead as a finding, so
+    # each has to carry what the correction does to it. Guarded separately
+    # because a caveat in one place is not a caveat in the other.
+    ("the Summary says which alignment its pool lead rests on",
+     int(float(_amznx.w_realigned) >= STRICT_LOW), 1,
+     "is a clear pool lead the one day it can be measured, on the alignment "
+     "these tables use"),
+    ("the AMZNX section gives the corrected reading",
+     round(float(_amznx.w_realigned), 3), 0.332,
+     f"realigned, AMZNX is {float(_amznx.w_realigned):.2f}, which the strict "
+     f"rule declines to call for either side"),
+    ("AMZNX realigned", round(float(_amznx.w_realigned), 3), 0.332,
+     f"it is {float(_amznx.w_realigned):.2f} rather than "
+     f"{float(_amznx.w_as_collected):.2f}"),
+    ("AMZNX as collected", round(float(_amznx.w_as_collected), 3), -0.238,
+     f"single clear pool lead at {float(_amznx.w_as_collected):.2f}"),
+    ("the corrected AMZNX reading is no longer a clear lead",
+     int(float(_amznx.w_realigned) >= STRICT_LOW), 1,
+     "no longer a clear lead for either side"),
+    # Both places the article leans on the correction's direction, and the two
+    # facts that make leaning on it fair.
+    ("the correction's direction, in the Summary",
+     _align_towards * 100 + len(align_fit), 2123,
+     f"moves {_align_towards} of {len(align_fit)} weights the same way"),
+    ("the correction's direction, where the exception is named",
+     _align_towards * 100 + len(align_fit), 2123,
+     f"moves {_align_towards} of {len(align_fit)} weights towards the exchange"),
+    ("the size of the two pairs that move the other way",
+     round(_align_against_max, 2), 0.01,
+     f"move the other way by {_align_against_max:.2f} and less"),
+    ("the correction costs a lead without buying one",
+     _align_leads_lost, 0, "no pair loses a lead it had"),
     ("loose tally, restated", led_days * 100 + pair_days, 2123,
      f"{led_days} of {pair_days} under the loose rule"),
     ("strict tally, restated",
@@ -760,7 +999,7 @@ checks = [
     ("TSLAX third-day exchange speed",
      round(abs(float(day3_ranked.loc["TSLAX"].speed_cex)), 2), 0.21,
      f"correcting meaningfully, at "
-     f"{abs(float(day3_ranked.loc['TSLAX'].speed_cex)):.2f} of the gap per minute"),
+     f"{abs(float(day3_ranked.loc['TSLAX'].speed_cex)):.2f} of the gap per observation"),
     ("AMZNX pool lead", round(float(day3_ranked.loc["AMZNX"].w_cex), 2), -0.24,
      f"prints a weight of {float(day3_ranked.loc['AMZNX'].w_cex):.2f} with the "
      "pool ahead in"),
@@ -820,21 +1059,34 @@ def table_rows(header: tuple[str, ...]) -> list[list[str]]:
     return []
 
 
+def compare_rows(name: str, tag: str, where: str, header: tuple[str, ...],
+                 got: list[list[str]], expected: list[list[str]]) -> int:
+    """Report every row that differs, in either direction.
+
+    Walking `expected` alone leaves a document with more rows than the data
+    failing silently: the check goes red and prints not one row, because every
+    row it knows about matched. That is the least useful moment to say nothing,
+    so the walk runs to the longer of the two.
+    """
+    if not got:
+        print(f"  [{tag}] {name}: no table in {where} with header {header}")
+        return 1
+    if got == expected:
+        return 0
+    print(f"  [{tag}] {name}: table does not match the data")
+    for i in range(max(len(got), len(expected))):
+        have = got[i] if i < len(got) else None
+        want = expected[i] if i < len(expected) else None
+        if have != want:
+            print(f"         row {i}: {where} {have} expected {want}")
+    return 1
+
+
 def check_table(name: str, header: tuple[str, ...],
                 expected: list[list[str]]) -> int:
     """Compare every cell of a post table against the recomputed values."""
-    got = table_rows(header)
-    if not got:
-        print(f"  [POST] {name}: no table in the post with header {header}")
-        return 1
-    if got != expected:
-        print(f"  [POST] {name}: table does not match the data")
-        for i, want_row in enumerate(expected):
-            have = got[i] if i < len(got) else None
-            if have != want_row:
-                print(f"         row {i}: post {have} expected {want_row}")
-        return 1
-    return 0
+    return compare_rows(name, "POST", "the post", header,
+                        table_rows(header), expected)
 
 
 money = "${:,.0f}".format
@@ -870,7 +1122,7 @@ dead_table = [
 robust_table = [
     [r.symbol, str(int(r.paired_minutes)), f"{r.fill_rate:.0%}",
      f"{r.w_cex:.2f}", f"{r.hasbrouck_low:.2f} to {r.hasbrouck_high:.2f}",
-     f"{r.lead_share:.0%}", f"{r.spread_half_life_min:.1f}"]
+     f"{r.lead_share:.0%}", f"{r.spread_half_life_obs:.1f}"]
     for r in ranked_pairs.itertuples()
 ]
 
@@ -891,7 +1143,11 @@ for name in POST_DATA:
         mirror_bad += 1
 
 bad = mirror_bad
-searched = len(POST_DATA)
+# Counted per surface rather than as one total. The single number this used to
+# print sat beside "lines of post" and read as though the post were the only
+# thing being checked, which stopped being true three surfaces ago.
+tally: Counter[str] = Counter()
+tally["post"] += len(POST_DATA)
 tables = (
     ("universe table",
      ("token", "Gate 24h", "on-chain 24h", "on-chain liquidity",
@@ -907,7 +1163,7 @@ tables = (
       "on-chain 24h volume", "on-chain liquidity"), dead_table),
     ("robustness table",
      ("token", "paired minutes", "pool fill", "GG weight",
-      "Hasbrouck bounds", "bootstrap lead", "spread half-life"),
+      "Hasbrouck bounds", "bootstrap lead", "half-life, obs"),
      robust_table),
     ("cross-window table",
      ("token", "29 July", "30 July", "31 July", "span"),
@@ -919,7 +1175,7 @@ tables = (
       for sym, r in both_windows.iterrows()]),
 )
 for name, header, expected in tables:
-    searched += sum(len(r) for r in expected)
+    tally["post"] += sum(len(r) for r in expected)
     bad += check_table(name, header, expected)
 
 # The daily correlation range the page quotes, from the same table the post
@@ -947,7 +1203,8 @@ PAGE = [
      f"{float(dep_first.loc['exchange']['median']):.2f} on the exchange legs"),
     ("the page's floor row",
      f"{int((thr_below.w_cex > 0.5).sum())} of {len(thr_below)} lean the same "
-     f"way, median {float(thr_below.w_cex.median()):.2f}"),
+     f"way, median {float(thr_below.w_cex.median()):.2f}, {thr_refused} too "
+     f"thin to fit"),
     ("the page's joint tally", f"{led_days}/{pair_days}"),
     # Anchored on the card it sits in, not on the bare value. The figure
     # appears twice on the page, so a bare search passed while one of the two
@@ -963,7 +1220,412 @@ PAGE = [
     ("the page's artefact range",
      f"error {ranked_risk.false_lead_drop.min() * 100:.0f}% to "
      f"{ranked_risk.false_lead_drop.max() * 100:.0f}%"),
+    # Three figures the digit sweep found standing on the page after the tables
+    # were covered. Each states what was done rather than what came out, which
+    # is why no result check touched them, and each is wrong in a way a reader
+    # cannot see: a page that says ten lags when the sweep ran eight describes a
+    # robustness check nobody performed.
+    ("the page's lag orders",
+     "refitted at "
+     + ", ".join(str(x) for x in sorted(lag_sweep.lags.unique())[:-1])
+     + f" and {sorted(lag_sweep.lags.unique())[-1]} lags"),
+    # What one step of the fit spans, on the surface that prints the speeds
+    # without the article's paragraph beside them. A reader of the page alone
+    # saw two coefficients and no unit at all.
+    ("the page's account of the step a speed is measured over",
+     f"a median of one minute on {int((_steps.median() == 1).sum())} of the "
+     f"{len(_steps.columns)} ranked pairs"),
+    ("the page's spacing row",
+     f"rank correlation {spearman(_spacing.mean_step_min, _spacing.w_cex):+.2f} "
+     f"over {len(_spacing)} pair-days"),
+    ("the page's lag-order result",
+     f"leader changes in {lag_flips} of {lag_sweep.symbol.nunique()}"),
+    ("the page's floor, in the question it asks",
+     f"Does the {MIN_PAIRED}-minute floor pick its own answer"),
+    ("the page's collection dates",
+     f"Collected daily, {int(FIRST_DAY[-2:])} "
+     f"{pd.Timestamp(FIRST_DAY).strftime('%B')} {FIRST_DAY[:4]} to "
+     f"{int(THIRD[-2:])} {pd.Timestamp(THIRD).strftime('%B')} {THIRD[:4]}"),
 ]
+
+readme = (base / "README.md").read_text()
+flat_readme = _flat(readme)
+
+# Read off the headers rather than remembered. Only the column names are
+# needed, so nothing is parsed beyond the first line of each file.
+_panel_all = p[p.regime == "all"]
+_panel_writes = set(re.findall(
+    r'to_csv\(\s*DATA\s*/\s*"([^"]+)"',
+    (base / "analysis" / "panel.py").read_text()))
+_groups_reads = set(re.findall(
+    r'read_csv\(\s*DATA\s*/\s*"([^"]+)"',
+    (base / "analysis" / "relation.py").read_text()))
+
+_CAPTURE_WORDS = ("captur", "fetched_at", "collected_at", "retrieved", "as_of")
+_capture_columns = sorted(
+    {c for _f in sorted((base / "data").glob("*.csv"))
+     for c in pd.read_csv(_f, nrows=0).columns
+     if any(w in c.lower() for w in _CAPTURE_WORDS)})
+
+# The third surface, and the one a reader who never opens the post still sees.
+# The README states the finding, the calibration and the staleness bounds in
+# its own words, and the only thing holding those figures was check_post's rule
+# that every number the README quotes must appear somewhere in the post. That
+# rule is real but its strength is an accident of the post's inventory: bumping
+# 98 to 99 is caught because no 99 appears in the post, and it stops catching
+# anything the day one does. Bumping each of the twenty-one numbers in the
+# README left nine standing, among them the calibration bias, the two recovery
+# counts this round had just corrected in the post, and the staleness band. The
+# entries below tie them to the same computed values the post's copies are tied
+# to, so the two documents cannot drift apart and neither can drift from the
+# data.
+README_CLAIMS = [
+    ("the README's universe size", f"Across {len(u)} xStocks quoted at once"),
+    ("the README's dead-pool count",
+     f"{_WORDS_LOW(len(dead)).capitalize()} of the {len(u)} have pools too "
+     f"close to dead"),
+    ("the README's joint tally", f"in {led_days} of the {pair_days} pair-days"),
+    ("the README's rank correlation", f"a rank correlation of {rho:.2f}"),
+    ("the README's calibration bias",
+     f"The fit sits {lead.error.mean():.2f} above the truth"),
+    ("the README's calibration scatter",
+     f"from {abs(lead.error.min()):.2f} below the truth to "
+     f"{lead.error.max():.2f} above it"),
+    ("the README's recovery away from an even split",
+     f"the right leader in {rank_clear * 100:.0f} percent of the {len(far)} runs"),
+    ("the README's recovery near an even split",
+     f"in {int(round(rank_near * len(near)))} of the {len(near)} at the one "
+     f"grid point"),
+    ("the README's worked Hasbrouck example",
+     f"a weight of {0.8:.2f} goes with a share near "
+     f"{0.8 ** 2 / (0.8 ** 2 + 0.2 ** 2):.2f}"),
+    ("the README's hold-scheme bound",
+     f"leader in {hold_false[hold_false.index < 1.0].min() * 100:.0f} to "
+     f"{hold_false[hold_false.index < 1.0].max() * 100:.0f} percent of runs"),
+    ("the README's drop-scheme bound",
+     f"keeps the error to {ranked_risk.false_lead_drop.min() * 100:.0f} to "
+     f"{ranked_risk.false_lead_drop.max() * 100:.0f} percent"),
+    # The correction's cost, which the README carried without it. The post
+    # names the exception in five places; the README said only that the
+    # as-collected fit is the conservative side, which is the aggregate claim
+    # review had already rejected as a stand-in for every part.
+    ("the README's AMZNX reading, as collected",
+     f"one clear pool lead at {float(_amznx.w_as_collected):.2f}"),
+    ("the README's AMZNX reading, realigned",
+     f"realigned it is {float(_amznx.w_realigned):.2f}"),
+    ("the README's account of the correction's direction",
+     f"moves {_align_towards} of {len(align_fit)} weights towards the exchange"),
+    # How far each panel reaches. The sentence saying so was written with the
+    # second number guessed off a merge printout and was wrong by two, which is
+    # the reason a number in prose gets a check rather than a proofread.
+    ("the README's first-pass coverage",
+     f"the only one that measured all {d.symbol.nunique()}"),
+    ("the README's session-panel coverage",
+     f"a regime and so covers {_panel_all.symbol.nunique()}"),
+]
+
+# The README's directions, tied to a sign rather than to a value. A flip sweep
+# over it swapped exchange for pool and leads for follows in each of its ten
+# claim-bearing sentences and only one of the ten went red, the headline among
+# the nine that did not: "the pool leads and the exchange follows" passed every
+# gate, because the cross-document rule requires the tally and never asked who
+# won it. A negation sweep did worse, nought of eight. The entries below cover
+# the sentences whose inversion contradicts the data; the rest are prose where
+# the inverted sentence is merely odd, and they are left alone rather than
+# given a check that asserts a phrase exists, which tests the sentence against
+# itself.
+README_DIRECTIONS = [
+    ("the README's headline direction", bool(led_days * 2 > pair_days),
+     "the exchange leads and the pool follows"),
+    # Carrying a stale price forward biases the estimator towards the exchange,
+    # so the warning not to do it and the direction of the damage are one fact
+    # said twice.
+    ("the README warns against carrying a stale price forward",
+     bool(hold_false[hold_false.index < 1.0].min() > 0.5),
+     "Do not carry a pool's last price forward"),
+    ("the README names the venue the stale-price artefact favours",
+     bool(hold_false[hold_false.index < 1.0].min() > 0.5),
+     "calls the exchange the leader in"),
+    ("the README's account of which way the correction moves the weights",
+     bool(_align_towards * 2 > len(align_fit)), "towards the exchange has"),
+    # The sentence the whole correction turns on: true of the aggregate, false
+    # of one part. It holds only while both halves hold, so both are read off
+    # the data -- the weights move to the exchange, and a reading is lost all
+    # the same.
+    ("the README keeps the aggregate and the parts apart",
+     bool(_align_towards * 2 > len(align_fit) and _pool_before == 1),
+     "cannot be left to stand for each part"),
+    # The reuse hazard the section exists for. Delete the "not" and the README
+    # tells a reader the two decompositions are the same object.
+    ("the README keeps the two decompositions apart",
+     bool(round(0.8, 2) != round(0.8 ** 2 / (0.8 ** 2 + 0.2 ** 2), 2)),
+     "is not a Gonzalo-Granger weight"),
+    # Why the post is dated by its commit. The claim is about what the CSVs do
+    # not carry, so it is read off their headers: the day one of them gains a
+    # capture column, the provenance note becomes false and this says so.
+    ("the README's reason for dating the post by its commit",
+     not _capture_columns, "carry no capture timestamp of their own"),
+    # The rebuild order says the grouping does not read what run_panel writes.
+    # That is a fact about two files and it is read off them, because the day
+    # relation.py is pointed at the session panel the sentence becomes a lie
+    # that no number in it would move.
+    # Disjoint, not difference. The first version asked whether relation.py
+    # reads anything panel.py does not write, which is true of universe.csv
+    # whatever the panel file is, so repointing the grouping at the session
+    # panel left it green. Two legs, and only the second one caught it.
+    ("the README on which panel file the grouping reads",
+     _panel_writes.isdisjoint(_groups_reads),
+     "not the file `run_panel` writes"),
+]
+
+# The fourth surface, and the one nobody thinks of as a surface. The module
+# docstrings carry thirty-two figures of their own and none of them was
+# checked, which showed: discovery.py still read the near-even recovery as a
+# rate off twelve runs, the framing the article had already corrected in two
+# places, and dependence.py said two tokens share 86 usable minutes when they
+# share 79. A number in a docstring is read by whoever reuses the code and by
+# nobody else, so it drifts in private. These are pulled from the same computed
+# values the article's copies are pulled from.
+def _all_docstrings(name: str) -> str:
+    """Every docstring in one module, module-level and per function alike.
+
+    Reading only the module docstring would have missed both of the arguments
+    that carry a measurement: staleness's simulator grid and collect_raw's
+    account of the day a collection lost its network.
+    """
+    tree = ast.parse((base / "analysis" / f"{name}.py").read_text())
+    return " ".join(
+        ast.get_docstring(node) or ""
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef,
+                             ast.ClassDef)))
+
+
+_stale_grid = pd.read_csv(base / "data" / "staleness_matched.csv")
+_stale_thin = _stale_grid[(_stale_grid.n == _stale_grid.n.max())
+                          & (_stale_grid.keep == _stale_grid.keep.min())]
+# Three modules cite the two papers by year and only the post pins them by
+# DOI, which is the identifier nobody reads and the year is what they do. The
+# year is taken out of the DOI the post carries, so the two cannot disagree.
+_doi_year = {}
+for _doi in re.findall(r"https://doi\.org/(\S+?)[)\s]", post):
+    if (_hit := re.search(r"\.((?:19|20)\d{2})\.", _doi)):
+        _doi_year[_doi.split("/")[0]] = _hit.group(1)
+_gg_year = _doi_year["10.1080"]
+_hasbrouck_year = _doi_year["10.1111"]
+# cointegration.py names the vector it assumes; vector.py is where the number
+# actually lives, as the beta handed to fit_with_vector. Read it off the call
+# rather than trusting the sentence, so the two cannot part company.
+_imposed_beta = next(
+    kw.value.value
+    for node in ast.walk(ast.parse((base / "analysis" / "vector.py").read_text()))
+    if isinstance(node, ast.Call) and getattr(node.func, "id", "") == "fit_with_vector"
+    for kw in node.keywords
+    if kw.arg == "beta" and isinstance(kw.value, ast.Constant))
+
+# Recomputed here rather than read out of dependence.csv, which keeps summary
+# statistics and not the pairwise overlaps the sentence is about.
+_third_legs = {}
+for _sym in pd.read_csv(base / "data" / f"robustness_{THIRD}.csv"
+                        ).query("verdict == 'ranked'").symbol:
+    _f = pd.read_csv(base / "raw" / THIRD / f"{_sym}.csv", index_col="ts")
+    _f.index = pd.to_datetime(_f.index, unit="s", utc=True)
+    _third_legs[_sym] = (len(_f), minute_changes(np.log(_f.cex) - np.log(_f.dex)))
+_overlaps = sorted(
+    (len(pd.concat([_third_legs[a][1], _third_legs[b][1]], axis=1,
+                   join="inner").dropna()), a, b)
+    for a, b in combinations(sorted(_third_legs), 2))
+_widest = _overlaps[-1]
+_second = _overlaps[-2]
+# The sentence names the two bar counts largest first. Taking them in the order
+# the pair happens to be stored gave the right answer here only because the two
+# symbols sort the same way their bar counts do, which is a coincidence and not
+# a rule.
+_widest_bars = sorted((_third_legs[_widest[1]][0], _third_legs[_widest[2]][0]),
+                      reverse=True)
+
+_align_best = align[align.best_lag == 1]
+_align_widest = align.assign(
+    margin=align.corr_at_best - align.corr_at_zero).nlargest(1, "margin").iloc[0]
+
+MODULE_DOCS = [
+    ("discovery's calibration run count", "discovery",
+     f"{_WORDS_LOW(len(cal))} runs over eight speed pairs"),
+    ("discovery's bias", "discovery",
+     f"the fit lands {lead.error.mean():.2f} above the truth"),
+    ("discovery's scatter", "discovery",
+     f"between {abs(lead.error.min()):.2f} below the truth and "
+     f"{lead.error.max():.2f} above it"),
+    ("discovery's recovery away from an even split", "discovery",
+     f"the right leader in {rank_clear * 100:.0f} percent of the {len(far)} runs"),
+    ("discovery's recovery near an even split", "discovery",
+     f"in {int(round(rank_near * len(near)))} of the {len(near)} at the one "
+     f"grid point"),
+    # The module writes the weight as 0.8 and the post as 0.80, so the two
+    # searches differ in their formatting and agree on their arithmetic.
+    ("discovery's worked Hasbrouck example", "discovery",
+     f"weight of {0.8:g} corresponds to a Hasbrouck share near "
+     f"{0.8 ** 2 / (0.8 ** 2 + 0.2 ** 2):.2f}"),
+    ("alignment's lag evidence", "alignment",
+     f"plus one rather than zero on {len(_align_best)} of the {len(align)}"),
+    ("alignment's widest margin", "alignment",
+     f"as wide as {_align_widest.corr_at_best:.2f} against "
+     f"{_align_widest.corr_at_zero:.2f}"),
+    ("dependence's bar counts and their overlap", "dependence",
+     f"{_widest_bars[0]} and {_widest_bars[1]} bars "
+     f"share only {_widest[0]} usable minutes"),
+    ("dependence's p-value under the coin-flip null", "dependence",
+     f"carries p = {sign_test(n_ranked, n_ranked):.4f}"),
+    # The sample the p-value is computed on, named in the module that computes
+    # it. It said nine, which is the session panel's count, next to a p-value
+    # that is the series pass's.
+    ("bootstrap names the sample the sign test is run on", "bootstrap",
+     f"{_WORDS_LOW(n_ranked).capitalize()} pairs all pointing the same way"),
+    ("windows' account of the headline correlation", "windows",
+     f"A correlation of {rho:.2f} from a single draw of "
+     f"{_WORDS_LOW(len(u))} tokens"),
+    # The matched sweep's grid, described in prose in one place and written as
+    # a tuple in another. Both ends of it are quoted, so both are read off the
+    # committed runs.
+    ("staleness's base series length", "staleness",
+     f"simulates a {_stale_grid.n.max():,}-minute base series"),
+    ("staleness's thinnest fill", "staleness",
+     f"a {_stale_grid.keep.min() * 100:.0f} percent fill"),
+    ("staleness's shortest case", "staleness",
+     f"{_stale_grid.n.min()} stresses the floor"),
+    # The one approximation in the paragraph, rounded from the runs it
+    # describes rather than from the arithmetic of the grid, since it is the
+    # rows that survived the fit and not the rows the sampler drew.
+    ("staleness's fitted rows at the thinnest fill", "staleness",
+     f"keeps near {round(_stale_thin.rows.median(), -2):.0f} fitted rows"),
+    # Both papers are cited by year in three modules and pinned by DOI only in
+    # the post. A year is the part a reader checks and the part a search
+    # engine uses.
+    ("discovery cites Gonzalo-Granger by the year the DOI resolves to",
+     "discovery", f"Gonzalo-Granger ({_gg_year}) decomposition"),
+    ("discovery cites Hasbrouck by the year the DOI resolves to",
+     "discovery", f"Hasbrouck ({_hasbrouck_year}) splits the variance"),
+    # A constant the module imports and then restates as a literal in its own
+    # first line, which is the arrangement that guarantees a drift.
+    ("threshold's floor", "threshold",
+     f"Does the {MIN_PAIRED}-minute floor"),
+    ("cointegration's imposed vector", "cointegration",
+     f"the cointegrating vector is (1, {-_imposed_beta:g})"),
+    # What the second day actually holds. The paragraph beside it recounts the
+    # attempt that failed, and the two numbers read alike unless the committed
+    # one is stated and checked.
+    ("collect_raw's second-day coverage", "collect_raw",
+     f"holds {len(day2_coverage)} of {len(day2_universe)}"),
+    # The newest module was the least guarded one, which is the shape this
+    # keeps taking: the docstring written last carries the figures nothing has
+    # got round to tying down.
+    ("spacing's sample size", "spacing",
+     f"is 0.13 across {len(_spacing)} pair-days"),
+    ("spacing's withdrawn prediction", "spacing",
+     f"even split is "
+     f"{abs(spearman(_spacing.mean_step_min, (_spacing.w_cex - 0.5).abs())):.2f}"),
+    ("spacing's resolvable correlation", "spacing",
+     f"rank correlation of about {_spacing_resolvable:.2f}"),
+]
+
+# Docstring claims that are true of a sign rather than of a value, and so take
+# the same shape the article's direction checks take. The first version of the
+# entry below was a presence check with an unreachable phrase standing in for
+# the false case, which fails with a message about a string nobody wrote
+# instead of a message about the data.
+MODULE_DIRECTIONS = [
+    # Spelled out, so the digit sweep cannot see it, and it is the sentence
+    # saying the widest overlap is not one case among many. The floor it names
+    # is the module's own.
+    ("dependence's second-widest overlap", "dependence",
+     bool(_second[0] < MIN_OVERLAP),
+     f"shares fewer than {_WORDS_LOW(MIN_OVERLAP)}"),
+    # The unit on the half-life, at the module that computes it. It read
+    # minutes for as long as the field was called half_life_min, which is how
+    # the post came to tell a reader a gap was half gone inside four minutes
+    # when for the thinnest pair it was twenty-five.
+    ("cointegration names the unit its half-life is in", "cointegration",
+     bool((_steps > 1).to_numpy().sum() > 0),
+     "observations it takes a gap to halve"),
+]
+
+# Read from the modules the two lists above actually name, rather than from a
+# roll typed beside them. A hand-kept roll goes out of date in one direction
+# only: an entry for a module missing from it raises a KeyError deep in the
+# driver, which reads in CI as broken tooling rather than as a claim that
+# drifted, and that is the third time this file has had that shape of bug.
+_docs = {module: _all_docstrings(module)
+         for module in sorted({m for _, m, _ in MODULE_DOCS}
+                              | {m for _, m, _, _ in MODULE_DIRECTIONS})}
+
+# The page's tables, cell for cell. Nine bare figures on it were tied to the
+# data and its three data tables were not, which is the hole the post had
+# before every cell of its own tables was compared here. The page is
+# regenerated and diffed in the workflow, but that only proves it matches the
+# builder: a builder reading speed_dex where it means speed_cex produces a page
+# that is wrong, regenerable and green. The expected rows below are written
+# from what each column means rather than copied from the builder, so a swapped
+# column fails here even though the diff stays clean.
+_TR = re.compile(r"<tr>(.*?)</tr>", re.S)
+_TD = re.compile(r"<td[^>]*>(.*?)</td>", re.S)
+_TH = re.compile(r"<th>(.*?)</th>", re.S)
+
+
+def page_table_rows(header: tuple[str, ...]) -> list[list[str]]:
+    """Pull one table out of index.html by its full header row.
+
+    Matched on the whole header for the reason the post's version was: three of
+    the four tables lead with "token", and a first-column match hands back the
+    same table every time while two of them go silently unchecked.
+    """
+    for block in re.findall(r"<table>.*?</table>", page, re.S):
+        if tuple(_TH.findall(block)) == header:
+            return [_TD.findall(row) for row in _TR.findall(block)
+                    if "<td" in row]
+    return []
+
+
+def check_page_table(name: str, header: tuple[str, ...],
+                     expected: list[list[str]]) -> int:
+    """The same comparison the post's tables get, on the page's markup."""
+    return compare_rows(name, "PAGE", "the page", header,
+                        page_table_rows(header), expected)
+
+
+PAGE_TABLES = (
+    ("the page's per-token table",
+     ("token", "exchange weight", "exchange corrects", "pool corrects",
+      "Hasbrouck bounds", "bootstrap lead", "paired minutes"),
+     [[r.symbol, f"{r.w_cex:.2f}", f"{r.speed_cex:+.2f}", f"{r.speed_dex:.2f}",
+       f"{r.hasbrouck_low:.2f} to {r.hasbrouck_high:.2f}",
+       f"{r.lead_share:.0%}", str(int(r.paired_minutes))]
+      for r in ranked_pairs.itertuples()]),
+    ("the page's cross-window table",
+     ("token", "29 July", "30 July", "31 July", "span"),
+     [[sym,
+       f"{r[LABEL]:.2f}" if pd.notna(r[LABEL]) else "-",
+       f"{r[SECOND]:.2f}" if pd.notna(r[SECOND]) else "-",
+       f"{r[THIRD]:.2f}" if pd.notna(r[THIRD]) else "-",
+       f"{r.spread_across_windows:.2f}"]
+      for sym, r in both_windows.iterrows()]),
+    ("the page's dead-token table",
+     ("token", "minutes the pool traded", "exchange 24h", "on-chain 24h",
+      "on-chain liquidity"),
+     [[t, str(int(gdead.loc[t].paired_min)),
+       money(gdead.loc[t].cex_volume_24h), money(gdead.loc[t].dex_volume_24h),
+       money(gdead.loc[t].dex_liquidity)]
+      for t in gdead.index]),
+)
+for _name, _header, _expected in PAGE_TABLES:
+    tally["page"] += sum(len(r) for r in _expected)
+    bad += check_page_table(_name, _header, _expected)
+
+# Three sentences whose whole content is a negation, each tied to the fact
+# that makes it true. Deleting the "not" from any of them inverts a finding
+# without moving a number, and all three passed every gate before this.
+_refused_rows = thr[thr.w_cex.isna()]
+_refusal_is_thinness = bool(_refused_rows.minutes.max() < thr_below.minutes.min())
+
 
 # Direction, not just magnitude. A word-flip sweep over every claim-bearing
 # sentence, swapping leads/follows, above/below, more/less and exchange/pool,
@@ -1018,10 +1680,77 @@ DIRECTIONS = [
     ("the misalignment favoured the pool, not the exchange",
      float((align_fit.w_realigned - align_fit.w_as_collected).median()) > 0,
      "The error pushes towards calling the pool the leader"),
-    ("the floor is not choosing the answer",
+    # This used to require the post to say the floor "is not choosing the
+    # answer". Review was right that a below-floor subset cannot establish
+    # that: pairs are refused for thinness, and thinness is the very variable
+    # the study relates to leadership, so the fitted 16 are selected too. The
+    # check now holds the weaker claim the data supports.
+    # Scope repeats the floor claim, and the weaker wording has to hold there
+    # too: pairs are refused for thinness, so as long as any were refused the
+    # below-floor run probes the floor rather than clearing it.
+    ("Scope calls the floor check what it is", thr_refused > 0,
+     "a floor the sensitivity check above probes rather than clears"),
+    # The paragraph that fixes the unit, checked the way the unit error itself
+    # should have been: three of its sentences carry no number a sweep can bump
+    # and reverse cleanly, and all three passed every gate as written backwards.
+    ("a step is longer than a minute often enough for the unit to matter",
+     bool((_steps > 1).to_numpy().sum() > 0),
+     "are per observation and not per minute"),
+    ("the rows are not evenly spaced",
+     bool((_steps > 1).to_numpy().sum() > 0),
+     "consecutive rows are not always a minute apart"),
+    ("a coarser bar gives a larger coefficient",
+     bool(float(_grid_tslax.loc["5min"].speed_dex)
+          > float(_grid_tslax.loc["1min"].speed_dex)),
+     "because a coarser bar is a longer step"),
+    # The spacing check reads as a null, and a null is the easiest thing in an
+    # article to state backwards: three of its sentences inverted cleanly and
+    # passed every gate. Each is tied to the two facts that decide it, the
+    # observed correlations and what a sample of this size can resolve.
+    ("no spacing measure is distinguishable from nothing",
+     bool(_spacing_strongest < _spacing_resolvable),
+     "none of them distinguishable from nothing on a permutation"),
+    ("the null is stated as the weak one it is",
+     bool(_spacing_strongest < _spacing_resolvable),
+     "rules out a strong relation and not a weak one"),
+    # The withdrawn prediction. It required the wider-spaced pairs to sit
+    # nearer an even split; they sit further from it, which is the sign this
+    # reads off rather than the size.
+    ("the saturation prediction came out the wrong way",
+     bool(spearman(_spacing.mean_step_min,
+                   (_spacing.w_cex - 0.5).abs()) > 0),
+     "They sit further from it"),
+    ("and the article says which way it came out",
+     bool(spearman(_spacing.mean_step_min,
+                   (_spacing.w_cex - 0.5).abs()) > 0),
+     "opposite sign to the prediction"),
+    ("the refusals are a function of thinness, not chance",
+     _refusal_is_thinness, "Those are not missing at random"),
+    ("exactly one pool reading is lost and none gained",
+     _pool_before == 1 and _pool_after == 0,
+     "One reading does not survive the correction"),
+    # Said a second time where the direction of the correction is argued, and
+    # the second saying was loose enough to survive being inverted: the clause
+    # named a side of a ledger rather than a count, so swapping the venue in it
+    # changed the meaning and moved nothing a check could see.
+    ("the ledger of the correction, where its direction is argued",
+     _pool_before == 1 and _pool_after == 0,
+     "takes the one pool reading and hands back none"),
+    ("the discount changes the number, so it is called arithmetic",
+     round(float(sign_test(round(n_effective), round(n_effective))), 4)
+     != round(float(sign_test(n_ranked, n_ranked)), 4),
+     "That is arithmetic, not a second test"),
+    ("the tally's rule is a weight above an even split",
+     led_days * 2 > pair_days,
+     "one mechanical rule, a weight above an even split"),
+    ("the below-floor sample is itself selected",
+     thr_refused > 0,
+     "agreement inside them cannot rule out"),
+    ("the below-floor pairs lean the same way as the kept ones",
      (float((thr_below.w_cex > 0.5).mean()) > 0.5)
      == (float((thr_kept.w_cex > 0.5).mean()) > 0.5),
-     "the floor is not choosing the answer"),
+     "It is a sensitivity check on the floor, not a demonstration that the "
+     "floor is neutral"),
     ("the controls read the close, so they were never misaligned",
      GATE_FIELDS.index("close") != GATE_FIELDS.index("open"),
      "Bybit and MEXC return their closes at field four"),
@@ -1057,7 +1786,7 @@ flat_post = _flat(post)
 for label, got, want, text in checks:
     drift = abs(got - want) > 0.011
     missing = not _present(text, flat_post)
-    searched += 1
+    tally["post"] += 1
     if drift:
         print(f"  [DATA] {label}: recomputed {got}, pipeline had {want}")
     if missing:
@@ -1070,7 +1799,7 @@ tokens = ("VTIX", "ACNX", "NFLXX", "AZNX", "TQQQX", "KOX", "MSTRX",
 for token in tokens:
     row = u[u.symbol == token].iloc[0]
     for value in (f"${row.cex_volume_24h:,}", f"${row.dex_volume_24h:,}"):
-        searched += 1
+        tally["post"] += 1
         if value not in flat_post:
             print(f"  [POST] {token}: {value} not found in post")
             bad += 1
@@ -1085,13 +1814,18 @@ for token in tokens:
 # the check fails and names itself instead of dying.
 _WORDS = dict(_SPELLED)
 _WORDS.update({25: "twenty-five", 27: "twenty-seven", 28: "twenty-eight",
-               29: "twenty-nine", 30: "thirty"})
+               29: "twenty-nine", 30: "thirty", 31: "thirty-one",
+               34: "thirty-four", 35: "thirty-five"})
 _doc = _flat(__doc__ or "")
-if _flat(f"The {_WORDS.get(len(DIRECTIONS), len(DIRECTIONS))} DIRECTIONS entries below") not in _doc:
+# Without the article, so the sentence can start where the prose wants it
+# to. Requiring "The N ..." forced a capital letter into mid-sentence.
+if _flat(f"{_WORDS.get(len(DIRECTIONS), len(DIRECTIONS))} DIRECTIONS entries below") not in _doc:
     bad += 1
-    print(f"  [DOC] the docstring does not say there are {len(DIRECTIONS)} "
-          f"direction checks")
-searched += 1
+    print(f"  [SELF] the direction-check count: this file's docstring does "
+          f"not say there are {len(DIRECTIONS)}")
+# This one counts a list in this file rather than numbers in a document, so no
+# edit to any document can trip it and a sweep can leave it running.
+tally["this file"] += 1
 
 # The universe the sweep runs over, counted the same way the sweep counts it.
 # The stated total went stale the moment the post gained six new figures, so it
@@ -1104,27 +1838,99 @@ searched += 1
 # fragments. All six turned out to be guarded, but the denominator the
 # docstring reported was wrong.
 _NUMBER = re.compile(r"(?<![\w.])\d+(?:\.\d+)?(?![\d])(?![a-zA-Z])")
+_SIGNED = re.compile(r"(?<![\w.])-\d+(?:\.\d+)?(?![\d])(?![a-zA-Z])")
 _distinct = len(set(_NUMBER.findall(post)))
-if _flat(f"Bumping each of the {_distinct} distinct numbers") not in _doc:
+_signed = sum(len(set(_SIGNED.findall(_t))) for _t in (post, readme, page))
+_readme_nums = len(set(_NUMBER.findall(readme)))
+_page_nums = len(set(_NUMBER.findall(page)))
+# Counted per module and summed, which is how the sweep counts it: the same
+# figure in two modules is two chances to drift, not one.
+_doc_nums = sum(
+    len(set(_NUMBER.findall(_all_docstrings(_p.stem))))
+    for _p in sorted((base / "analysis").glob("*.py"))
+    if _p.name != "verify.py")
+
+# Every denominator the docstring quotes, counted from the document it
+# describes rather than typed, so a paragraph added to the README or a figure
+# added to the page reddens this before anyone can quote a stale total. Only
+# the caught counts stay hand-measured, and none of them can move without its
+# denominator moving first.
+#
+# These five are the ones a mutation sweep has to be run without. They count
+# distinct numbers, so bumping any figure to a value the document already holds
+# merges two tokens into one, the total drops, and the check goes red whether
+# or not the claim it sat next to was guarded. The docstring used to ask a
+# human to ignore them while judging. That instruction was followed for the
+# post and forgotten for the README and the page, where six and thirty-seven of
+# the bumps collide, so `--sweep` skips them instead of asking.
+_SELF_COUNTS = (
+    ("the post's numbers",
+     f"Bumping each of the {_distinct} distinct numbers"),
+    ("the module docstrings' numbers",
+     f"carry {_WORDS.get(_doc_nums, _doc_nums)} figures between them"),
+    ("the README's numbers",
+     f"each of the {_WORDS.get(_readme_nums, _readme_nums)} numbers in "
+     f"the README"),
+    ("the page's numbers", f"of its {_page_nums} distinct numbers"),
+    ("the signed figures",
+     f"each of the {_WORDS.get(_signed, _signed)} signed figures"),
+)
+SWEEPING = "--sweep" in sys.argv
+# Rejected rather than ignored. The one argument this takes exists to keep a
+# mutation sweep honest, so a sweep run with it misspelled would quietly go
+# back to scoring the counter, which is the failure it was written to end.
+_unknown = [a for a in sys.argv[1:] if a != "--sweep"]
+if _unknown:
+    raise SystemExit(f"verify.py: unknown argument {_unknown[0]!r}\n"
+                     f"usage: verify.py [--sweep]\n"
+                     f"  --sweep  drop the checks that count distinct numbers, "
+                     f"which a mutation sweep trips whatever it is testing")
+for _label, _phrase in () if SWEEPING else _SELF_COUNTS:
+    tally["this file"] += 1
+    if _flat(_phrase) not in _doc:
+        bad += 1
+        print(f"  [SELF] {_label}: this file's docstring does not say "
+              f"{_phrase!r}")
+
+# One pass over every phrase search, in place of the loop-per-list this grew
+# into. Six loops meant the failure message written six times, and it had
+# already drifted twice. Two lists both printed [DIRECTION] with no way to tell
+# which document had failed. [DOC] and [DOCSTRING] sat four characters apart
+# meaning the docstring of this file and the docstring of another. A reader
+# meets those strings at the one moment they are debugging, so the message is
+# built once and always names the file.
+_flat_docs = {_name: _flat(_text) for _name, _text in _docs.items()}
+_SEARCHES = (
+    [("page", "index.html", n, True, p, flat_page) for n, p in PAGE]
+    + [("readme", "README.md", n, True, p, flat_readme)
+       for n, p in README_CLAIMS]
+    + [("readme", "README.md", n, h, p, flat_readme)
+       for n, h, p in README_DIRECTIONS]
+    + [("module", f"analysis/{m}.py", n, True, p, _flat_docs[m])
+       for n, m, p in MODULE_DOCS]
+    + [("module", f"analysis/{m}.py", n, h, p, _flat_docs[m])
+       for n, m, h, p in MODULE_DIRECTIONS]
+    + [("post", "post/index.md", n, h, p, flat_post) for n, h, p in DIRECTIONS]
+)
+for _surface, _where, _name, _holds, _phrase, _haystack in _SEARCHES:
+    tally[_surface] += 1
+    if _holds == _present(_phrase, _haystack):
+        continue
     bad += 1
-    print(f"  [DOC] the docstring does not say the post holds {_distinct} "
-          f"distinct numbers")
-searched += 1
+    _verb = "does not say" if _holds else "should not say"
+    print(f"  [{_surface.upper()}] {_where} {_verb} {_phrase!r} ({_name})")
 
-for _name, _text in PAGE:
-    searched += 1
-    if not _present(_text, flat_page):
-        bad += 1
-        print(f"  [PAGE] {_name}: index.html does not contain {_text!r}")
-
-for _name, _holds, _phrase in DIRECTIONS:
-    searched += 1
-    if _holds != _present(_phrase, flat_post):
-        bad += 1
-        _want = "should say" if _holds else "should not say"
-        print(f"  [DIRECTION] {_name}: the data {_want} {_phrase!r}")
-
-print(f" searched {searched} claims against {len(post.splitlines())} lines of post")
+_WHERE = {"post": "post/index.md", "readme": "README.md",
+          "page": "index.html", "module": "module docstrings",
+          "this file": "this file's own docstring"}
+# A surface counted but not named would leave the parts adding to less than the
+# whole, and a reader checking the arithmetic would be right and confused.
+_unnamed = sorted(set(tally) - set(_WHERE))
+if _unnamed:  # pragma: no cover - a new surface has to be named here
+    raise SystemExit(f"verify.py: counted but unnamed surfaces: {_unnamed}")
+print(f" searched {sum(tally.values())} claims: "
+      + ", ".join(f"{tally[key]} in {name}"
+                  for key, name in _WHERE.items() if tally[key]))
 print(f"FAILED: {bad}")
 # Exit non-zero on any failure. Without this the CI step and the README
 # reproduce flow both pass whatever the numbers say.

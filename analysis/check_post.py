@@ -26,6 +26,10 @@ _DIGIT_WORDS = ("zero", "one", "two", "three", "four", "five",
 
 base = Path(__file__).resolve().parent.parent
 post = (base / "post" / "index.md").read_text()
+# Read here rather than beside the first rule that wants it. Two rules below
+# needed the README and the second one was written above the line that opened
+# it, which is the kind of ordering accident a module-level script invites.
+_readme = (base / "README.md").read_text()
 
 checks = []
 
@@ -58,11 +62,90 @@ _missing = sorted(m for m in _writes if f"analysis/{m}" not in post)
 check("the reproduce block runs every module that writes a dataset",
       not _missing, f"absent from the post: {_missing}")
 
+# And the other direction, which nothing asked. The rule above starts from the
+# modules; this one starts from the files, and it is the one that found
+# something: data/panel_run1.csv is read by relation.py and by verify.py, is
+# the only pass covering all twenty-four tokens, and no module in the tree
+# writes it. A reader following the README's rebuild order would have got a
+# stale file or none. A dataset with no producer is either a snapshot, in which
+# case it is named here with the reason, or an oversight.
+_SNAPSHOTS = {
+    "panel_run1.csv":
+        "the first collection pass, kept because it is the only one that "
+        "measured every token; panel.py replaced it with a session split that "
+        "drops any token too thin to fit in a regime, so the run cannot be "
+        "reproduced from the tree and is committed as data instead",
+}
+# Three spellings reach the same directory. Matching only the first reported
+# vector.py's three files as orphans, which would have made the exemption list
+# a place to hide a real gap.
+_TO_CSV = re.compile(r'to_csv\(\s*(?:DATA|BASE\s*/\s*"data"|base\s*/\s*"data")'
+                     r'\s*/\s*(f?)"([^"]+)"')
+_producers = []
+for _p in sorted((Path(__file__).resolve().parent).glob("*.py")):
+    for _f, _template in _TO_CSV.findall(_p.read_text()):
+        _pattern = re.escape(_template)
+        if _f:
+            _pattern = re.sub(r"\\\{[^}]*\\\}", ".+", _pattern)
+        _producers.append(re.compile(f"^{_pattern}$"))
+_orphans = sorted(
+    f.name for f in (base / "data").glob("*.csv")
+    if f.name not in _SNAPSHOTS
+    and not any(rx.match(f.name) for rx in _producers))
+check("every committed dataset has a producer or a stated reason",
+      not _orphans, f"nothing writes: {_orphans}")
+
+# The reproduce blocks name windows by label, and the labels are the one part
+# of a command a reader cannot check by eye. A number sweep does not see them
+# either: bumping the month in 2026-07-30 leaves every figure in both documents
+# correct and every gate green, and hands a reader a command that dies on a
+# directory that was never collected. Every label has to be a window that
+# exists, except the one that is the argument to collect_raw.py, which is the
+# example for starting a new one and so must NOT exist.
+# Read as the argument of a command rather than matched as a date. A pattern
+# that only recognises well-formed labels cannot see a malformed one: prefixing
+# a digit turns 2026-08-05 into 2026-908-05, which stops looking like a label,
+# drops out of the search and leaves the rule green over a command that dies.
+# Every non-flag argument to a module under analysis/ is a window, so that is
+# what gets checked, whatever shape it has been mangled into.
+_COMMAND = re.compile(r"\s*python\s+analysis/(\w+)\.py\s*(.*)$")
+_windows = {p.name for p in (base / "raw").iterdir() if p.is_dir()}
+_examples = set()
+_stale_labels = []
+for _doc_name, _text in (("the post", post), ("the README", _readme)):
+    for _block in re.findall(r"```.*?```", _text, re.S):
+        for _line in _block.splitlines():
+            _hit = _COMMAND.match(_line)
+            if not _hit:
+                continue
+            for _arg in _hit.group(2).split("#")[0].split():
+                if _arg.startswith("-"):
+                    continue
+                if _hit.group(1) == "collect_raw":
+                    _examples.add(_arg)
+                elif _arg not in _windows:
+                    _stale_labels.append(f"{_doc_name}: {_arg}")
+check("every window a reproduce block names was collected",
+      not _stale_labels, f"no such window under raw/: {_stale_labels}")
+# And the example has to be one label, not one per document, or a reader
+# following both is told to start two different windows.
+check("the two documents offer the same new-window example",
+      len(_examples) == 1 and not (_examples & _windows),
+      f"collect_raw.py examples: {sorted(_examples)}, "
+      f"of which already collected: {sorted(_examples & _windows)}")
+# The exemption has to stay honest in the other direction too: a snapshot that
+# gains a producer, or is deleted, should not sit here unnoticed.
+_stale_snapshots = sorted(
+    name for name in _SNAPSHOTS
+    if not (base / "data" / name).exists()
+    or any(rx.match(name) for rx in _producers))
+check("no dataset is exempted that does not need it",
+      not _stale_snapshots, f"exempted without cause: {_stale_snapshots}")
+
 # The README repeats the post's account of the bar layouts and nothing checked
 # it. Three documents now state which field is which -- the post, the README
 # and alignment.py -- and only the first was tied to the tuples the collector
 # selects by, so the other two could drift the moment a layout changed.
-_readme = (base / "README.md").read_text()
 for _label, _fields, _text in (("Gate", GATE_FIELDS, _readme),
                                ("Gate", GATE_FIELDS, post),
                                ("GeckoTerminal", GECKO_FIELDS, post)):

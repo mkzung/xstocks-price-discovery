@@ -51,6 +51,9 @@ jobs:
 
       - name: whether both venues' bars describe the same instant
         run: python analysis/alignment.py
+
+      - name: whether row spacing predicts the reading
+        run: python analysis/spacing.py
       - name: figures redraw from the committed data
         run: python analysis/build_analysis.py
       - name: the post's line wrapping is settled

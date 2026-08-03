@@ -21,7 +21,7 @@ minute earlier; differencing a sparse series silently produces changes across
 gaps of any length. And two tokens can only be compared on minutes where both
 have such a change, which the pools' sparseness makes much rarer than their
 bar counts suggest: on the third pass, two tokens holding 433 and 398 bars
-share only 86 usable minutes, and every other pairing shares fewer than sixty.
+share only 79 usable minutes, and every other pairing shares fewer than sixty.
 The overlap counts are reported alongside the correlations so that a number
 resting on thin overlap is visible as one.
 

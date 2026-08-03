@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+REPO = Path(__file__).resolve().parent.parent
+# Every path below hangs off this rather than off the working directory. Four
+# tests read the repository through bare relative paths, which are right only
+# when pytest is run from the root; one of them failed the moment it was run
+# from anywhere else. A test below keeps it that way.
+sys.path.insert(0, str(REPO))
 from analysis.discovery import information_share, simulate_leader_follower  # noqa: E402
 
 
@@ -293,7 +299,7 @@ def test_adf_separates_a_random_walk_from_a_reverting_series() -> None:
     result = adf(pd.Series(reverting))
     assert result.rejects_unit_root()
     # phi of 0.8 implies a half-life of ln(0.5)/ln(0.8), about 3.1 minutes.
-    assert 2.0 < result.half_life_min < 4.5
+    assert 2.0 < result.half_life_obs < 4.5
 
 
 def test_adf_rejects_at_about_its_nominal_rate() -> None:
@@ -446,7 +452,7 @@ def test_the_floor_is_applied_to_the_sample_not_the_answer() -> None:
 
     from analysis.robustness import MIN_PAIRED
 
-    table = pd.read_csv("data/threshold.csv")
+    table = pd.read_csv(REPO / "data" / "threshold.csv")
     assert (table[table.kept].minutes >= MIN_PAIRED).all()
     assert (table[~table.kept].minutes < MIN_PAIRED).all()
 
@@ -569,7 +575,7 @@ def test_each_coverage_row_describes_its_own_series() -> None:
     import pandas as pd
 
     for label in ("2026-07-29b", "2026-07-30", "2026-07-31"):
-        folder = Path("raw") / label
+        folder = REPO / "raw" / label
         coverage = pd.read_csv(folder / "coverage.csv").set_index("symbol")
         for symbol, row in coverage.iterrows():
             series = pd.read_csv(folder / f"{symbol}.csv", index_col="ts")
@@ -594,7 +600,7 @@ def test_no_series_file_is_missing_from_its_coverage() -> None:
     import pandas as pd
 
     for label in ("2026-07-29b", "2026-07-30", "2026-07-31"):
-        folder = Path("raw") / label
+        folder = REPO / "raw" / label
         listed = set(pd.read_csv(folder / "coverage.csv").symbol)
         on_disk = {p.stem for p in folder.glob("*.csv")} - {"coverage", "universe"}
         assert on_disk == listed, f"{label}: {on_disk ^ listed}"
@@ -621,8 +627,42 @@ def test_every_written_table_has_a_total_order() -> None:
         "token_groups.csv": (["paired_min", "symbol"], [False, True]),
     }
     for name, (keys, ascending) in ordered.items():
-        frame = pd.read_csv(Path("data") / name)
+        frame = pd.read_csv(REPO / "data" / name)
         assert not frame.duplicated(subset=keys).any(), f"{name}: key ties"
         expected = frame.sort_values(keys, ascending=ascending).reset_index(drop=True)
         assert frame.reset_index(drop=True).equals(expected), f"{name}: not in key order"
+
+
+def test_no_test_reads_the_repository_through_a_relative_path() -> None:
+    # Four tests here opened data/ and raw/ by bare relative path, which is
+    # correct only when pytest is run from the repository root and silently
+    # wrong from anywhere else: `pytest tests` passed and `pytest <abs>/tests`
+    # failed on one of them. Paths hang off REPO now, and this keeps it that
+    # way, since the failure only shows up in an invocation nobody uses twice.
+    source = Path(__file__).read_text()
+    stray = re.findall(
+        r'(?:read_csv|read_text|open|Path)\(\s*"(?:data|raw|post|analysis)/',
+        source)
+    stray += re.findall(r'Path\(\s*"(?:data|raw|post|analysis)"\s*\)', source)
+    assert not stray, f"relative repository paths in the suite: {stray}"
+
+
+def test_one_issuer_prefix_screens_every_module() -> None:
+    # The universe screen, the collision screen and the venue controls all
+    # decide what counts as the issuer's mint. Two took the prefix from
+    # collect; the third carried its own copy in a default argument, so a
+    # change to the constant would have moved two screens and left the controls
+    # matching on the old string with nothing to say so.
+    import inspect
+
+    from analysis.collect import MINT_PREFIX
+    from analysis.venues import pools_for_mint
+
+    default = inspect.signature(pools_for_mint).parameters["mint_prefix"].default
+    assert default == MINT_PREFIX
+    for module in ("collect", "collisions", "venues"):
+        source = (REPO / "analysis" / f"{module}.py").read_text()
+        assert f'"{MINT_PREFIX}"' not in source.replace(
+            f'MINT_PREFIX = "{MINT_PREFIX}"', ""), \
+            f"{module}.py carries a literal copy of the issuer prefix"
 

@@ -110,8 +110,9 @@ exceptions are named. Collected daily, {first_date} to {last_date}.</p>
 <h2>Why believe it</h2>
 <p class="lede">Every way the result could have been an artefact, and what the
 check returned. All of it runs from the committed data. The first row is a
-mistake found in the collection itself, that row and the last three span all
-three days, and the rest come from the first day's series pass.</p>
+mistake found in the collection itself and spans all three days, as do the last
+two; the rest, the dependence row among them, come from the first day's series
+pass.</p>
 {checks_table}
 
 <h2>What sparse trading could explain</h2>
@@ -126,7 +127,11 @@ dropping the untraded minutes does not.</p>
 <h2>Who leads, and how hard each side corrects</h2>
 <p class="lede">Read the speed columns rather than the weights. A weight is a
 ratio of two similar numbers and is noisy; the speeds are ordinary coefficients.
-Hasbrouck bounds and the bootstrap come from the series pass.</p>
+A speed is the share of the gap closed from one paired observation to the next,
+and untraded minutes are dropped rather than filled, so that step is a median
+of one minute on {median_step_pairs} of the {n_ranked_pairs} ranked pairs and
+longer on the rest. Hasbrouck bounds and the bootstrap come from the series
+pass.</p>
 {weights_table}
 <figure><img src="post/weights-series.png" alt="Exchange weights with Hasbrouck bounds, and the correction speeds behind them"></figure>
 
@@ -181,7 +186,8 @@ def _table(frame: pd.DataFrame, tone: str | None = None) -> str:
 def _checks_table(rob: pd.DataFrame, vec: pd.DataFrame, lags: pd.DataFrame,
                   grid: pd.DataFrame, risk: pd.DataFrame, cross: pd.DataFrame,
                   align: pd.DataFrame, dep: pd.DataFrame,
-                  below: pd.DataFrame) -> pd.DataFrame:
+                  below: pd.DataFrame,
+                  spacing: pd.DataFrame) -> pd.DataFrame:
     n = len(rob)
     grid_ok = grid.dropna(subset=["w_cex"])
     fitted = align.dropna(subset=["w_realigned"])
@@ -214,6 +220,13 @@ def _checks_table(rob: pd.DataFrame, vec: pd.DataFrame, lags: pd.DataFrame,
          "simulation with the pool as known leader",
          f"error {risk.false_lead_drop.min():.0%} to "
          f"{risk.false_lead_drop.max():.0%} at these fill rates", "pass"),
+        # The empirical half of the row above it, which answers from a
+        # simulation. This one asks the pairs actually measured whether the
+        # sparse ones read differently from the dense ones.
+        ("Do the sparser pairs read differently",
+         "spacing against the weight, across every ranked pair-day",
+         f"rank correlation {spearman(spacing.mean_step_min, spacing.w_cex):+.2f} "
+         f"over {len(spacing)} pair-days", "pass"),
         ("Does the answer depend on the lag order",
          "refitted at 1, 3, 5 and 10 lags",
          f"leader changes in {int((lags.groupby('symbol').leads.nunique() > 1).sum())} "
@@ -226,10 +239,14 @@ def _checks_table(rob: pd.DataFrame, vec: pd.DataFrame, lags: pd.DataFrame,
          "cross-token correlation of the spread the model fits",
          f"{dep.loc['spread']['median']:.2f}, against "
          f"{dep.loc['exchange']['median']:.2f} on the exchange legs", "pass"),
+        # Not green. The pairs below the floor are refused for thinness, and
+        # thinness is the variable this study relates to leadership, so the
+        # ones that can be fitted are a selected sample too. This probes the
+        # floor; it does not clear it.
         ("Does the 120-minute floor pick its own answer",
-         "the estimator run below the floor as well",
+         "sensitivity check: the estimator run below the floor",
          f"{int((below.w_cex > 0.5).sum())} of {len(below)} lean the same way, "
-         f"median {below.w_cex.median():.2f}", "pass"),
+         f"median {below.w_cex.median():.2f}, 26 too thin to fit", ""),
         ("Does it survive different days",
          f"collection repeated daily through {LAST_DAY_TEXT}",
          f"led in every window ranked, {int(cross.led_every_window.sum())} of "
@@ -252,6 +269,7 @@ def build() -> Path:
     align = pd.read_csv(DATA / "alignment.csv")
     dep = pd.read_csv(DATA / "dependence.csv")
     dep = dep[dep.window == SERIES_PASS].set_index("leg")
+    spacing = pd.read_csv(DATA / "spacing.csv")
     below = pd.read_csv(DATA / "threshold.csv").dropna(subset=["w_cex"])
     below = below[~below.kept]
     cross = pd.read_csv(DATA / "windows_leadership.csv", index_col=0)
@@ -325,8 +343,13 @@ def build() -> Path:
         ratio_max=groups.ratio.max(),
         risk_low=risk.false_lead_drop.min() * 100,
         risk_high=risk.false_lead_drop.max() * 100,
+        median_step_pairs=int(sum(
+            pd.Series(pd.read_csv(RAW / SERIES_PASS / f"{s}.csv",
+                                  index_col="ts").index).diff().median() == 60
+            for s in rob.symbol)),
+        n_ranked_pairs=len(rob),
         checks_table=_table(_checks_table(rob, vec, lags, grid, risk, cross,
-                                          align, dep, below),
+                                          align, dep, below, spacing),
                             tone="tone"),
         weights_table=_table(weights),
         cross_table=_table(cross_rows),

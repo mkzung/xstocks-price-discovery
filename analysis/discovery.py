@@ -35,8 +35,11 @@ the two venues correct at similar speeds. One weight from one sample is weak
 evidence whatever it reads.
 
 The ordering survives that scatter. Where the true weight is plainly one-sided
-the estimator picks the right leader in 98 percent of runs, falling to 92
-percent near even. So weights are read as a ranking, near-even readings mean
+the estimator picks the right leader in 98 percent of the 60 runs, and in 11 of
+the 12 at the one grid point near an even split. The second is a count rather
+than a rate because twelve runs at one point of the grid do not support a
+percentage, and runs whose truth is an even split are excluded from both, having
+no leader to recover. So weights are read as a ranking, near-even readings mean
 shared discovery rather than a measured lead, and the load is carried by the two
 correction speeds, which are ordinary coefficients, rather than by the ratio
 built from them.
@@ -118,6 +121,15 @@ def vecm_design(
     jumps swamp the error-correction term; a bootstrap built that way recovers
     nothing. Resampling rows of this frame leaves the spread column exactly as
     the original prices produced it.
+
+    One step here is one row to the next, not one minute to the next. The
+    caller passes a series of minutes both venues traded in, and the minutes
+    neither of them did are absent rather than filled, so on a sparse pool the
+    rows are further apart than the bar they came from. That makes every
+    coefficient below a rate per observation. It does not touch which venue
+    leads, since both equations are fitted to the same rows. It does mean a
+    speed is not a rate per clock minute. Refit the same pair on five-minute
+    bars and the coefficients grow, which is the step and not the venue.
     """
     df = pd.concat([np.log(price_a.rename("a")), np.log(price_b.rename("b"))],
                    axis=1).dropna()

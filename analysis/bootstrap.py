@@ -148,9 +148,13 @@ def block_bootstrap(
 def sign_test(led: int, total: int) -> float:
     """Two-sided probability of `led` or more one-way results under coin flips.
 
-    Nine pairs all pointing the same way is the claim the post rests on. Each
+    Seven pairs all pointing the same way is the claim the post rests on. Each
     individual weight is noisy, but the joint outcome is not, and this is the
     number that says by how much. Exact binomial, no library.
+
+    Seven, not nine. Nine is the session panel's count and this is the series
+    pass's, and the docstring carried the panel's number beside the series
+    pass's p-value for as long as nothing read it.
     """
     if total <= 0:
         return float("nan")

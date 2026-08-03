@@ -1,4 +1,4 @@
-symbol,paired_minutes,fill_rate,consecutive_share,median_gap_min,max_gap_min,adf_statistic,spread_stationary,spread_half_life_min,w_cex,speed_cex,speed_dex,hasbrouck_low,hasbrouck_high,innovation_correlation,lead_share,speed_cex_low,speed_cex_high,speed_dex_low,speed_dex_high,speeds_separated,agree,verdict
+symbol,paired_minutes,fill_rate,consecutive_share,median_gap_min,max_gap_min,adf_statistic,spread_stationary,spread_half_life_obs,w_cex,speed_cex,speed_dex,hasbrouck_low,hasbrouck_high,innovation_correlation,lead_share,speed_cex_low,speed_cex_high,speed_dex_low,speed_dex_high,speeds_separated,agree,verdict
 TSLAX,530,0.5332,0.69,1,15,-5.22,True,2.4,0.915,-0.022,0.24,0.673,0.979,0.449,0.998,-0.071,0.016,0.147,0.333,True,True,ranked
 NVDAX,506,0.5121,0.6733,1,16,-5.98,True,2.0,0.77,-0.068,0.227,0.504,0.905,0.451,0.97,-0.127,-0.009,0.14,0.318,True,True,ranked
 QQQX,429,0.4294,0.6402,1,22,-5.4,True,2.4,1.012,0.004,0.305,0.944,1.0,0.254,1.0,-0.032,0.034,0.238,0.396,True,True,ranked

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from analysis.collect import _get, dex_history
+from analysis.collect import MINT_PREFIX, _get, dex_history
 from analysis.discovery import information_share
 
 DATA = Path(__file__).resolve().parent.parent / "data"
@@ -37,8 +37,13 @@ def mexc_bars(symbol: str, limit: int = 1000) -> pd.Series:
     return pd.Series({int(r[0]) // 1000: float(r[4]) for r in rows}).sort_index()
 
 
-def pools_for_mint(symbol: str, mint_prefix: str = "Xs") -> list[dict]:
-    """Every Solana pool on the issuer's mint, deepest first."""
+def pools_for_mint(symbol: str, mint_prefix: str = MINT_PREFIX) -> list[dict]:
+    """Every Solana pool on the issuer's mint, deepest first.
+
+    The prefix comes from collect rather than a literal here. Three places
+    screen on it, this one had its own copy, and a copy of a constant is a
+    constant that is right until someone changes the other one.
+    """
     found = _get(f"https://api.dexscreener.com/latest/dex/search?q={symbol}")
     pools = [
         p for p in (found.get("pairs") or [])

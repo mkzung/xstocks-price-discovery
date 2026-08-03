@@ -85,7 +85,7 @@ def figure_weights(panel: pd.DataFrame) -> None:
     right.barh(y + 0.19, allr.speed_dex, height=0.36, color=INK,
                label="pool", zorder=3)
     right.set_yticks(y, allr.symbol, fontsize=8.5)
-    right.set_xlabel("share of the gap closed per minute", fontsize=9.5)
+    right.set_xlabel("share of the gap closed per observation", fontsize=9.5)
     right.set_title("Who moves toward whom", fontsize=10.5, pad=30)
     # Inside the axes this lands on the bottom token's bars; directly above,
     # it landed on the title. The title gets extra padding and the legend sits
@@ -185,7 +185,7 @@ def figure_weights_series(rob: pd.DataFrame) -> None:
     right.barh(y + 0.19, ranked.speed_dex, height=0.36, color=INK,
                label="pool", zorder=3)
     right.set_yticks(y, ranked.symbol, fontsize=8.5)
-    right.set_xlabel("share of the gap closed per minute", fontsize=9.5)
+    right.set_xlabel("share of the gap closed per observation", fontsize=9.5)
     right.set_title("The pool closes the gap, the book does not",
                     fontsize=10.5, pad=26)
     right.legend(frameon=False, fontsize=8, loc="lower center",
@@ -280,7 +280,7 @@ POST_DATA = ("universe.csv", "token_groups.csv", "panel_run1.csv",
              "windows_relation.csv", "windows_leadership.csv", "collisions.csv",
              "staleness_matched.csv", "registry_check.csv",
              "sessions_from_series.csv", "dependence.csv", "threshold.csv",
-             "alignment.csv")
+             "alignment.csv", "spacing.csv")
 
 
 def sync_post_data() -> None:

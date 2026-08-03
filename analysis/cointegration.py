@@ -49,7 +49,7 @@ class AdfResult:
     statistic: float
     lags: int
     n_obs: int
-    half_life_min: float
+    half_life_obs: float
 
     def rejects_unit_root(self, level: float = 0.05) -> bool:
         """True where the spread looks stationary at the given level."""
@@ -57,7 +57,7 @@ class AdfResult:
 
     def __repr__(self) -> str:
         return (f"AdfResult(statistic={self.statistic:.2f}, "
-                f"n={self.n_obs}, half_life={self.half_life_min:.1f}min)")
+                f"n={self.n_obs}, half_life={self.half_life_obs:.1f} obs)")
 
 
 def adf(series: pd.Series, *, lags: int = 5) -> AdfResult:
@@ -68,8 +68,15 @@ def adf(series: pd.Series, *, lags: int = 5) -> AdfResult:
         lags: Lagged differences included to soak up serial correlation.
 
     Returns:
-        The statistic, and the half-life implied by the fitted decay, which is
-        the more readable form: how many minutes it takes a gap to halve.
+        The statistic, and the half-life implied by the fitted decay: how many
+        observations it takes a gap to halve.
+
+        Observations, not minutes. The regression runs on the rows it is given
+        and those are the minutes both venues traded in, so on a sparse pool
+        they are further apart than a minute. Multiply by the pair's own mean
+        spacing to read a clock. The field carried `_min` until a reader of the
+        post was told a gap was half gone inside four minutes when for the
+        thinnest pair it was twenty-five.
     """
     y = series.dropna()
     if len(y) < lags + 20:
@@ -91,7 +98,8 @@ def adf(series: pd.Series, *, lags: int = 5) -> AdfResult:
     gamma = float(coef[0])
     statistic = gamma / se if se > 0 else float("nan")
 
-    # dy = gamma * y[t-1] means the level decays by (1 + gamma) each minute.
+    # dy = gamma * y[t-1] means the level decays by (1 + gamma) each step,
+    # and a step is one row, not one minute.
     decay = 1.0 + gamma
     half_life = (np.log(0.5) / np.log(decay)
                  if 0 < decay < 1 else float("inf"))
