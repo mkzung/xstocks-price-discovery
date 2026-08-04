@@ -41,9 +41,9 @@ The answer for Backed Finance's xStocks, collected daily from 29 to 31 July
 pair-days that can be ranked. It holds when the sample is cut to the hours when
 the US equity market is shut and it holds on a second exchange. The two
 exceptions get their own paragraphs below, and both sit where the first day
-already pointed: TSLAX reads near even on the third day, and AMZNX, the one
-pair the first day flagged as the exchange giving up pricing, is a clear pool
-lead the one day it can be measured, on the alignment these tables use. The
+already pointed. TSLAX reads near even on the third day. AMZNX, the one pair
+the first day flagged as the exchange giving up pricing, is a clear pool lead
+the one day it can be measured, on the alignment these tables use, and the
 correction described below is the one thing that takes it away.
 
 The more useful finding sits underneath it. Rank the twenty-four tokens by how
@@ -361,10 +361,10 @@ same ordering everything else in this post keeps finding.
 
 Stationarity is tested on the spread of log prices, which imposes a
 cointegrating vector of one to minus one instead of fitting it. Two venues
-quoting one mint should move one for one, and imposing that buys precision, but
-it is an assumption and it can fail: a pool at a proportional discount that
+quoting one mint should move one for one, and imposing that buys precision. It
+is still an assumption and it can fail. A pool at a proportional discount that
 widens with the price would need a coefficient away from one, and the spread
-built the wrong way would not be the error the model thinks it is.
+built the wrong way is not the error the model thinks it is.
 
 Fitted instead of imposed, the coefficient comes out between 0.85 and 1.00,
 below one in every pair. That is what noise in a regressor does, not evidence
@@ -537,8 +537,8 @@ closer still.
 The next days are the harder test. The headline number replicates without
 wobble. The correlation between how much a pool trades and how many exchange
 dollars are printed against it prints -0.93 on 25 tokens on the second day and
-**-0.93** on 24 on the third, each with a permutation p below 0.0001, and each
-surviving its own tail check: dropping the six most extreme ratios leaves the
+**-0.93** on 24 on the third, each with a permutation p below 0.0001. Each
+survives its own tail check: dropping the six most extreme ratios leaves the
 third day at -0.92 on 18 tokens. Pool liquidity ranks with pool activity at
 0.90. Whatever else moves between days, the quieter the chain, the more the
 exchange prints, every day, by the same amount.

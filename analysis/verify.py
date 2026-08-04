@@ -1,166 +1,92 @@
 """Machine-check every quantitative claim in post/index.md against the committed CSVs.
 
-Each check has two legs. The first recomputes a value from `data/` and compares
-it to what the pipeline produced, which catches a data refresh that moved a
-number. The second searches the post for that value formatted the way the prose
-writes it, which catches the case the first leg cannot see: the data is fine and
-the sentence is stale.
+Each check has two legs. The first recomputes a value from `data/`, which
+catches a data refresh that moved a number. The second searches the document for
+that value formatted the way the prose writes it, which catches the case the
+first cannot see: the data is fine and the sentence is stale. The second leg is
+the point. An earlier version had only the first, compared computed values
+against hardcoded constants, and never opened the post at all.
 
-The second leg is the point. An earlier version of this file had only the first,
-so it compared computed values against hardcoded constants and never opened the
-post at all. Every number in the text could have been wrong and it would still
-have printed FAILED: 0. Whenever a check is added here, mutate the post and
-confirm the check goes red before trusting it.
+Four surfaces carry the findings and for a long time one of them was checked.
 
-The post is not the only surface, and the other two took two rounds to cover.
-index.html ships the same findings on one page, and the workflow diff catches a
-stale page, not one built from the wrong column. Its headline figures are
-checked here, each anchored on the element it sits in rather than searched for
-bare, because the correlation appears twice and a bare search passed while one
-of the two sites carried a wrong number. That left its three data tables
-untied, which is the hole the post had before every cell of its own tables was
-compared; they are compared cell for cell now, from what each column means
-rather than from what the builder writes, so swapping speed_cex for speed_dex
-in the builder fails here while the page still regenerates and diffs clean.
+The post. Bumping each of the 238 distinct numbers in it turns every one red,
+and prepending a digit does the same. Its four tables are compared cell for cell, which is where
+55 of 69 unguarded numbers turned up the first time anyone looked.
 
-The README is the third surface and the one a reader who never opens the post
-still sees. Nothing here read it. Its figures were held only by check_post's
-rule that every number the README quotes must appear somewhere in the post,
-which is real but is not verification: it fires because 99 happens to be absent
-from the post and it stops firing the day some other sentence introduces a 99.
-Bumping each of the twenty-eight numbers in the README left fourteen standing.
-Eleven were claims: the calibration bias and the scatter around it, the
-recovery rate away from an even split and the run count near one, both ends of
-the staleness band, the size of the universe, the reach of the session panel,
-and AMZNX's weight either way. They are tied to the same computed values the
-post's copies are tied to, and one of them was wrong by two when it was
-written. 26 of 28 now. The two left are a bump that lands on another collected
-window, which leaves the command it sits in valid, and the runtime estimate
-beside run_panel, which asserts nothing. Neither is guarded, for the reason 429
-is named in check_post rather than guarded.
+index.html. The workflow diff proves the page matches its builder, not the data,
+so a builder reading speed_dex where it means speed_cex ships a page that is
+wrong, regenerable and green. Its figures are checked here, anchored on the
+element they sit in because the correlation appears twice and a bare search
+passed while one of the two sites was wrong. Its three data tables are compared
+from what each column means rather than from what the builder writes. 100 of its
+105 distinct numbers go red; the five left are line heights and font weights.
 
-The fourth surface is the one nobody thinks of as a surface. The module
-docstrings carry 39 figures between them, read by whoever reuses the
-code and by nobody else, so they drift in private, and two had: discovery.py
-still gave the near-even recovery as a rate off twelve runs, which is the
-framing the article corrected in two places this round, and dependence.py said
-two tokens share 86 usable minutes when they share 79. 31 of the 39 go red
-now. The eight left are the symbols in the estimator's own formula and the 0.5
-that names an even split, the unit in "24-hour volumes", the date in a note
-about a collection that failed and the count from that failed attempt, which
-nothing committed can confirm and which is labelled as such, and one half of
-"1,000", which a comma splits in two.
+README.md. Held only by check_post's rule that every number it quotes appears
+somewhere in the post, which is not verification: it fires because 99 happens to
+be absent and stops the day a sentence introduces one. Bumping each of the
+twenty-eight numbers in the README left fourteen standing, eleven of them
+claims. 26 of 28 now; the two left are a bump that lands on another collected
+window and a runtime estimate.
 
-The other two sweeps reached the README last and found it worse than the post.
-Swapping exchange for pool and leads for follows in each of its ten
-claim-bearing sentences reddened one, and the sentence that survived was the
-headline: "the pool leads and the exchange follows in 21 of the 23 pair-days"
-passed every gate, because the rule tying the README to the post asks for the
-tally and never asks who won it. Deleting the negation from each of its negated
-sentences reddened none of them. Five of ten and five of nine now, and the
-residue is prose whose inversion is ungrammatical or merely odd, which is where
-a check would be testing the sentence against itself.
+The module docstrings, read by whoever reuses the code and by nobody else, so
+they drift in private. They carry 39 figures between them and two were wrong:
+discovery.py gave the near-even recovery as a rate off twelve runs, the framing
+the post had already corrected, and dependence.py said two tokens share 86
+usable minutes when they share 79. 31 of the 39 go red; the eight left are
+formula symbols, a unit, and a note about a collection that failed.
 
-The current state of that sweep, run against both gates, this file and
-check_post.py, because the two divide the work and a number can be held by
-either. Bumping each of the 238 distinct numbers in the post by one unit in its
-last digit turns every one of them red. Prepending a digit does the same, and
-it is the corruption a bump cannot make: it turns 16 into 916. Before the
-phrase searches were anchored that one left another number standing, because a
-plain substring test finds "16 cents" inside "916 cents" and fifty-four of the
-searches below open with the value they check. The last two to fall were
-the day and month of the example collection date, which asserts nothing on its
-own and now has to agree with the README's copy of the same command.
+Five mutation sweeps, and each of them had to be fixed before it measured
+anything.
 
-Four things about running that sweep, each learned by getting it wrong. Match
-numbers with a pattern that allows a full stop after them, or every figure
-ending a sentence is invisible to it: six were, including the discounted
-p-value and both DOI fragments. Run the sweep against `--sweep`, which drops
-the five checks that count distinct numbers: a bump to a value the document
-already holds merges two tokens, the total falls and the check goes red whether
-or not the claim beside it was guarded. 93 of the post's bumps collide that
-way, 37 of the page's and 6 of the README's, so this is most of the sweep and
-not an edge of it. This paragraph used to ask a reader to ignore the counting
-checks while judging, which worked on the post and was then forgotten on the
-other two, where the numbers those runs reported were the counter's and not the
-guards'. The flag is the fix and the instruction it replaced is what needed
-fixing. Rewrap the post before judging, or a mutation that changes a line's
-length trips the wrapping rule and is scored as caught while its meaning went
-untested; that alone moved the direction figure from 85 of 89 to 72 of 93. And
-clear the results file before re-running a range, because a chunk re-run after
-a timeout appends a second time and the accumulated file reports gaps that are
-green when tested one by one: three did, and all three were phantoms. And check
-that the gate is green before the first mutation, because a gate that cannot
-import scores every mutation as caught: a name defined below the list that read
-it turned a run of nine into nine of nine, which is what a perfect score should
-look like from across the room and never does up close. The sweep has caught real gaps five times:
-the whole robustness table once shipped uncompared, the lede's 21-of-23 tally
-was unguarded in both places it is made, the comparison paragraph restated both
-tallies in words nothing checked, the strict rule's own 0.3-to-0.7 band could
-be moved in the prose while every count stayed green, and the citation years in
-the running text could disagree with the DOIs beside them.
+Bumping a digit, and prepending one. Prepending is the corruption a bump cannot
+make: it turns 16 into 916, and a plain substring test finds "16 cents" inside
+"916 cents", so every phrase search here is anchored.
 
-Numbers are not the only thing a sentence can get wrong. A second sweep flips
-direction words in every claim-bearing sentence, swapping leads for follows,
-above for below, more for less and exchange for pool. Against both gates 72 of
-93 such flips go red, and the thirty-five DIRECTIONS entries below are what
-closed most of that gap, by tying a phrase to a sign in the data rather than
-merely requiring it to exist. Four of them cover the headline, the figure
-captions and the alt text, because alt text is the entire figure for a reader
-using a screen reader and carried three reversible claims.
+Flipping direction words in every claim-bearing sentence, leads for follows,
+above for below, exchange for pool. 72 of 93 go red, and the thirty-five
+DIRECTIONS entries below are what closed the gap, by tying a phrase to a sign in
+the data rather than requiring it to exist. Four cover figure captions and alt
+text, which is the entire figure for a reader using a screen reader.
 
-That 72 was 85 until the sweep itself was fixed, and the correction is worth
-recording. A word swap changes the length of a line, so unless the post is
-rewrapped before judging, check_post's wrapping rule fires and the flip is
-counted as caught when nothing about its meaning was checked at all. Rewrap
-first, or a formatter stands in for a proof. The residue is prose where the
-inverted sentence is odd rather than false, or sits inside the fenced reproduce
-block, and it is named here rather than papered over with checks that assert a
-phrase exists, which is form-checking wearing the costume of verification.
+Deleting the negation, since dropping a "not" inverts a claim without moving a
+digit or touching a word the flip sweep tries. 76 sentences qualify and 60
+deletions still pass, most of them prose where the inverted sentence is merely
+odd. The rest are named rather than transcribed into a check apiece, which would
+test each sentence against itself.
 
-A third sweep deletes the negation from every sentence that carries one, since
-dropping a "not" inverts a claim without moving a number or touching any of the
-words the flip sweep tries. 76 sentences qualify and 60 of the deletions still
-pass, which is the honest state of it: most are ordinary prose where the
-inverted sentence is merely odd. Twelve of the DIRECTIONS entries cover the
-ones where the inversion would contradict the data instead, among them that
-the misalignment did not manufacture the relation, that the pairs below the
-floor are refused for thinness rather than at random, that exactly one pool
-reading is lost to the correction, and that the ranking does not depend on
-the market being open.
-The rest are left uncovered rather than transcribed into a check apiece, which
-would test the sentence against itself.
+Swapping a unit or a comparator, which moves no digit at all. Three claims fell:
+a correction speed given as a bound, an artefact range in a caption, and the
+one-minute bar the study samples at, which read the same as "five-minute".
+Figures spelled out in words are invisible to a digit sweep too, which is how a
+hundred and twenty-seven thousand dollars of turnover sat unguarded.
 
-Two smaller sweeps followed. Swapping a unit or a comparator moves no digit at
-all, and three claims fell to it: the exchange's correction speed given as a
-bound, the artefact range in a figure caption, and the one-minute bar the whole
-study samples at, which read the same with "five-minute" in its place. And
-figures written out in words are invisible to a digit sweep, which is how a
-hundred and twenty-seven thousand dollars of turnover, two hundred and
-twenty-five dollars of liquidity and the count of pairs the sign test is asked
-about all sat unguarded. All are checked now, each proven red by the mutation
-that found it.
+Dropping a minus sign, which the first four patterns all refused to match, so no
+signed figure had ever been mutated: not the rank correlation the second finding
+rests on, not AMZNX's pool lead, not one correction speed. Dropping the sign and
+bumping the last digit of each of the seventeen signed figures goes red now. A sweep reports what its own pattern can see, so
+its silence is evidence about the part of the document the pattern matches and
+nothing else.
 
-A fifth sweep exists because the first four had a blind spot they could not
-report. Every number pattern above refuses a leading minus, so no signed figure
-in any of the three documents had ever been mutated: not the rank correlation
-the whole second finding rests on, not AMZNX's pool lead, not a single
-correction speed. A minus sign is the cheapest possible reversal, changing a
-claim's direction without touching a digit or any word the flip sweep tries.
-Dropping the sign and bumping the last digit of each of the seventeen signed
-figures now goes red everywhere: nine in the post, two in the README, six on
-the page, where eight of the twelve mutations had passed before the tables were
-compared. The lesson generalises past this file. A sweep reports what its own
-pattern can see, so its silence is evidence only about the part of the document
-the pattern matches, and the pattern is worth reading as carefully as the
-checks are.
+Five things about running one, each learned by getting it wrong. Match numbers
+with a pattern that allows a full stop after them, or every figure ending a
+sentence is invisible: six were. Pass `--sweep`, which drops the five checks
+that count distinct numbers, because a bump to a value the document already
+holds merges two tokens and reddens the check whatever it sat next to; 93 of the
+post's bumps collide that way, 37 of the page's, 6 of the README's. Rewrap the
+post before judging, or a mutation that changes a line's length trips the
+wrapping rule and scores as caught while its meaning went untested, which alone
+moved the direction figure from 85 of 89 to 72 of 93. Clear the results file
+before re-running a range, or a chunk re-run after a timeout appends twice and
+reports gaps that are green one by one. And check the gate is green before the
+first mutation, because a gate that cannot import scores every mutation as
+caught: a name defined below the list that read it turned a run of nine into
+nine of nine.
 
-Where the page stands after all of this: 100 of its 105 distinct numbers go red
-under a last-digit bump, and the five survivors are the line heights and font
-weights in its stylesheet. The last four claims to fall were a lag order, the
-lag sweep's own result, the paired-minute floor and the collection year, all of
-which describe what was done rather than what came out, which is why no result
-check had ever touched them and why a reader cannot tell they are wrong.
+The sweeps have earned it. They found the robustness table shipping uncompared,
+the lede's tally unguarded in both places it is made, the strict rule's own band
+movable while every count stayed green, the citation years free to disagree with
+the DOIs beside them, and the unit on every coefficient in the post.
+
 """
 import ast
 import re
@@ -1267,18 +1193,8 @@ _capture_columns = sorted(
      for c in pd.read_csv(_f, nrows=0).columns
      if any(w in c.lower() for w in _CAPTURE_WORDS)})
 
-# The third surface, and the one a reader who never opens the post still sees.
-# The README states the finding, the calibration and the staleness bounds in
-# its own words, and the only thing holding those figures was check_post's rule
-# that every number the README quotes must appear somewhere in the post. That
-# rule is real but its strength is an accident of the post's inventory: bumping
-# 98 to 99 is caught because no 99 appears in the post, and it stops catching
-# anything the day one does. Bumping each of the twenty-one numbers in the
-# README left nine standing, among them the calibration bias, the two recovery
-# counts this round had just corrected in the post, and the staleness band. The
-# entries below tie them to the same computed values the post's copies are tied
-# to, so the two documents cannot drift apart and neither can drift from the
-# data.
+# The README's figures, tied to the same computed values the post's copies are
+# tied to, so the two documents cannot drift apart or from the data.
 README_CLAIMS = [
     ("the README's universe size", f"Across {len(u)} xStocks quoted at once"),
     ("the README's dead-pool count",
@@ -1378,14 +1294,8 @@ README_DIRECTIONS = [
      "not the file `run_panel` writes"),
 ]
 
-# The fourth surface, and the one nobody thinks of as a surface. The module
-# docstrings carry thirty-two figures of their own and none of them was
-# checked, which showed: discovery.py still read the near-even recovery as a
-# rate off twelve runs, the framing the article had already corrected in two
-# places, and dependence.py said two tokens share 86 usable minutes when they
-# share 79. A number in a docstring is read by whoever reuses the code and by
-# nobody else, so it drifts in private. These are pulled from the same computed
-# values the article's copies are pulled from.
+# The module docstrings, pulled from the same computed values the post's copies
+# are pulled from.
 def _all_docstrings(name: str) -> str:
     """Every docstring in one module, module-level and per function alike.
 
@@ -1558,14 +1468,9 @@ _docs = {module: _all_docstrings(module)
          for module in sorted({m for _, m, _ in MODULE_DOCS}
                               | {m for _, m, _, _ in MODULE_DIRECTIONS})}
 
-# The page's tables, cell for cell. Nine bare figures on it were tied to the
-# data and its three data tables were not, which is the hole the post had
-# before every cell of its own tables was compared here. The page is
-# regenerated and diffed in the workflow, but that only proves it matches the
-# builder: a builder reading speed_dex where it means speed_cex produces a page
-# that is wrong, regenerable and green. The expected rows below are written
-# from what each column means rather than copied from the builder, so a swapped
-# column fails here even though the diff stays clean.
+# The page's tables, cell for cell. Written from what each column means rather
+# than copied from the builder, so a swapped column fails here while the
+# workflow's diff of the regenerated page stays clean.
 _TR = re.compile(r"<tr>(.*?)</tr>", re.S)
 _TD = re.compile(r"<td[^>]*>(.*?)</td>", re.S)
 _TH = re.compile(r"<th>(.*?)</th>", re.S)
@@ -1627,11 +1532,8 @@ _refused_rows = thr[thr.w_cex.isna()]
 _refusal_is_thinness = bool(_refused_rows.minutes.max() < thr_below.minutes.min())
 
 
-# Direction, not just magnitude. A word-flip sweep over every claim-bearing
-# sentence, swapping leads/follows, above/below, more/less and exchange/pool,
-# found 39 reversals that left every number correct and every check green: a
-# sentence can carry the right figure and state the opposite of what the data
-# says. These tie the prose's direction to a sign in the data, so the phrase
+# Direction, not just magnitude: a sentence can carry the right figure and state
+# the opposite of what the data says. These tie a phrase to a sign, so the
 # requirement flips if the finding ever does.
 _hold_mean = float(hold_false.mean())
 _drop_mean = float(sim[sim.scheme == "drop"].groupby("keep")
@@ -1851,18 +1753,9 @@ _doc_nums = sum(
     if _p.name != "verify.py")
 
 # Every denominator the docstring quotes, counted from the document it
-# describes rather than typed, so a paragraph added to the README or a figure
-# added to the page reddens this before anyone can quote a stale total. Only
-# the caught counts stay hand-measured, and none of them can move without its
-# denominator moving first.
-#
-# These five are the ones a mutation sweep has to be run without. They count
-# distinct numbers, so bumping any figure to a value the document already holds
-# merges two tokens into one, the total drops, and the check goes red whether
-# or not the claim it sat next to was guarded. The docstring used to ask a
-# human to ignore them while judging. That instruction was followed for the
-# post and forgotten for the README and the page, where six and thirty-seven of
-# the bumps collide, so `--sweep` skips them instead of asking.
+# describes rather than typed. Only the caught counts stay hand-measured, and
+# none can move without its denominator moving first. These five are the ones
+# `--sweep` drops, for the reason the docstring gives.
 _SELF_COUNTS = (
     ("the post's numbers",
      f"Bumping each of the {_distinct} distinct numbers"),
