@@ -127,6 +127,21 @@ for _doc_name, _text in (("the post", post), ("the README", _readme)):
                     _stale_labels.append(f"{_doc_name}: {_arg}")
 check("every window a reproduce block names was collected",
       not _stale_labels, f"no such window under raw/: {_stale_labels}")
+
+# The post tells a reader that every `analysis/`, `tests/` or `raw/` path in it
+# hangs off the repository, which is only useful if they all resolve. The post
+# is republished on a wiki, where those paths have nothing to resolve against
+# until the repository is named. So the sentence naming it earns a check of its
+# own: it has to name the repository the badges point at, not a repository.
+_REPO = "github.com/mkzung/xstocks-price-discovery"
+check("the post names the repository its paths hang off",
+      _REPO in post and _REPO in _readme,
+      f"in post={_REPO in post} in README={_REPO in _readme}")
+_named_modules = sorted({m for m in re.findall(r"`(analysis/[A-Za-z0-9_]+\.py)`", post)}
+                        - {p.name for p in (base / "analysis").glob("*.py")}
+                        - {f"analysis/{p.name}" for p in (base / "analysis").glob("*.py")})
+check("every module the post names by path exists",
+      not _named_modules, f"named but absent: {_named_modules}")
 # And the example has to be one label, not one per document, or a reader
 # following both is told to start two different windows.
 check("the two documents offer the same new-window example",

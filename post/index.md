@@ -727,6 +727,15 @@ now.
 
 ### Reproducing
 
+All of it lives in one repository,
+[mkzung/xstocks-price-discovery](https://github.com/mkzung/xstocks-price-discovery):
+the code, the tests that hold each estimator to an answer it was not told, and
+`analysis/verify.py`, which reads every number in this post back out of the
+CSVs and exits non-zero if one has drifted. Every path below that starts
+`analysis/`, `tests/` or `raw/` is relative to it. The `data/` files named
+through the post are mirrored beside it as well, so those resolve wherever it
+is published.
+
 Reproducibility splits by pass. Everything drawn from the three series passes
 re-fits from the committed minute series in `raw/`: every robustness check, the
 daily comparison, the vector and session splits. The two earliest passes, the
@@ -734,11 +743,8 @@ universe snapshot and the session panel, kept only their outputs, so their
 tables are reported rather than re-fittable, and the series passes carry the
 same claims where it matters. The modules behind them, `analysis/panel.py` for
 the session split and `analysis/venues.py` for the second exchange and the
-pool-against-pool controls, are here and will run, but they collect afresh from
-the live endpoints rather than replaying those windows, which no longer exist.
-The code, the tests that hold each estimator to an answer it was not told, and
-`analysis/verify.py`, which reads every number in this post back out of the
-CSVs and exits non-zero if one has drifted, are all here.
+pool-against-pool controls, will run, but they collect afresh from the live
+endpoints rather than replaying those windows, which no longer exist.
 
 ```bash
 pip install -r requirements.txt
