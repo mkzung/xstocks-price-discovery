@@ -143,7 +143,7 @@ Do not carry a pool's last price forward across minutes it did not trade in.
 `staleness.py` measures what that costs on data with a known answer: at every
 partial fill rate the estimator then calls the exchange the leader in 95 to 100
 percent of runs, whoever actually leads. Dropping the untraded minutes, which is
-what the pipeline does, keeps the error to 2 to 19 percent at the fill rates the
+what the code here does, keeps the error to 2 to 19 percent at the fill rates the
 ranked pairs show.
 
 One correction worth knowing before reusing any of this. Gate returns a minute
@@ -152,14 +152,18 @@ closed]`, and `cex_bars` read field five, the open, while `dex_bars` read
 GeckoTerminal's close. The two series were therefore a minute apart at every
 stamp. `cex_bars` reads the close now and `tests/` pins the field layout of all
 four venue readers, but the windows committed under `raw/` were collected
-before the fix and are analysed as collected. For the headline that is the
-conservative side of the error, which the correction only strengthens. For its
-exception it is the easier side: AMZNX is the study's one clear pool lead at
+before the fix and are analysed as collected.
+
+For the headline that is the conservative side of the error, which the
+correction only strengthens. For its exception it is the easier side: AMZNX is
+the study's one clear pool lead at
 -0.24, and realigned it is 0.33, which the strict rule declines to call for
-either side. A correction that moves 21 of 23 weights towards the exchange has
-to cost the one reading that ran the other way. So "conservative" is true of
-the aggregate and cannot be left to stand for each part.
-`analysis/alignment.py` refits both ways and reports the difference.
+either side.
+
+A correction that moves 21 of 23 weights towards the exchange has to cost the
+one reading that ran the other way. So "conservative" is true of the aggregate
+and cannot be left to stand for each part. `analysis/alignment.py` refits both
+ways and reports the difference.
 
 Two provenance notes. The 24-hour volumes in `universe.csv` are a snapshot
 taken when the universe was built; the minute bars were pulled afterwards, so
